@@ -1,4 +1,6 @@
 ;; Raylib binding generator
+(define input-file-path "./src/raylib_api.xml")
+(define output-file-path "./src/raylib.sls")
 
 (define-syntax push!
   (syntax-rules ()
@@ -11,7 +13,7 @@
               (xml-get-attrs xml-node))))
 
 (define apis
-  (xml-load (open-input-file "./src/raylib_api.xml")
+  (xml-load (open-input-file input-file-path)
             #f))
 
 (assert (string=? (xml-get-name apis) "raylibAPI"))
@@ -61,7 +63,14 @@
                         (string-downcase
                          (substring string
                                     start-ind
-                                    end-ind)) "-")
+                                    (if (char=?
+                                         #\-
+                                         (string-ref
+                                          string
+                                          (- end-ind 1)))
+                                        (- end-ind 1)
+                                        end-ind)))
+                        "-")
                        this-upcase)
                  (loop start-ind (+ end-ind 1)
                        result-string this-upcase)))
@@ -188,7 +197,8 @@
                   (xml-get-children struct-xml))]
          [struct-sexpr (cons 'struct fields)])
     (cons
-     (list 'define-ftype name struct-sexpr)
+     (cons
+     `(define-ftype ,name ,struct-sexpr)
      (if scalar-field
          (cons 'define
                (list
@@ -209,7 +219,18 @@
                                           struct ,f)))
                          fields)
                     struct)))
-           '()))))
+         '()))
+     (let ([set-name (string->var-name (string-append
+                                        name-str "-set!") #f)]
+           [get-name (string->var-name (string-append
+                                        name-str "-get") #f)])
+       (cons
+        `(define-syntax ,set-name
+           (syntax-rules ()
+             [(_ s f v) (ftype-set! ,name (f) s v)]))
+        `(define-syntax ,get-name
+           (syntax-rules ()
+             [(_ s f) (ftype-ref ,name (f) s)])))))))
 
 (define (make-trace-log-callback p)
   (let ([code (foreign-callable __collect_safe
@@ -218,7 +239,6 @@
                                 void)])
     (lock-object code)
     (foreign-callable-entry-point code)))
-
 
 (define (cb-generator cb-xml)
   (let* ([name-str (xml-get-attr cb-xml "name")]
@@ -246,7 +266,6 @@
          (lock-object code)
          (foreign-callable-entry-point code)))))
 
-
 (define (enum-generator enum-item-xml)
   (let ([name-str (xml-get-attr enum-item-xml
                                 "name")]
@@ -257,8 +276,16 @@
        ,(string->number int-str))))
 
 (define fn-black-list
-  '(gen-image-font-atlas text-join text-split))
-
+  '(gen-image-font-atlas
+    text-join text-split
+    check-collision-point-poly
+    gen-image-perlin-noise
+    image-draw-circle-lines
+    image-draw-circle-lines-v
+    load-utf8
+    unload-utf8
+    get-codepoint-next
+    get-codepoint-previous))
 
 (define (fn-generator func-xml)
   (let* ([name-str (xml-get-attr func-xml "name")]
@@ -288,23 +315,24 @@
             (memq func-name fn-black-list))
         #f
         (if v-ret
-            `(define (,func-name ,@(car params))
-               (let ([ret (make-ftype-pointer
-                           ,(cadr ret-type)
-                           (foreign-alloc 
-                            (ftype-sizeof
-                             ,(cadr ret-type))))])
-                 ((foreign-procedure
-                   ,name-str
-                   ,(cdr params) ,ret-type)
-                  ret ,@(car params))
-                 ret))
-            `(define (,func-name ,@(car params))
-               ((foreign-procedure
-                 ,name-str
-                 ,(cdr params) ,ret-type)
-                ,@(car params)))))))
-
+            `(define ,func-name
+               (let ([f (foreign-procedure
+                         ,name-str
+                         ,(cdr params) ,ret-type)])
+                 (lambda ,(car params)
+                   (let ([ret (make-ftype-pointer
+                               ,(cadr ret-type)
+                               (foreign-alloc 
+                                (ftype-sizeof
+                                 ,(cadr ret-type))))])
+                   (f ret ,@(car params))
+                   ret))))
+            `(define ,func-name
+               (let ([f (foreign-procedure
+                         ,name-str
+                         ,(cdr params) ,ret-type)])
+                 (lambda ,(car params)
+                   (f ,@(car params)))))))))
 
 (define (color-generator color-xml)
   (let* ([name (string->symbol
@@ -334,20 +362,37 @@
                                               (+ i 2)
                                               res-len))))))
               ))))))
-
               
-
 (let ([write-fp (if #t #;(output)
-                    (open-output-file
-                     "./src/raylib_api.sls")
+                    (begin
+                      (when (file-exists? output-file-path)
+                        (delete-file output-file-path))
+                      (open-output-file output-file-path))
                     (current-output-port))]
-      [export-list '(PI deg->rad rad->deg)]
+      [export-list '(PI deg->rad rad->deg drawing-begin float int)]
       [sexpr-list '((define (rad->deg rad)
-                       (/ (* rad 180) PI))
-                     (define (deg->rad deg)
-                       (/ (* deg PI) 180))
-                     (define PI 3.14159265358979323846))])
-  
+                      (/ (* rad 180) PI))
+                    (define (deg->rad deg)
+                      (/ (* deg PI) 180))
+                    (define PI 3.14159265358979323846)
+                    (define-syntax drawing-begin
+                      (syntax-rules ()
+                        [(_ e0 e1 ...)
+                         (begin
+                           (begin-drawing)
+                           e0 e1 ...
+                           (end-drawing))]))
+                    (define-syntax float
+                      (syntax-rules ()
+                        [(_ f) (if (fixnum? f)
+                                   (fixnum->flonum f)                                   
+                                   f)]))
+                    (define-syntax int
+                      (syntax-rules ()
+                        [(_ f) (if (flonum? f)
+                                   (flonum->fixnum (round f))
+                                   f)]))
+                     )])
   (for-each (lambda (enum-xml)
               (for-each
                (lambda (enum-item)
@@ -357,12 +402,19 @@
                    (push! export-list (cadr enum-expr))))
                (xml-get-children enum-xml)))
             api-enums)
-  
+
   (for-each (lambda (struct-xml)
               (let* ([sexpr (struct-generator struct-xml)]
-                     [def-sexpr (car sexpr)]
-                     [def-make-sexpr (cdr sexpr)])
+                     [def-sexpr (caar sexpr)]
+                     [def-make-sexpr (cdar sexpr)]
+                     [set-sexpr (cadr sexpr)]
+                     [get-sexpr (cddr sexpr)])
                 (push! sexpr-list def-sexpr)
+                (push! sexpr-list set-sexpr)                
+                (push! sexpr-list get-sexpr)
+                #;(push! export-list (cadr def-sexpr))
+                (push! export-list (cadr set-sexpr))
+                (push! export-list (cadr get-sexpr)) 
                 (unless (null? def-make-sexpr)
                   (push! sexpr-list def-make-sexpr)
                   (push! export-list
@@ -379,7 +431,7 @@
               (let ([sexpr (fn-generator fn-xml)])
                 (when sexpr
                   (push! sexpr-list sexpr)
-                  (push! export-list (caadr sexpr)))))
+                  (push! export-list (cadr sexpr)))))
             api-functions)
 
   (for-each (lambda (def-xml)
@@ -391,22 +443,31 @@
                   (push! export-list (cadr color-sexpr)))))
           api-defines)
 
-  (push! sexpr-list
-         '(let load-loop ([libs (library-directories)])
-            (when (null? libs)
-              (error #f
-                     "Raylib not found"))
-            (let ([libpath (string-append
-                            (caar libs)
-                            "/raylib/raylib.dll")])
-              (if (file-exists? libpath)
-                  (load-shared-object libpath)
-                  (load-loop (cdr libs))))))
+  (pretty-print
+   '(let load-loop ([libs (library-directories)])
+      (when (null? libs)
+        (error #f
+               "Raylib not found"))
+      (let ([libpath (string-append
+                      (caar libs)
+                      "/raylib/raylib.dll")])
+        (if (file-exists? libpath)
+            (load-shared-object libpath)
+            (load-loop (cdr libs)))))
+   write-fp)
   (pretty-print
    `(library (raylib (0 1))
       (export ,@export-list)
       (import (chezscheme))
       ,@(reverse sexpr-list))
    write-fp)
-  (close-port write-fp))
-
+  (close-port write-fp)
+  (compile-file output-file-path
+                (let lib-loop ([libs (library-directories)])
+                  (when (null? libs)
+                    (error #f
+                           "Raylib not found"))
+                  (let ([libpath (caar libs)])
+                    (if (file-exists? (string-append libpath "/raylib/"))
+                        (string-append libpath "/raylib.so")
+                        (lib-loop (cdr libs)))))))
