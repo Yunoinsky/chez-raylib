@@ -1,4 +1,5 @@
 ;; Raylib binding generator
+
 (define input-file-path "./src/raylib_api.xml")
 (define output-file-path "./src/raylib.sls")
 
@@ -198,39 +199,52 @@
          [struct-sexpr (cons 'struct fields)])
     (cons
      (cons
-     `(define-ftype ,name ,struct-sexpr)
-     (if scalar-field
-         (cons 'define
-               (list
-                (cons (string->var-name
-                       (string-append
-                        "Make"
-                        name-str) #f)
-                      (map car fields))
-                `(let ([struct
-                         (make-ftype-pointer
-                          ,name
-                          (foreign-alloc
-                           (ftype-sizeof ,name)))])
-                   ,@(map (lambda (field)
-                        	 (let ([f (car field)])
-                             `(ftype-set! ,name
-                                          (,f)
-                                          struct ,f)))
-                         fields)
-                    struct)))
-         '()))
+      `(define-ftype ,name ,struct-sexpr)
+      (let ([maker-name (string->var-name
+                         (string-append
+                          "Make"
+                          name-str) #f)]
+            [field-name-list (map car fields)])
+        (if scalar-field
+            `(define ,maker-name
+               (case-lambda
+                 [,field-name-list
+                  (let ([struct (make-ftype-pointer
+                                 ,name
+                                 (foreign-alloc
+                                  (ftype-sizeof ,name)))])
+                    ,@(map (lambda (f)
+                             `(ftype-set! ,name (,f) struct ,f))
+                           field-name-list)
+                    struct)]
+                 [,(append field-name-list '(struct))
+                  ,@(map (lambda (f)
+                           `(ftype-set! ,name (,f) struct ,f))
+                         field-name-list)
+                  struct]))
+            `(define ,maker-name
+               (lambda () (make-ftype-pointer
+                           ,name
+                           (foreign-alloc
+                            (ftype-sizeof ,name))))))))
+
      (let ([set-name (string->var-name (string-append
                                         name-str "-set!") #f)]
            [get-name (string->var-name (string-append
-                                        name-str "-get") #f)])
-       (cons
+                                        name-str "-get") #f)]
+           [ref-name (string->var-name (string-append
+                                        name-str "-ref&") #f)])
+       (list
         `(define-syntax ,set-name
            (syntax-rules ()
              [(_ s f v) (ftype-set! ,name (f) s v)]))
         `(define-syntax ,get-name
            (syntax-rules ()
-             [(_ s f) (ftype-ref ,name (f) s)])))))))
+             [(_ s (f ...)) (ftype-ref ,name (f ...) s)]
+             [(_ s f) (ftype-ref ,name (f) s)]))
+        `(define-syntax ,ref-name
+           (syntax-rules ()
+             [(_ s f) (ftype-&ref ,name (f) s)])))))))
 
 (define (make-trace-log-callback p)
   (let ([code (foreign-callable __collect_safe
@@ -369,7 +383,9 @@
                         (delete-file output-file-path))
                       (open-output-file output-file-path))
                     (current-output-port))]
-      [export-list '(PI deg->rad rad->deg drawing-begin float int)]
+      [export-list '(PI deg->rad rad->deg
+                        drawing-begin mode-3d-begin
+                        float int make-camera3d)]
       [sexpr-list '((define (rad->deg rad)
                       (/ (* rad 180) PI))
                     (define (deg->rad deg)
@@ -382,6 +398,13 @@
                            (begin-drawing)
                            e0 e1 ...
                            (end-drawing))]))
+                    (define-syntax mode-3d-begin
+                      (syntax-rules ()
+                        [(_ camera e0 e1 ...)
+                         (begin
+                           (begin-mode-3d camera)
+                           e0 e1 ...
+                           (end-mode-3d))]))
                     (define-syntax float
                       (syntax-rules ()
                         [(_ f) (if (fixnum? f)
@@ -392,6 +415,32 @@
                         [(_ f) (if (flonum? f)
                                    (flonum->fixnum (round f))
                                    f)]))
+                    (define (make-camera3d position
+                                           target
+                                           up
+                                           fovy projection)
+                      (let ([camera (make-camera-3d)])
+                        (make-vector-3
+                         (car position)
+                         (cadr position)
+                         (caddr position)
+                         (camera-3d-ref& camera position))
+                        (make-vector-3
+                         (car target)
+                         (cadr target)
+                         (caddr target)
+                         (camera-3d-ref& camera target))
+                        (make-vector-3
+                         (car up)
+                         (cadr up)
+                         (caddr up)
+                         (camera-3d-ref& camera up))
+                        (camera-3d-set! camera fovy fovy)
+                        (camera-3d-set! camera
+                                        projection
+                                        projection)
+                        camera))
+                    
                      )])
   (for-each (lambda (enum-xml)
               (for-each
@@ -408,17 +457,20 @@
                      [def-sexpr (caar sexpr)]
                      [def-make-sexpr (cdar sexpr)]
                      [set-sexpr (cadr sexpr)]
-                     [get-sexpr (cddr sexpr)])
+                     [get-sexpr (caddr sexpr)]
+                     [ref-sexpr (cadddr sexpr)])
                 (push! sexpr-list def-sexpr)
                 (push! sexpr-list set-sexpr)                
                 (push! sexpr-list get-sexpr)
-                #;(push! export-list (cadr def-sexpr))
+                (push! sexpr-list ref-sexpr)
+                (push! export-list (cadr def-sexpr))
                 (push! export-list (cadr set-sexpr))
-                (push! export-list (cadr get-sexpr)) 
+                (push! export-list (cadr get-sexpr))
+                (push! export-list (cadr ref-sexpr)) 
                 (unless (null? def-make-sexpr)
                   (push! sexpr-list def-make-sexpr)
                   (push! export-list
-                         (caadr def-make-sexpr)))))
+                         (cadr def-make-sexpr)))))
             api-structs)
   
   (for-each (lambda (cb-xml)
