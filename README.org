@@ -1,4 +1,24 @@
 #+TITLE: Chez-Raylib λ-0.1
 #+AUTHOR: Yunoinsky Chen
 
+** Introduction
 
+   Raylib in ChezScheme, with an automatic binding generator.
+
+   Inspired by Petelliott's fantastic [[https://github.com/petelliott/raylib-guile][raylib-guile]].
+   
+   Thanks for Raysan's outstanding work - [[https://github.com/raysan5/raylib][Raylib]]!
+
+   
+** Installation
+
+   ([[https://github.com/cisco/ChezScheme][Chez Scheme (v9.5.8)]] is required)
+
+   - ~git clone https://github.com/Yunoinsky/chez-raylib~
+   - ~cd chez-raylib~
+   - Download ~raylib.dll~ and put it into ~~/Library/chezscheme/raylib/~.
+   - append ~~/Library/chezscheme/~ to the environment variable ~CHEZSCHEMELIBDIRS~.
+   - Make sure ~raylib_api.xml~ is existed in ~./src/~
+   - Globally install [[https://github.com/Yunoinsky/chez-xml][chez-xml]].
+   - Automatic generate and compile binding library: ~scheme --script ./src/raylib_binding_generator.ss~
+   - run the test: ~scheme --script ./test/test_core_window.ss~
