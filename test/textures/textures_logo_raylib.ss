@@ -1,6 +1,8 @@
 (import (raylib))
 
-(init-window 800 450 "raylib [core] example - input mouse wheel")
+
+(init-window 800 450 "raylib [texture] example - raylib logo texture")
+
 (set-target-fps 60)
 
 (do ([box-pos-y 185.0 (- box-pos-y

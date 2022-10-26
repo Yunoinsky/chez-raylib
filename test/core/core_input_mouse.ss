@@ -1,9 +1,7 @@
 (import (raylib))
 
-(init-window 800 450 "raylib [core] example - input mouse wheel")
-
+(init-window 800 450 "raylib [core] example - mouse input")
 (set-target-fps 60)
-
 (hide-cursor)
 
 (do ([ball-pos (get-mouse-position)

@@ -21,4 +21,4 @@
    - Make sure ~raylib_api.xml~ is existed in ~./src/~
    - Globally install [[https://github.com/Yunoinsky/chez-xml][chez-xml]].
    - Automatic generate and compile binding library: ~scheme --script ./src/raylib_binding_generator.ss~
-   - run the test: ~scheme --script ./test/test_core_window.ss~
+   - run the test: ~scheme --script ./test/core/core_basic_window.ss~
