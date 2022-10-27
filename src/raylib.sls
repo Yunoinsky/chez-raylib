@@ -1573,12 +1573,14 @@
     (let ([f (foreign-procedure "GetMonitorPosition"
                (int)
                (& Vector-2))])
-      (lambda (monitor)
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret monitor)
-          ret))))
+      (case-lambda
+        [(monitor)
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret monitor)
+           ret)]
+        [(monitor struct) (f struct monitor) struct])))
   (define get-monitor-width
     (let ([f (foreign-procedure "GetMonitorWidth" (int) int)])
       (lambda (monitor) (f monitor))))
@@ -1604,22 +1606,26 @@
     (let ([f (foreign-procedure "GetWindowPosition"
                ()
                (& Vector-2))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define get-window-scale-dpi
     (let ([f (foreign-procedure "GetWindowScaleDPI"
                ()
                (& Vector-2))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define get-monitor-name
     (let ([f (foreign-procedure "GetMonitorName" (int) string)])
       (lambda (monitor) (f monitor))))
@@ -1733,12 +1739,14 @@
     (let ([f (foreign-procedure "LoadVrStereoConfig"
                ((& Vr-Device-Info))
                (& Vr-Stereo-Config))])
-      (lambda (device)
-        (let ([ret (make-ftype-pointer
-                     Vr-Stereo-Config
-                     (foreign-alloc (ftype-sizeof Vr-Stereo-Config)))])
-          (f ret device)
-          ret))))
+      (case-lambda
+        [(device)
+         (let ([ret (make-ftype-pointer
+                      Vr-Stereo-Config
+                      (foreign-alloc (ftype-sizeof Vr-Stereo-Config)))])
+           (f ret device)
+           ret)]
+        [(device struct) (f struct device) struct])))
   (define unload-vr-stereo-config
     (let ([f (foreign-procedure "UnloadVrStereoConfig"
                ((& Vr-Stereo-Config))
@@ -1748,22 +1756,30 @@
     (let ([f (foreign-procedure "LoadShader"
                (string string)
                (& Shader))])
-      (lambda (vs-file-name fs-file-name)
-        (let ([ret (make-ftype-pointer
-                     Shader
-                     (foreign-alloc (ftype-sizeof Shader)))])
-          (f ret vs-file-name fs-file-name)
-          ret))))
+      (case-lambda
+        [(vs-file-name fs-file-name)
+         (let ([ret (make-ftype-pointer
+                      Shader
+                      (foreign-alloc (ftype-sizeof Shader)))])
+           (f ret vs-file-name fs-file-name)
+           ret)]
+        [(vs-file-name fs-file-name struct)
+         (f struct vs-file-name fs-file-name)
+         struct])))
   (define load-shader-from-memory
     (let ([f (foreign-procedure "LoadShaderFromMemory"
                (string string)
                (& Shader))])
-      (lambda (vs-code fs-code)
-        (let ([ret (make-ftype-pointer
-                     Shader
-                     (foreign-alloc (ftype-sizeof Shader)))])
-          (f ret vs-code fs-code)
-          ret))))
+      (case-lambda
+        [(vs-code fs-code)
+         (let ([ret (make-ftype-pointer
+                      Shader
+                      (foreign-alloc (ftype-sizeof Shader)))])
+           (f ret vs-code fs-code)
+           ret)]
+        [(vs-code fs-code struct)
+         (f struct vs-code fs-code)
+         struct])))
   (define get-shader-location
     (let ([f (foreign-procedure "GetShaderLocation"
                ((& Shader) string)
@@ -1806,72 +1822,96 @@
     (let ([f (foreign-procedure "GetMouseRay"
                ((& Vector-2) (& Camera-3D))
                (& Ray))])
-      (lambda (mouse-position camera)
-        (let ([ret (make-ftype-pointer
-                     Ray
-                     (foreign-alloc (ftype-sizeof Ray)))])
-          (f ret mouse-position camera)
-          ret))))
+      (case-lambda
+        [(mouse-position camera)
+         (let ([ret (make-ftype-pointer
+                      Ray
+                      (foreign-alloc (ftype-sizeof Ray)))])
+           (f ret mouse-position camera)
+           ret)]
+        [(mouse-position camera struct)
+         (f struct mouse-position camera)
+         struct])))
   (define get-camera-matrix
     (let ([f (foreign-procedure "GetCameraMatrix"
                ((& Camera-3D))
                (& Matrix))])
-      (lambda (camera)
-        (let ([ret (make-ftype-pointer
-                     Matrix
-                     (foreign-alloc (ftype-sizeof Matrix)))])
-          (f ret camera)
-          ret))))
+      (case-lambda
+        [(camera)
+         (let ([ret (make-ftype-pointer
+                      Matrix
+                      (foreign-alloc (ftype-sizeof Matrix)))])
+           (f ret camera)
+           ret)]
+        [(camera struct) (f struct camera) struct])))
   (define get-camera-matrix-2d
     (let ([f (foreign-procedure "GetCameraMatrix2D"
                ((& Camera-2D))
                (& Matrix))])
-      (lambda (camera)
-        (let ([ret (make-ftype-pointer
-                     Matrix
-                     (foreign-alloc (ftype-sizeof Matrix)))])
-          (f ret camera)
-          ret))))
+      (case-lambda
+        [(camera)
+         (let ([ret (make-ftype-pointer
+                      Matrix
+                      (foreign-alloc (ftype-sizeof Matrix)))])
+           (f ret camera)
+           ret)]
+        [(camera struct) (f struct camera) struct])))
   (define get-world-to-screen
     (let ([f (foreign-procedure "GetWorldToScreen"
                ((& Vector-3) (& Camera-3D))
                (& Vector-2))])
-      (lambda (position camera)
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret position camera)
-          ret))))
+      (case-lambda
+        [(position camera)
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret position camera)
+           ret)]
+        [(position camera struct)
+         (f struct position camera)
+         struct])))
   (define get-screen-to-world-2d
     (let ([f (foreign-procedure "GetScreenToWorld2D"
                ((& Vector-2) (& Camera-2D))
                (& Vector-2))])
-      (lambda (position camera)
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret position camera)
-          ret))))
+      (case-lambda
+        [(position camera)
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret position camera)
+           ret)]
+        [(position camera struct)
+         (f struct position camera)
+         struct])))
   (define get-world-to-screen-ex
     (let ([f (foreign-procedure "GetWorldToScreenEx"
                ((& Vector-3) (& Camera-3D) int int)
                (& Vector-2))])
-      (lambda (position camera width height)
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret position camera width height)
-          ret))))
+      (case-lambda
+        [(position camera width height)
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret position camera width height)
+           ret)]
+        [(position camera width height struct)
+         (f struct position camera width height)
+         struct])))
   (define get-world-to-screen-2d
     (let ([f (foreign-procedure "GetWorldToScreen2D"
                ((& Vector-2) (& Camera-2D))
                (& Vector-2))])
-      (lambda (position camera)
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret position camera)
-          ret))))
+      (case-lambda
+        [(position camera)
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret position camera)
+           ret)]
+        [(position camera struct)
+         (f struct position camera)
+         struct])))
   (define set-target-fps
     (let ([f (foreign-procedure "SetTargetFPS" (int) void)])
       (lambda (fps) (f fps))))
@@ -2043,22 +2083,28 @@
     (let ([f (foreign-procedure "LoadDirectoryFiles"
                (string)
                (& File-Path-List))])
-      (lambda (dir-path)
-        (let ([ret (make-ftype-pointer
-                     File-Path-List
-                     (foreign-alloc (ftype-sizeof File-Path-List)))])
-          (f ret dir-path)
-          ret))))
+      (case-lambda
+        [(dir-path)
+         (let ([ret (make-ftype-pointer
+                      File-Path-List
+                      (foreign-alloc (ftype-sizeof File-Path-List)))])
+           (f ret dir-path)
+           ret)]
+        [(dir-path struct) (f struct dir-path) struct])))
   (define load-directory-files-ex
     (let ([f (foreign-procedure "LoadDirectoryFilesEx"
                (string string boolean)
                (& File-Path-List))])
-      (lambda (base-path filter scan-subdirs)
-        (let ([ret (make-ftype-pointer
-                     File-Path-List
-                     (foreign-alloc (ftype-sizeof File-Path-List)))])
-          (f ret base-path filter scan-subdirs)
-          ret))))
+      (case-lambda
+        [(base-path filter scan-subdirs)
+         (let ([ret (make-ftype-pointer
+                      File-Path-List
+                      (foreign-alloc (ftype-sizeof File-Path-List)))])
+           (f ret base-path filter scan-subdirs)
+           ret)]
+        [(base-path filter scan-subdirs struct)
+         (f struct base-path filter scan-subdirs)
+         struct])))
   (define unload-directory-files
     (let ([f (foreign-procedure "UnloadDirectoryFiles"
                ((& File-Path-List))
@@ -2071,12 +2117,14 @@
     (let ([f (foreign-procedure "LoadDroppedFiles"
                ()
                (& File-Path-List))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     File-Path-List
-                     (foreign-alloc (ftype-sizeof File-Path-List)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      File-Path-List
+                      (foreign-alloc (ftype-sizeof File-Path-List)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define unload-dropped-files
     (let ([f (foreign-procedure "UnloadDroppedFiles"
                ((& File-Path-List))
@@ -2209,22 +2257,26 @@
     (let ([f (foreign-procedure "GetMousePosition"
                ()
                (& Vector-2))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define get-mouse-delta
     (let ([f (foreign-procedure "GetMouseDelta"
                ()
                (& Vector-2))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define set-mouse-position
     (let ([f (foreign-procedure "SetMousePosition"
                (int int)
@@ -2247,12 +2299,14 @@
     (let ([f (foreign-procedure "GetMouseWheelMoveV"
                ()
                (& Vector-2))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define set-mouse-cursor
     (let ([f (foreign-procedure "SetMouseCursor" (int) void)])
       (lambda (cursor) (f cursor))))
@@ -2266,12 +2320,14 @@
     (let ([f (foreign-procedure "GetTouchPosition"
                (int)
                (& Vector-2))])
-      (lambda (index)
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret index)
-          ret))))
+      (case-lambda
+        [(index)
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret index)
+           ret)]
+        [(index struct) (f struct index) struct])))
   (define get-touch-point-id
     (let ([f (foreign-procedure "GetTouchPointId" (int) int)])
       (lambda (index) (f index))))
@@ -2300,12 +2356,14 @@
     (let ([f (foreign-procedure "GetGestureDragVector"
                ()
                (& Vector-2))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define get-gesture-drag-angle
     (let ([f (foreign-procedure "GetGestureDragAngle"
                ()
@@ -2315,12 +2373,14 @@
     (let ([f (foreign-procedure "GetGesturePinchVector"
                ()
                (& Vector-2))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define get-gesture-pinch-angle
     (let ([f (foreign-procedure "GetGesturePinchAngle"
                ()
@@ -2640,72 +2700,92 @@
     (let ([f (foreign-procedure "GetCollisionRec"
                ((& Rectangle) (& Rectangle))
                (& Rectangle))])
-      (lambda (rec-1 rec-2)
-        (let ([ret (make-ftype-pointer
-                     Rectangle
-                     (foreign-alloc (ftype-sizeof Rectangle)))])
-          (f ret rec-1 rec-2)
-          ret))))
+      (case-lambda
+        [(rec-1 rec-2)
+         (let ([ret (make-ftype-pointer
+                      Rectangle
+                      (foreign-alloc (ftype-sizeof Rectangle)))])
+           (f ret rec-1 rec-2)
+           ret)]
+        [(rec-1 rec-2 struct) (f struct rec-1 rec-2) struct])))
   (define load-image
     (let ([f (foreign-procedure "LoadImage"
                (string)
                (& Image))])
-      (lambda (file-name)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret file-name)
-          ret))))
+      (case-lambda
+        [(file-name)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret file-name)
+           ret)]
+        [(file-name struct) (f struct file-name) struct])))
   (define load-image-raw
     (let ([f (foreign-procedure "LoadImageRaw"
                (string int int int int)
                (& Image))])
-      (lambda (file-name width height format header-size)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret file-name width height format header-size)
-          ret))))
+      (case-lambda
+        [(file-name width height format header-size)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret file-name width height format header-size)
+           ret)]
+        [(file-name width height format header-size struct)
+         (f struct file-name width height format header-size)
+         struct])))
   (define load-image-anim
     (let ([f (foreign-procedure "LoadImageAnim"
                (string (* int))
                (& Image))])
-      (lambda (file-name frames)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret file-name frames)
-          ret))))
+      (case-lambda
+        [(file-name frames)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret file-name frames)
+           ret)]
+        [(file-name frames struct)
+         (f struct file-name frames)
+         struct])))
   (define load-image-from-memory
     (let ([f (foreign-procedure "LoadImageFromMemory"
                (string (* unsigned-8) int)
                (& Image))])
-      (lambda (file-type file-data data-size)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret file-type file-data data-size)
-          ret))))
+      (case-lambda
+        [(file-type file-data data-size)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret file-type file-data data-size)
+           ret)]
+        [(file-type file-data data-size struct)
+         (f struct file-type file-data data-size)
+         struct])))
   (define load-image-from-texture
     (let ([f (foreign-procedure "LoadImageFromTexture"
                ((& Texture))
                (& Image))])
-      (lambda (texture)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret texture)
-          ret))))
+      (case-lambda
+        [(texture)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret texture)
+           ret)]
+        [(texture struct) (f struct texture) struct])))
   (define load-image-from-screen
     (let ([f (foreign-procedure "LoadImageFromScreen"
                ()
                (& Image))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define unload-image
     (let ([f (foreign-procedure "UnloadImage"
                ((& Image))
@@ -2725,112 +2805,152 @@
     (let ([f (foreign-procedure "GenImageColor"
                (int int (& Color))
                (& Image))])
-      (lambda (width height color)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret width height color)
-          ret))))
+      (case-lambda
+        [(width height color)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret width height color)
+           ret)]
+        [(width height color struct)
+         (f struct width height color)
+         struct])))
   (define gen-image-gradient-v
     (let ([f (foreign-procedure "GenImageGradientV"
                (int int (& Color) (& Color))
                (& Image))])
-      (lambda (width height top bottom)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret width height top bottom)
-          ret))))
+      (case-lambda
+        [(width height top bottom)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret width height top bottom)
+           ret)]
+        [(width height top bottom struct)
+         (f struct width height top bottom)
+         struct])))
   (define gen-image-gradient-h
     (let ([f (foreign-procedure "GenImageGradientH"
                (int int (& Color) (& Color))
                (& Image))])
-      (lambda (width height left right)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret width height left right)
-          ret))))
+      (case-lambda
+        [(width height left right)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret width height left right)
+           ret)]
+        [(width height left right struct)
+         (f struct width height left right)
+         struct])))
   (define gen-image-gradient-radial
     (let ([f (foreign-procedure "GenImageGradientRadial"
                (int int float (& Color) (& Color))
                (& Image))])
-      (lambda (width height density inner outer)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret width height density inner outer)
-          ret))))
+      (case-lambda
+        [(width height density inner outer)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret width height density inner outer)
+           ret)]
+        [(width height density inner outer struct)
+         (f struct width height density inner outer)
+         struct])))
   (define gen-image-checked
     (let ([f (foreign-procedure "GenImageChecked"
                (int int int int (& Color) (& Color))
                (& Image))])
-      (lambda (width height checks-x checks-y col-1 col-2)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret width height checks-x checks-y col-1 col-2)
-          ret))))
+      (case-lambda
+        [(width height checks-x checks-y col-1 col-2)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret width height checks-x checks-y col-1 col-2)
+           ret)]
+        [(width height checks-x checks-y col-1 col-2 struct)
+         (f struct width height checks-x checks-y col-1 col-2)
+         struct])))
   (define gen-image-white-noise
     (let ([f (foreign-procedure "GenImageWhiteNoise"
                (int int float)
                (& Image))])
-      (lambda (width height factor)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret width height factor)
-          ret))))
+      (case-lambda
+        [(width height factor)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret width height factor)
+           ret)]
+        [(width height factor struct)
+         (f struct width height factor)
+         struct])))
   (define gen-image-cellular
     (let ([f (foreign-procedure "GenImageCellular"
                (int int int)
                (& Image))])
-      (lambda (width height tile-size)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret width height tile-size)
-          ret))))
+      (case-lambda
+        [(width height tile-size)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret width height tile-size)
+           ret)]
+        [(width height tile-size struct)
+         (f struct width height tile-size)
+         struct])))
   (define image-copy
     (let ([f (foreign-procedure "ImageCopy"
                ((& Image))
                (& Image))])
-      (lambda (image)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret image)
-          ret))))
+      (case-lambda
+        [(image)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret image)
+           ret)]
+        [(image struct) (f struct image) struct])))
   (define image-from-image
     (let ([f (foreign-procedure "ImageFromImage"
                ((& Image) (& Rectangle))
                (& Image))])
-      (lambda (image rec)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret image rec)
-          ret))))
+      (case-lambda
+        [(image rec)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret image rec)
+           ret)]
+        [(image rec struct) (f struct image rec) struct])))
   (define image-text
     (let ([f (foreign-procedure "ImageText"
                (string int (& Color))
                (& Image))])
-      (lambda (text font-size color)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret text font-size color)
-          ret))))
+      (case-lambda
+        [(text font-size color)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret text font-size color)
+           ret)]
+        [(text font-size color struct)
+         (f struct text font-size color)
+         struct])))
   (define image-text-ex
     (let ([f (foreign-procedure "ImageTextEx"
                ((& Font) string float float (& Color))
                (& Image))])
-      (lambda (font text font-size spacing tint)
-        (let ([ret (make-ftype-pointer
-                     Image
-                     (foreign-alloc (ftype-sizeof Image)))])
-          (f ret font text font-size spacing tint)
-          ret))))
+      (case-lambda
+        [(font text font-size spacing tint)
+         (let ([ret (make-ftype-pointer
+                      Image
+                      (foreign-alloc (ftype-sizeof Image)))])
+           (f ret font text font-size spacing tint)
+           ret)]
+        [(font text font-size spacing tint struct)
+         (f struct font text font-size spacing tint)
+         struct])))
   (define image-format
     (let ([f (foreign-procedure "ImageFormat"
                ((* Image) int)
@@ -2970,22 +3090,28 @@
     (let ([f (foreign-procedure "GetImageAlphaBorder"
                ((& Image) float)
                (& Rectangle))])
-      (lambda (image threshold)
-        (let ([ret (make-ftype-pointer
-                     Rectangle
-                     (foreign-alloc (ftype-sizeof Rectangle)))])
-          (f ret image threshold)
-          ret))))
+      (case-lambda
+        [(image threshold)
+         (let ([ret (make-ftype-pointer
+                      Rectangle
+                      (foreign-alloc (ftype-sizeof Rectangle)))])
+           (f ret image threshold)
+           ret)]
+        [(image threshold struct)
+         (f struct image threshold)
+         struct])))
   (define get-image-color
     (let ([f (foreign-procedure "GetImageColor"
                ((& Image) int int)
                (& Color))])
-      (lambda (image x y)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret image x y)
-          ret))))
+      (case-lambda
+        [(image x y)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret image x y)
+           ret)]
+        [(image x y struct) (f struct image x y) struct])))
   (define image-clear-background
     (let ([f (foreign-procedure "ImageClearBackground"
                ((* Image) (& Color))
@@ -3075,42 +3201,50 @@
     (let ([f (foreign-procedure "LoadTexture"
                (string)
                (& Texture))])
-      (lambda (file-name)
-        (let ([ret (make-ftype-pointer
-                     Texture
-                     (foreign-alloc (ftype-sizeof Texture)))])
-          (f ret file-name)
-          ret))))
+      (case-lambda
+        [(file-name)
+         (let ([ret (make-ftype-pointer
+                      Texture
+                      (foreign-alloc (ftype-sizeof Texture)))])
+           (f ret file-name)
+           ret)]
+        [(file-name struct) (f struct file-name) struct])))
   (define load-texture-from-image
     (let ([f (foreign-procedure "LoadTextureFromImage"
                ((& Image))
                (& Texture))])
-      (lambda (image)
-        (let ([ret (make-ftype-pointer
-                     Texture
-                     (foreign-alloc (ftype-sizeof Texture)))])
-          (f ret image)
-          ret))))
+      (case-lambda
+        [(image)
+         (let ([ret (make-ftype-pointer
+                      Texture
+                      (foreign-alloc (ftype-sizeof Texture)))])
+           (f ret image)
+           ret)]
+        [(image struct) (f struct image) struct])))
   (define load-texture-cubemap
     (let ([f (foreign-procedure "LoadTextureCubemap"
                ((& Image) int)
                (& Texture))])
-      (lambda (image layout)
-        (let ([ret (make-ftype-pointer
-                     Texture
-                     (foreign-alloc (ftype-sizeof Texture)))])
-          (f ret image layout)
-          ret))))
+      (case-lambda
+        [(image layout)
+         (let ([ret (make-ftype-pointer
+                      Texture
+                      (foreign-alloc (ftype-sizeof Texture)))])
+           (f ret image layout)
+           ret)]
+        [(image layout struct) (f struct image layout) struct])))
   (define load-render-texture
     (let ([f (foreign-procedure "LoadRenderTexture"
                (int int)
                (& Render-Texture))])
-      (lambda (width height)
-        (let ([ret (make-ftype-pointer
-                     Render-Texture
-                     (foreign-alloc (ftype-sizeof Render-Texture)))])
-          (f ret width height)
-          ret))))
+      (case-lambda
+        [(width height)
+         (let ([ret (make-ftype-pointer
+                      Render-Texture
+                      (foreign-alloc (ftype-sizeof Render-Texture)))])
+           (f ret width height)
+           ret)]
+        [(width height struct) (f struct width height) struct])))
   (define unload-texture
     (let ([f (foreign-procedure "UnloadTexture"
                ((& Texture))
@@ -3228,12 +3362,14 @@
     (let ([f (foreign-procedure "Fade"
                ((& Color) float)
                (& Color))])
-      (lambda (color alpha)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret color alpha)
-          ret))))
+      (case-lambda
+        [(color alpha)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret color alpha)
+           ret)]
+        [(color alpha struct) (f struct color alpha) struct])))
   (define color-to-int
     (let ([f (foreign-procedure "ColorToInt" ((& Color)) int)])
       (lambda (color) (f color))))
@@ -3241,82 +3377,102 @@
     (let ([f (foreign-procedure "ColorNormalize"
                ((& Color))
                (& Vector-4))])
-      (lambda (color)
-        (let ([ret (make-ftype-pointer
-                     Vector-4
-                     (foreign-alloc (ftype-sizeof Vector-4)))])
-          (f ret color)
-          ret))))
+      (case-lambda
+        [(color)
+         (let ([ret (make-ftype-pointer
+                      Vector-4
+                      (foreign-alloc (ftype-sizeof Vector-4)))])
+           (f ret color)
+           ret)]
+        [(color struct) (f struct color) struct])))
   (define color-from-normalized
     (let ([f (foreign-procedure "ColorFromNormalized"
                ((& Vector-4))
                (& Color))])
-      (lambda (normalized)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret normalized)
-          ret))))
+      (case-lambda
+        [(normalized)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret normalized)
+           ret)]
+        [(normalized struct) (f struct normalized) struct])))
   (define color-to-hsv
     (let ([f (foreign-procedure "ColorToHSV"
                ((& Color))
                (& Vector-3))])
-      (lambda (color)
-        (let ([ret (make-ftype-pointer
-                     Vector-3
-                     (foreign-alloc (ftype-sizeof Vector-3)))])
-          (f ret color)
-          ret))))
+      (case-lambda
+        [(color)
+         (let ([ret (make-ftype-pointer
+                      Vector-3
+                      (foreign-alloc (ftype-sizeof Vector-3)))])
+           (f ret color)
+           ret)]
+        [(color struct) (f struct color) struct])))
   (define color-from-hsv
     (let ([f (foreign-procedure "ColorFromHSV"
                (float float float)
                (& Color))])
-      (lambda (hue saturation value)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret hue saturation value)
-          ret))))
+      (case-lambda
+        [(hue saturation value)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret hue saturation value)
+           ret)]
+        [(hue saturation value struct)
+         (f struct hue saturation value)
+         struct])))
   (define color-alpha
     (let ([f (foreign-procedure "ColorAlpha"
                ((& Color) float)
                (& Color))])
-      (lambda (color alpha)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret color alpha)
-          ret))))
+      (case-lambda
+        [(color alpha)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret color alpha)
+           ret)]
+        [(color alpha struct) (f struct color alpha) struct])))
   (define color-alpha-blend
     (let ([f (foreign-procedure "ColorAlphaBlend"
                ((& Color) (& Color) (& Color))
                (& Color))])
-      (lambda (dst src tint)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret dst src tint)
-          ret))))
+      (case-lambda
+        [(dst src tint)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret dst src tint)
+           ret)]
+        [(dst src tint struct) (f struct dst src tint) struct])))
   (define get-color
     (let ([f (foreign-procedure "GetColor"
                (unsigned)
                (& Color))])
-      (lambda (hex-value)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret hex-value)
-          ret))))
+      (case-lambda
+        [(hex-value)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret hex-value)
+           ret)]
+        [(hex-value struct) (f struct hex-value) struct])))
   (define get-pixel-color
     (let ([f (foreign-procedure "GetPixelColor"
                (void* int)
                (& Color))])
-      (lambda (src-ptr format)
-        (let ([ret (make-ftype-pointer
-                     Color
-                     (foreign-alloc (ftype-sizeof Color)))])
-          (f ret src-ptr format)
-          ret))))
+      (case-lambda
+        [(src-ptr format)
+         (let ([ret (make-ftype-pointer
+                      Color
+                      (foreign-alloc (ftype-sizeof Color)))])
+           (f ret src-ptr format)
+           ret)]
+        [(src-ptr format struct)
+         (f struct src-ptr format)
+         struct])))
   (define set-pixel-color
     (let ([f (foreign-procedure "SetPixelColor"
                (void* (& Color) int)
@@ -3329,52 +3485,70 @@
       (lambda (width height format) (f width height format))))
   (define get-font-default
     (let ([f (foreign-procedure "GetFontDefault" () (& Font))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Font
-                     (foreign-alloc (ftype-sizeof Font)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Font
+                      (foreign-alloc (ftype-sizeof Font)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define load-font
     (let ([f (foreign-procedure "LoadFont" (string) (& Font))])
-      (lambda (file-name)
-        (let ([ret (make-ftype-pointer
-                     Font
-                     (foreign-alloc (ftype-sizeof Font)))])
-          (f ret file-name)
-          ret))))
+      (case-lambda
+        [(file-name)
+         (let ([ret (make-ftype-pointer
+                      Font
+                      (foreign-alloc (ftype-sizeof Font)))])
+           (f ret file-name)
+           ret)]
+        [(file-name struct) (f struct file-name) struct])))
   (define load-font-ex
     (let ([f (foreign-procedure "LoadFontEx"
                (string int (* int) int)
                (& Font))])
-      (lambda (file-name font-size font-chars glyph-count)
-        (let ([ret (make-ftype-pointer
-                     Font
-                     (foreign-alloc (ftype-sizeof Font)))])
-          (f ret file-name font-size font-chars glyph-count)
-          ret))))
+      (case-lambda
+        [(file-name font-size font-chars glyph-count)
+         (let ([ret (make-ftype-pointer
+                      Font
+                      (foreign-alloc (ftype-sizeof Font)))])
+           (f ret file-name font-size font-chars glyph-count)
+           ret)]
+        [(file-name font-size font-chars glyph-count struct)
+         (f struct file-name font-size font-chars glyph-count)
+         struct])))
   (define load-font-from-image
     (let ([f (foreign-procedure "LoadFontFromImage"
                ((& Image) (& Color) int)
                (& Font))])
-      (lambda (image key first-char)
-        (let ([ret (make-ftype-pointer
-                     Font
-                     (foreign-alloc (ftype-sizeof Font)))])
-          (f ret image key first-char)
-          ret))))
+      (case-lambda
+        [(image key first-char)
+         (let ([ret (make-ftype-pointer
+                      Font
+                      (foreign-alloc (ftype-sizeof Font)))])
+           (f ret image key first-char)
+           ret)]
+        [(image key first-char struct)
+         (f struct image key first-char)
+         struct])))
   (define load-font-from-memory
     (let ([f (foreign-procedure "LoadFontFromMemory"
                (string (* unsigned-8) int int (* int) int)
                (& Font))])
-      (lambda (file-type file-data data-size font-size font-chars
-               glyph-count)
-        (let ([ret (make-ftype-pointer
-                     Font
-                     (foreign-alloc (ftype-sizeof Font)))])
-          (f ret file-type file-data data-size font-size font-chars
-             glyph-count)
-          ret))))
+      (case-lambda
+        [(file-type file-data data-size font-size font-chars
+          glyph-count)
+         (let ([ret (make-ftype-pointer
+                      Font
+                      (foreign-alloc (ftype-sizeof Font)))])
+           (f ret file-type file-data data-size font-size font-chars
+              glyph-count)
+           ret)]
+        [(file-type file-data data-size font-size font-chars
+          glyph-count struct)
+         (f struct file-type file-data data-size font-size font-chars
+            glyph-count)
+         struct])))
   (define load-font-data
     (let ([f (foreign-procedure "LoadFontData"
                ((* unsigned-8) int int (* int) int int)
@@ -3448,12 +3622,16 @@
     (let ([f (foreign-procedure "MeasureTextEx"
                ((& Font) string float float)
                (& Vector-2))])
-      (lambda (font text font-size spacing)
-        (let ([ret (make-ftype-pointer
-                     Vector-2
-                     (foreign-alloc (ftype-sizeof Vector-2)))])
-          (f ret font text font-size spacing)
-          ret))))
+      (case-lambda
+        [(font text font-size spacing)
+         (let ([ret (make-ftype-pointer
+                      Vector-2
+                      (foreign-alloc (ftype-sizeof Vector-2)))])
+           (f ret font text font-size spacing)
+           ret)]
+        [(font text font-size spacing struct)
+         (f struct font text font-size spacing)
+         struct])))
   (define get-glyph-index
     (let ([f (foreign-procedure "GetGlyphIndex"
                ((& Font) int)
@@ -3463,22 +3641,30 @@
     (let ([f (foreign-procedure "GetGlyphInfo"
                ((& Font) int)
                (& Glyph-Info))])
-      (lambda (font codepoint)
-        (let ([ret (make-ftype-pointer
-                     Glyph-Info
-                     (foreign-alloc (ftype-sizeof Glyph-Info)))])
-          (f ret font codepoint)
-          ret))))
+      (case-lambda
+        [(font codepoint)
+         (let ([ret (make-ftype-pointer
+                      Glyph-Info
+                      (foreign-alloc (ftype-sizeof Glyph-Info)))])
+           (f ret font codepoint)
+           ret)]
+        [(font codepoint struct)
+         (f struct font codepoint)
+         struct])))
   (define get-glyph-atlas-rec
     (let ([f (foreign-procedure "GetGlyphAtlasRec"
                ((& Font) int)
                (& Rectangle))])
-      (lambda (font codepoint)
-        (let ([ret (make-ftype-pointer
-                     Rectangle
-                     (foreign-alloc (ftype-sizeof Rectangle)))])
-          (f ret font codepoint)
-          ret))))
+      (case-lambda
+        [(font codepoint)
+         (let ([ret (make-ftype-pointer
+                      Rectangle
+                      (foreign-alloc (ftype-sizeof Rectangle)))])
+           (f ret font codepoint)
+           ret)]
+        [(font codepoint struct)
+         (f struct font codepoint)
+         struct])))
   (define load-codepoints
     (let ([f (foreign-procedure "LoadCodepoints"
                (string (* int))
@@ -3689,22 +3875,26 @@
     (let ([f (foreign-procedure "LoadModel"
                (string)
                (& Model))])
-      (lambda (file-name)
-        (let ([ret (make-ftype-pointer
-                     Model
-                     (foreign-alloc (ftype-sizeof Model)))])
-          (f ret file-name)
-          ret))))
+      (case-lambda
+        [(file-name)
+         (let ([ret (make-ftype-pointer
+                      Model
+                      (foreign-alloc (ftype-sizeof Model)))])
+           (f ret file-name)
+           ret)]
+        [(file-name struct) (f struct file-name) struct])))
   (define load-model-from-mesh
     (let ([f (foreign-procedure "LoadModelFromMesh"
                ((& Mesh))
                (& Model))])
-      (lambda (mesh)
-        (let ([ret (make-ftype-pointer
-                     Model
-                     (foreign-alloc (ftype-sizeof Model)))])
-          (f ret mesh)
-          ret))))
+      (case-lambda
+        [(mesh)
+         (let ([ret (make-ftype-pointer
+                      Model
+                      (foreign-alloc (ftype-sizeof Model)))])
+           (f ret mesh)
+           ret)]
+        [(mesh struct) (f struct mesh) struct])))
   (define unload-model
     (let ([f (foreign-procedure "UnloadModel"
                ((& Model))
@@ -3719,12 +3909,14 @@
     (let ([f (foreign-procedure "GetModelBoundingBox"
                ((& Model))
                (& Bounding-Box))])
-      (lambda (model)
-        (let ([ret (make-ftype-pointer
-                     Bounding-Box
-                     (foreign-alloc (ftype-sizeof Bounding-Box)))])
-          (f ret model)
-          ret))))
+      (case-lambda
+        [(model)
+         (let ([ret (make-ftype-pointer
+                      Bounding-Box
+                      (foreign-alloc (ftype-sizeof Bounding-Box)))])
+           (f ret model)
+           ret)]
+        [(model struct) (f struct model) struct])))
   (define draw-model
     (let ([f (foreign-procedure "DrawModel"
                ((& Model) (& Vector-3) float (& Color))
@@ -3836,12 +4028,14 @@
     (let ([f (foreign-procedure "GetMeshBoundingBox"
                ((& Mesh))
                (& Bounding-Box))])
-      (lambda (mesh)
-        (let ([ret (make-ftype-pointer
-                     Bounding-Box
-                     (foreign-alloc (ftype-sizeof Bounding-Box)))])
-          (f ret mesh)
-          ret))))
+      (case-lambda
+        [(mesh)
+         (let ([ret (make-ftype-pointer
+                      Bounding-Box
+                      (foreign-alloc (ftype-sizeof Bounding-Box)))])
+           (f ret mesh)
+           ret)]
+        [(mesh struct) (f struct mesh) struct])))
   (define gen-mesh-tangents
     (let ([f (foreign-procedure "GenMeshTangents"
                ((* Mesh))
@@ -3851,112 +4045,154 @@
     (let ([f (foreign-procedure "GenMeshPoly"
                (int float)
                (& Mesh))])
-      (lambda (sides radius)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret sides radius)
-          ret))))
+      (case-lambda
+        [(sides radius)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret sides radius)
+           ret)]
+        [(sides radius struct) (f struct sides radius) struct])))
   (define gen-mesh-plane
     (let ([f (foreign-procedure "GenMeshPlane"
                (float float int int)
                (& Mesh))])
-      (lambda (width length res-x res-z)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret width length res-x res-z)
-          ret))))
+      (case-lambda
+        [(width length res-x res-z)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret width length res-x res-z)
+           ret)]
+        [(width length res-x res-z struct)
+         (f struct width length res-x res-z)
+         struct])))
   (define gen-mesh-cube
     (let ([f (foreign-procedure "GenMeshCube"
                (float float float)
                (& Mesh))])
-      (lambda (width height length)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret width height length)
-          ret))))
+      (case-lambda
+        [(width height length)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret width height length)
+           ret)]
+        [(width height length struct)
+         (f struct width height length)
+         struct])))
   (define gen-mesh-sphere
     (let ([f (foreign-procedure "GenMeshSphere"
                (float int int)
                (& Mesh))])
-      (lambda (radius rings slices)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret radius rings slices)
-          ret))))
+      (case-lambda
+        [(radius rings slices)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret radius rings slices)
+           ret)]
+        [(radius rings slices struct)
+         (f struct radius rings slices)
+         struct])))
   (define gen-mesh-hemi-sphere
     (let ([f (foreign-procedure "GenMeshHemiSphere"
                (float int int)
                (& Mesh))])
-      (lambda (radius rings slices)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret radius rings slices)
-          ret))))
+      (case-lambda
+        [(radius rings slices)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret radius rings slices)
+           ret)]
+        [(radius rings slices struct)
+         (f struct radius rings slices)
+         struct])))
   (define gen-mesh-cylinder
     (let ([f (foreign-procedure "GenMeshCylinder"
                (float float int)
                (& Mesh))])
-      (lambda (radius height slices)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret radius height slices)
-          ret))))
+      (case-lambda
+        [(radius height slices)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret radius height slices)
+           ret)]
+        [(radius height slices struct)
+         (f struct radius height slices)
+         struct])))
   (define gen-mesh-cone
     (let ([f (foreign-procedure "GenMeshCone"
                (float float int)
                (& Mesh))])
-      (lambda (radius height slices)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret radius height slices)
-          ret))))
+      (case-lambda
+        [(radius height slices)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret radius height slices)
+           ret)]
+        [(radius height slices struct)
+         (f struct radius height slices)
+         struct])))
   (define gen-mesh-torus
     (let ([f (foreign-procedure "GenMeshTorus"
                (float float int int)
                (& Mesh))])
-      (lambda (radius size rad-seg sides)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret radius size rad-seg sides)
-          ret))))
+      (case-lambda
+        [(radius size rad-seg sides)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret radius size rad-seg sides)
+           ret)]
+        [(radius size rad-seg sides struct)
+         (f struct radius size rad-seg sides)
+         struct])))
   (define gen-mesh-knot
     (let ([f (foreign-procedure "GenMeshKnot"
                (float float int int)
                (& Mesh))])
-      (lambda (radius size rad-seg sides)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret radius size rad-seg sides)
-          ret))))
+      (case-lambda
+        [(radius size rad-seg sides)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret radius size rad-seg sides)
+           ret)]
+        [(radius size rad-seg sides struct)
+         (f struct radius size rad-seg sides)
+         struct])))
   (define gen-mesh-heightmap
     (let ([f (foreign-procedure "GenMeshHeightmap"
                ((& Image) (& Vector-3))
                (& Mesh))])
-      (lambda (heightmap size)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret heightmap size)
-          ret))))
+      (case-lambda
+        [(heightmap size)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret heightmap size)
+           ret)]
+        [(heightmap size struct)
+         (f struct heightmap size)
+         struct])))
   (define gen-mesh-cubicmap
     (let ([f (foreign-procedure "GenMeshCubicmap"
                ((& Image) (& Vector-3))
                (& Mesh))])
-      (lambda (cubicmap cube-size)
-        (let ([ret (make-ftype-pointer
-                     Mesh
-                     (foreign-alloc (ftype-sizeof Mesh)))])
-          (f ret cubicmap cube-size)
-          ret))))
+      (case-lambda
+        [(cubicmap cube-size)
+         (let ([ret (make-ftype-pointer
+                      Mesh
+                      (foreign-alloc (ftype-sizeof Mesh)))])
+           (f ret cubicmap cube-size)
+           ret)]
+        [(cubicmap cube-size struct)
+         (f struct cubicmap cube-size)
+         struct])))
   (define load-materials
     (let ([f (foreign-procedure "LoadMaterials"
                (string (* int))
@@ -3967,12 +4203,14 @@
     (let ([f (foreign-procedure "LoadMaterialDefault"
                ()
                (& Material))])
-      (lambda ()
-        (let ([ret (make-ftype-pointer
-                     Material
-                     (foreign-alloc (ftype-sizeof Material)))])
-          (f ret)
-          ret))))
+      (case-lambda
+        [()
+         (let ([ret (make-ftype-pointer
+                      Material
+                      (foreign-alloc (ftype-sizeof Material)))])
+           (f ret)
+           ret)]
+        [(struct) (f struct) struct])))
   (define unload-material
     (let ([f (foreign-procedure "UnloadMaterial"
                ((& Material))
@@ -4035,42 +4273,54 @@
     (let ([f (foreign-procedure "GetRayCollisionSphere"
                ((& Ray) (& Vector-3) float)
                (& Ray-Collision))])
-      (lambda (ray center radius)
-        (let ([ret (make-ftype-pointer
-                     Ray-Collision
-                     (foreign-alloc (ftype-sizeof Ray-Collision)))])
-          (f ret ray center radius)
-          ret))))
+      (case-lambda
+        [(ray center radius)
+         (let ([ret (make-ftype-pointer
+                      Ray-Collision
+                      (foreign-alloc (ftype-sizeof Ray-Collision)))])
+           (f ret ray center radius)
+           ret)]
+        [(ray center radius struct)
+         (f struct ray center radius)
+         struct])))
   (define get-ray-collision-box
     (let ([f (foreign-procedure "GetRayCollisionBox"
                ((& Ray) (& Bounding-Box))
                (& Ray-Collision))])
-      (lambda (ray box)
-        (let ([ret (make-ftype-pointer
-                     Ray-Collision
-                     (foreign-alloc (ftype-sizeof Ray-Collision)))])
-          (f ret ray box)
-          ret))))
+      (case-lambda
+        [(ray box)
+         (let ([ret (make-ftype-pointer
+                      Ray-Collision
+                      (foreign-alloc (ftype-sizeof Ray-Collision)))])
+           (f ret ray box)
+           ret)]
+        [(ray box struct) (f struct ray box) struct])))
   (define get-ray-collision-mesh
     (let ([f (foreign-procedure "GetRayCollisionMesh"
                ((& Ray) (& Mesh) (& Matrix))
                (& Ray-Collision))])
-      (lambda (ray mesh transform)
-        (let ([ret (make-ftype-pointer
-                     Ray-Collision
-                     (foreign-alloc (ftype-sizeof Ray-Collision)))])
-          (f ret ray mesh transform)
-          ret))))
+      (case-lambda
+        [(ray mesh transform)
+         (let ([ret (make-ftype-pointer
+                      Ray-Collision
+                      (foreign-alloc (ftype-sizeof Ray-Collision)))])
+           (f ret ray mesh transform)
+           ret)]
+        [(ray mesh transform struct)
+         (f struct ray mesh transform)
+         struct])))
   (define get-ray-collision-triangle
     (let ([f (foreign-procedure "GetRayCollisionTriangle"
                ((& Ray) (& Vector-3) (& Vector-3) (& Vector-3))
                (& Ray-Collision))])
-      (lambda (ray p1 p2 p3)
-        (let ([ret (make-ftype-pointer
-                     Ray-Collision
-                     (foreign-alloc (ftype-sizeof Ray-Collision)))])
-          (f ret ray p1 p2 p3)
-          ret))))
+      (case-lambda
+        [(ray p1 p2 p3)
+         (let ([ret (make-ftype-pointer
+                      Ray-Collision
+                      (foreign-alloc (ftype-sizeof Ray-Collision)))])
+           (f ret ray p1 p2 p3)
+           ret)]
+        [(ray p1 p2 p3 struct) (f struct ray p1 p2 p3) struct])))
   (define get-ray-collision-quad
     (let ([f (foreign-procedure "GetRayCollisionQuad"
                ((& Ray)
@@ -4079,12 +4329,16 @@
                 (& Vector-3)
                 (& Vector-3))
                (& Ray-Collision))])
-      (lambda (ray p1 p2 p3 p4)
-        (let ([ret (make-ftype-pointer
-                     Ray-Collision
-                     (foreign-alloc (ftype-sizeof Ray-Collision)))])
-          (f ret ray p1 p2 p3 p4)
-          ret))))
+      (case-lambda
+        [(ray p1 p2 p3 p4)
+         (let ([ret (make-ftype-pointer
+                      Ray-Collision
+                      (foreign-alloc (ftype-sizeof Ray-Collision)))])
+           (f ret ray p1 p2 p3 p4)
+           ret)]
+        [(ray p1 p2 p3 p4 struct)
+         (f struct ray p1 p2 p3 p4)
+         struct])))
   (define init-audio-device
     (let ([f (foreign-procedure "InitAudioDevice" () void)])
       (lambda () (f))))
@@ -4103,42 +4357,52 @@
       (lambda (volume) (f volume))))
   (define load-wave
     (let ([f (foreign-procedure "LoadWave" (string) (& Wave))])
-      (lambda (file-name)
-        (let ([ret (make-ftype-pointer
-                     Wave
-                     (foreign-alloc (ftype-sizeof Wave)))])
-          (f ret file-name)
-          ret))))
+      (case-lambda
+        [(file-name)
+         (let ([ret (make-ftype-pointer
+                      Wave
+                      (foreign-alloc (ftype-sizeof Wave)))])
+           (f ret file-name)
+           ret)]
+        [(file-name struct) (f struct file-name) struct])))
   (define load-wave-from-memory
     (let ([f (foreign-procedure "LoadWaveFromMemory"
                (string (* unsigned-8) int)
                (& Wave))])
-      (lambda (file-type file-data data-size)
-        (let ([ret (make-ftype-pointer
-                     Wave
-                     (foreign-alloc (ftype-sizeof Wave)))])
-          (f ret file-type file-data data-size)
-          ret))))
+      (case-lambda
+        [(file-type file-data data-size)
+         (let ([ret (make-ftype-pointer
+                      Wave
+                      (foreign-alloc (ftype-sizeof Wave)))])
+           (f ret file-type file-data data-size)
+           ret)]
+        [(file-type file-data data-size struct)
+         (f struct file-type file-data data-size)
+         struct])))
   (define load-sound
     (let ([f (foreign-procedure "LoadSound"
                (string)
                (& Sound))])
-      (lambda (file-name)
-        (let ([ret (make-ftype-pointer
-                     Sound
-                     (foreign-alloc (ftype-sizeof Sound)))])
-          (f ret file-name)
-          ret))))
+      (case-lambda
+        [(file-name)
+         (let ([ret (make-ftype-pointer
+                      Sound
+                      (foreign-alloc (ftype-sizeof Sound)))])
+           (f ret file-name)
+           ret)]
+        [(file-name struct) (f struct file-name) struct])))
   (define load-sound-from-wave
     (let ([f (foreign-procedure "LoadSoundFromWave"
                ((& Wave))
                (& Sound))])
-      (lambda (wave)
-        (let ([ret (make-ftype-pointer
-                     Sound
-                     (foreign-alloc (ftype-sizeof Sound)))])
-          (f ret wave)
-          ret))))
+      (case-lambda
+        [(wave)
+         (let ([ret (make-ftype-pointer
+                      Sound
+                      (foreign-alloc (ftype-sizeof Sound)))])
+           (f ret wave)
+           ret)]
+        [(wave struct) (f struct wave) struct])))
   (define update-sound
     (let ([f (foreign-procedure "UpdateSound"
                ((& Sound) void* int)
@@ -4212,12 +4476,14 @@
     (let ([f (foreign-procedure "WaveCopy"
                ((& Wave))
                (& Wave))])
-      (lambda (wave)
-        (let ([ret (make-ftype-pointer
-                     Wave
-                     (foreign-alloc (ftype-sizeof Wave)))])
-          (f ret wave)
-          ret))))
+      (case-lambda
+        [(wave)
+         (let ([ret (make-ftype-pointer
+                      Wave
+                      (foreign-alloc (ftype-sizeof Wave)))])
+           (f ret wave)
+           ret)]
+        [(wave struct) (f struct wave) struct])))
   (define wave-crop
     (let ([f (foreign-procedure "WaveCrop"
                ((* Wave) int int)
@@ -4244,22 +4510,28 @@
     (let ([f (foreign-procedure "LoadMusicStream"
                (string)
                (& Music))])
-      (lambda (file-name)
-        (let ([ret (make-ftype-pointer
-                     Music
-                     (foreign-alloc (ftype-sizeof Music)))])
-          (f ret file-name)
-          ret))))
+      (case-lambda
+        [(file-name)
+         (let ([ret (make-ftype-pointer
+                      Music
+                      (foreign-alloc (ftype-sizeof Music)))])
+           (f ret file-name)
+           ret)]
+        [(file-name struct) (f struct file-name) struct])))
   (define load-music-stream-from-memory
     (let ([f (foreign-procedure "LoadMusicStreamFromMemory"
                (string (* unsigned-8) int)
                (& Music))])
-      (lambda (file-type data data-size)
-        (let ([ret (make-ftype-pointer
-                     Music
-                     (foreign-alloc (ftype-sizeof Music)))])
-          (f ret file-type data data-size)
-          ret))))
+      (case-lambda
+        [(file-type data data-size)
+         (let ([ret (make-ftype-pointer
+                      Music
+                      (foreign-alloc (ftype-sizeof Music)))])
+           (f ret file-type data data-size)
+           ret)]
+        [(file-type data data-size struct)
+         (f struct file-type data data-size)
+         struct])))
   (define unload-music-stream
     (let ([f (foreign-procedure "UnloadMusicStream"
                ((& Music))
@@ -4329,12 +4601,16 @@
     (let ([f (foreign-procedure "LoadAudioStream"
                (unsigned unsigned unsigned)
                (& Audio-Stream))])
-      (lambda (sample-rate sample-size channels)
-        (let ([ret (make-ftype-pointer
-                     Audio-Stream
-                     (foreign-alloc (ftype-sizeof Audio-Stream)))])
-          (f ret sample-rate sample-size channels)
-          ret))))
+      (case-lambda
+        [(sample-rate sample-size channels)
+         (let ([ret (make-ftype-pointer
+                      Audio-Stream
+                      (foreign-alloc (ftype-sizeof Audio-Stream)))])
+           (f ret sample-rate sample-size channels)
+           ret)]
+        [(sample-rate sample-size channels struct)
+         (f struct sample-rate sample-size channels)
+         struct])))
   (define unload-audio-stream
     (let ([f (foreign-procedure "UnloadAudioStream"
                ((& Audio-Stream))

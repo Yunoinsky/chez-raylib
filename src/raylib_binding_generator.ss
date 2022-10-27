@@ -333,14 +333,18 @@
                (let ([f (foreign-procedure
                          ,name-str
                          ,(cdr params) ,ret-type)])
-                 (lambda ,(car params)
-                   (let ([ret (make-ftype-pointer
-                               ,(cadr ret-type)
-                               (foreign-alloc 
-                                (ftype-sizeof
-                                 ,(cadr ret-type))))])
-                   (f ret ,@(car params))
-                   ret))))
+                 (case-lambda
+                   [,(car params)
+                    (let ([ret (make-ftype-pointer
+                                ,(cadr ret-type)
+                                (foreign-alloc 
+                                 (ftype-sizeof
+                                  ,(cadr ret-type))))])
+                      (f ret ,@(car params))
+                      ret)]
+                   [(,@(car params) struct)
+                    (f struct ,@(car params))
+                    struct])))
             `(define ,func-name
                (let ([f (foreign-procedure
                          ,name-str
