@@ -337,8 +337,8 @@
    FLAG_WINDOW_MAXIMIZED FLAG_WINDOW_MINIMIZED
    FLAG_WINDOW_HIDDEN FLAG_WINDOW_UNDECORATED
    FLAG_WINDOW_RESIZABLE FLAG_FULLSCREEN_MODE FLAG_VSYNC_HINT
-   PI deg->rad rad->deg drawing-begin mode-3d-begin float int
-   make-camera3d)
+   PI deg->rad rad->deg make-array arr* drawing-begin
+   mode-3d-begin float int make-camera3d)
   (import (chezscheme))
   (define (make-camera3d position target up fovy projection)
     (let ([camera (make-camera-3d)])
@@ -360,6 +360,33 @@
       (camera-3d-set! camera fovy fovy)
       (camera-3d-set! camera projection projection)
       camera))
+  (define-syntax make-array
+    (syntax-rules ()
+      [(_ num ftype-name)
+       (let ([size (ftype-sizeof ftype-name)]
+             [arr (make-vector num)])
+         (do ([i 0 (\x31;+ i)]
+              [addr (foreign-alloc (* num size)) (+ addr size)])
+             ((= i num) arr)
+           (vector-set! arr i (make-ftype-pointer ftype-name addr))))]
+      [(_ data-list ftype-name maker-fn)
+       (let* ([size (ftype-sizeof ftype-name)]
+              [num (length data-list)]
+              [arr (make-vector num)])
+         (do ([i 0 (\x31;+ i)]
+              [addr (foreign-alloc (* num size)) (+ addr size)]
+              [dl data-list (cdr dl)])
+             ((= i num) arr)
+           (vector-set!
+             arr
+             i
+             (apply
+               maker-fn
+               (append
+                 (car dl)
+                 (list (make-ftype-pointer ftype-name addr)))))))]))
+  (define-syntax arr*
+    (syntax-rules () [(_ arr) (vector-ref arr 0)]))
   (define-syntax int
     (syntax-rules ()
       [(_ f) (if (flonum? f) (flonum->fixnum (round f)) f)]))

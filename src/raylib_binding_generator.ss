@@ -380,7 +380,96 @@
                                               (+ i 2)
                                               res-len))))))
               ))))))
-              
+
+(define init-sexpr
+  '((define (rad->deg rad)
+      (/ (* rad 180) PI))
+    (define (deg->rad deg)
+      (/ (* deg PI) 180))
+    (define PI 3.14159265358979323846)
+    (define-syntax drawing-begin
+      (syntax-rules ()
+        [(_ e0 e1 ...)
+         (begin
+           (begin-drawing)
+           e0 e1 ...
+           (end-drawing))]))
+    (define-syntax mode-3d-begin
+      (syntax-rules ()
+        [(_ camera e0 e1 ...)
+         (begin
+           (begin-mode-3d camera)
+           e0 e1 ...
+           (end-mode-3d))]))
+    (define-syntax float
+      (syntax-rules ()
+        [(_ f) (if (fixnum? f)
+                   (fixnum->flonum f)                                   
+                   f)]))
+    (define-syntax int
+      (syntax-rules ()
+        [(_ f) (if (flonum? f)
+                   (flonum->fixnum (round f))
+                   f)]))
+    (define-syntax arr*
+      (syntax-rules ()
+        [(_ arr) (vector-ref arr 0)]))
+    (define-syntax make-array
+      (syntax-rules ()
+        [(_ num ftype-name)
+         (let ([size (ftype-sizeof ftype-name)]
+               [arr (make-vector num)])
+           (do ([i 0 (1+ i)]
+                [addr (foreign-alloc (* num size))
+                      (+ addr size)])
+               ((= i num)
+                arr)
+             (vector-set! arr
+                          i (make-ftype-pointer
+                             ftype-name addr))))]
+        [(_ data-list ftype-name maker-fn)
+         (let* ([size (ftype-sizeof ftype-name)]
+                [num (length data-list)]
+                [arr (make-vector num)])
+           (do ([i 0 (1+ i)]
+                [addr (foreign-alloc (* num size))
+                      (+ addr size)]
+                [dl data-list (cdr dl)])
+               ((= i num)
+                arr)
+             (vector-set! arr i
+                          (apply
+                           maker-fn
+                           (append (car dl)
+                                   (list (make-ftype-pointer
+                                          ftype-name
+                                          addr)))))))]))
+    (define (make-camera3d position
+                           target
+                           up
+                           fovy projection)
+      (let ([camera (make-camera-3d)])
+        (make-vector-3
+         (car position)
+         (cadr position)
+         (caddr position)
+         (camera-3d-ref& camera position))
+        (make-vector-3
+         (car target)
+         (cadr target)
+         (caddr target)
+         (camera-3d-ref& camera target))
+        (make-vector-3
+         (car up)
+         (cadr up)
+         (caddr up)
+         (camera-3d-ref& camera up))
+        (camera-3d-set! camera fovy fovy)
+        (camera-3d-set! camera
+                        projection
+                        projection)
+        camera))))
+
 (let ([write-fp (if #t #;(output)
                     (begin
                       (when (file-exists? output-file-path)
@@ -388,64 +477,10 @@
                       (open-output-file output-file-path))
                     (current-output-port))]
       [export-list '(PI deg->rad rad->deg
+                        make-array arr*
                         drawing-begin mode-3d-begin
                         float int make-camera3d)]
-      [sexpr-list '((define (rad->deg rad)
-                      (/ (* rad 180) PI))
-                    (define (deg->rad deg)
-                      (/ (* deg PI) 180))
-                    (define PI 3.14159265358979323846)
-                    (define-syntax drawing-begin
-                      (syntax-rules ()
-                        [(_ e0 e1 ...)
-                         (begin
-                           (begin-drawing)
-                           e0 e1 ...
-                           (end-drawing))]))
-                    (define-syntax mode-3d-begin
-                      (syntax-rules ()
-                        [(_ camera e0 e1 ...)
-                         (begin
-                           (begin-mode-3d camera)
-                           e0 e1 ...
-                           (end-mode-3d))]))
-                    (define-syntax float
-                      (syntax-rules ()
-                        [(_ f) (if (fixnum? f)
-                                   (fixnum->flonum f)                                   
-                                   f)]))
-                    (define-syntax int
-                      (syntax-rules ()
-                        [(_ f) (if (flonum? f)
-                                   (flonum->fixnum (round f))
-                                   f)]))
-                    (define (make-camera3d position
-                                           target
-                                           up
-                                           fovy projection)
-                      (let ([camera (make-camera-3d)])
-                        (make-vector-3
-                         (car position)
-                         (cadr position)
-                         (caddr position)
-                         (camera-3d-ref& camera position))
-                        (make-vector-3
-                         (car target)
-                         (cadr target)
-                         (caddr target)
-                         (camera-3d-ref& camera target))
-                        (make-vector-3
-                         (car up)
-                         (cadr up)
-                         (caddr up)
-                         (camera-3d-ref& camera up))
-                        (camera-3d-set! camera fovy fovy)
-                        (camera-3d-set! camera
-                                        projection
-                                        projection)
-                        camera))
-                    
-                     )])
+      [sexpr-list init-sexpr])
   (for-each (lambda (enum-xml)
               (for-each
                (lambda (enum-item)
@@ -497,7 +532,7 @@
                 (let ([color-sexpr (color-generator def-xml)])
                   (push! sexpr-list color-sexpr)
                   (push! export-list (cadr color-sexpr)))))
-          api-defines)
+            api-defines)
 
   (pretty-print
    '(let load-loop ([libs (library-directories)])
