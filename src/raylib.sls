@@ -6,7 +6,7 @@
     (if (file-exists? libpath)
         (load-shared-object libpath)
         (load-loop (cdr libs)))))
-(library (raylib (0 1))
+(library (raylib raylib (0 1))
   (export RAYWHITE MAGENTA BLANK BLACK WHITE DARKBROWN BROWN
    BEIGE DARKPURPLE VIOLET PURPLE DARKBLUE BLUE SKYBLUE
    DARKGREEN LIME GREEN MAROON RED PINK ORANGE GOLD YELLOW
@@ -337,29 +337,31 @@
    FLAG_WINDOW_MAXIMIZED FLAG_WINDOW_MINIMIZED
    FLAG_WINDOW_HIDDEN FLAG_WINDOW_UNDECORATED
    FLAG_WINDOW_RESIZABLE FLAG_FULLSCREEN_MODE FLAG_VSYNC_HINT
-   PI deg->rad rad->deg make-array arr* drawing-begin
-   mode-3d-begin float int make-camera3d)
+   rad->deg deg->rad PI drawing-begin mode-3d-begin
+   blend-mode-begin scissor-mode-begin float int arr*
+   make-array make-camera3d)
   (import (chezscheme))
-  (define (make-camera3d position target up fovy projection)
-    (let ([camera (make-camera-3d)])
-      (make-vector-3
-        (car position)
-        (cadr position)
-        (caddr position)
-        (camera-3d-ref& camera position))
-      (make-vector-3
-        (car target)
-        (cadr target)
-        (caddr target)
-        (camera-3d-ref& camera target))
-      (make-vector-3
-        (car up)
-        (cadr up)
-        (caddr up)
-        (camera-3d-ref& camera up))
-      (camera-3d-set! camera fovy fovy)
-      (camera-3d-set! camera projection projection)
-      camera))
+  (define make-camera3d
+    (lambda (position target up fovy projection)
+      (let ([camera (make-camera-3d)])
+        (make-vector-3
+          (car position)
+          (cadr position)
+          (caddr position)
+          (camera-3d-ref& camera position))
+        (make-vector-3
+          (car target)
+          (cadr target)
+          (caddr target)
+          (camera-3d-ref& camera target))
+        (make-vector-3
+          (car up)
+          (cadr up)
+          (caddr up)
+          (camera-3d-ref& camera up))
+        (camera-3d-set! camera fovy fovy)
+        (camera-3d-set! camera projection projection)
+        camera)))
   (define-syntax make-array
     (syntax-rules ()
       [(_ num ftype-name)
@@ -393,6 +395,24 @@
   (define-syntax float
     (syntax-rules ()
       [(_ f) (if (fixnum? f) (fixnum->flonum f) f)]))
+  (define-syntax scissor-mode-begin
+    (syntax-rules ()
+      [(_ rect-l e0 e1 ...)
+       (begin
+         (apply begin-scissor-mode rect-l)
+         e0
+         e1
+         ...
+         (end-blend-mode))]))
+  (define-syntax blend-mode-begin
+    (syntax-rules ()
+      [(_ blend-mode e0 e1 ...)
+       (begin
+         (begin-blend-mode blend-mode)
+         e0
+         e1
+         ...
+         (end-blend-mode))]))
   (define-syntax mode-3d-begin
     (syntax-rules ()
       [(_ camera e0 e1 ...)
@@ -402,8 +422,8 @@
       [(_ e0 e1 ...)
        (begin (begin-drawing) e0 e1 ... (end-drawing))]))
   (define PI 3.141592653589793)
-  (define (deg->rad deg) (/ (* deg PI) 180))
-  (define (rad->deg rad) (/ (* rad 180) PI))
+  (define deg->rad (lambda (deg) (/ (* deg PI) 180)))
+  (define rad->deg (lambda (rad) (/ (* rad 180) PI)))
   (define FLAG_VSYNC_HINT 64)
   (define FLAG_FULLSCREEN_MODE 2)
   (define FLAG_WINDOW_RESIZABLE 4)

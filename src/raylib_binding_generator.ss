@@ -382,10 +382,12 @@
               ))))))
 
 (define init-sexpr
-  '((define (rad->deg rad)
-      (/ (* rad 180) PI))
-    (define (deg->rad deg)
-      (/ (* deg PI) 180))
+  '((define rad->deg
+      (lambda (rad)
+        (/ (* rad 180) PI)))
+    (define deg->rad
+      (lambda (deg)
+        (/ (* deg PI) 180)))
     (define PI 3.14159265358979323846)
     (define-syntax drawing-begin
       (syntax-rules ()
@@ -401,6 +403,20 @@
            (begin-mode-3d camera)
            e0 e1 ...
            (end-mode-3d))]))
+    (define-syntax blend-mode-begin
+      (syntax-rules ()
+        [(_ blend-mode e0 e1 ...)
+         (begin
+           (begin-blend-mode blend-mode)
+           e0 e1 ...
+           (end-blend-mode))]))
+    (define-syntax scissor-mode-begin
+      (syntax-rules ()
+        [(_ rect-l e0 e1 ...)
+         (begin
+           (apply begin-scissor-mode rect-l)
+           e0 e1 ...
+           (end-blend-mode))]))
     (define-syntax float
       (syntax-rules ()
         [(_ f) (if (fixnum? f)
@@ -444,31 +460,29 @@
                                    (list (make-ftype-pointer
                                           ftype-name
                                           addr)))))))]))
-    (define (make-camera3d position
-                           target
-                           up
-                           fovy projection)
-      (let ([camera (make-camera-3d)])
-        (make-vector-3
-         (car position)
-         (cadr position)
-         (caddr position)
-         (camera-3d-ref& camera position))
-        (make-vector-3
-         (car target)
-         (cadr target)
-         (caddr target)
-         (camera-3d-ref& camera target))
-        (make-vector-3
-         (car up)
-         (cadr up)
-         (caddr up)
-         (camera-3d-ref& camera up))
-        (camera-3d-set! camera fovy fovy)
-        (camera-3d-set! camera
-                        projection
-                        projection)
-        camera))))
+    (define make-camera3d
+      (lambda (position target up fovy projection)
+        (let ([camera (make-camera-3d)])
+          (make-vector-3
+           (car position)
+           (cadr position)
+           (caddr position)
+           (camera-3d-ref& camera position))
+          (make-vector-3
+           (car target)
+           (cadr target)
+           (caddr target)
+           (camera-3d-ref& camera target))
+          (make-vector-3
+           (car up)
+           (cadr up)
+           (caddr up)
+           (camera-3d-ref& camera up))
+          (camera-3d-set! camera fovy fovy)
+          (camera-3d-set! camera
+                          projection
+                          projection)
+          camera)))))
 
 (let ([write-fp (if #t #;(output)
                     (begin
@@ -476,10 +490,7 @@
                         (delete-file output-file-path))
                       (open-output-file output-file-path))
                     (current-output-port))]
-      [export-list '(PI deg->rad rad->deg
-                        make-array arr*
-                        drawing-begin mode-3d-begin
-                        float int make-camera3d)]
+      [export-list (map cadr init-sexpr)]
       [sexpr-list init-sexpr])
   (for-each (lambda (enum-xml)
               (for-each
@@ -547,18 +558,24 @@
             (load-loop (cdr libs)))))
    write-fp)
   (pretty-print
-   `(library (raylib (0 1))
+   `(library (raylib raylib (0 1))
       (export ,@export-list)
       (import (chezscheme))
       ,@(reverse sexpr-list))
    write-fp)
   (close-port write-fp)
-  (compile-file output-file-path
-                (let lib-loop ([libs (library-directories)])
-                  (when (null? libs)
-                    (error #f
-                           "Raylib not found"))
-                  (let ([libpath (caar libs)])
-                    (if (file-exists? (string-append libpath "/raylib/"))
-                        (string-append libpath "/raylib.so")
-                        (lib-loop (cdr libs)))))))
+  
+  (let ([lib-dir
+         (let lib-loop ([libs (library-directories)])
+           (when (null? libs)
+             (error #f
+                    "Raylib not found"))
+           (let ([libpath (caar libs)])
+             (if (file-exists? (string-append libpath "/raylib/"))
+                 libpath
+                 (lib-loop (cdr libs)))))])
+    (compile-file output-file-path
+                  (string-append lib-dir "/raylib/raylib.so"))
+    (compile-file "./src/raymath.sls"
+                  (string-append lib-dir "/raylib/raymath.so")) ))
+
