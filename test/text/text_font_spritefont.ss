@@ -24,7 +24,7 @@
   '(-3.0 -2.0 2.0))
 
 (define y-offset
-  '(-80.0 -40.0 50.0))
+  '(-80.0 -10.0 50.0))
 
 (define positions
   (map
@@ -36,7 +36,7 @@
                              fnt msg
                              (float bs)
                              spc) x)) 2.0)
-        (- (/ (- screen-height bs) 2.0) ost))))
+        (+ (/ (- screen-height bs) 2.0) ost))))
    fonts messages spacings y-offset))
 
 (set-target-fps 60)

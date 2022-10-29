@@ -156,6 +156,7 @@
                (in-loop (substring str 6 len) pass-value))
           (case str
             ["char *" 'string]
+            ["int *" 'u8*]
             [("rAudioBuffer *" "rAudioProcessor *"
               "va_list" "TraceLogCallback"
               "LoadFileDataCallback" "SaveFileDataCallback"

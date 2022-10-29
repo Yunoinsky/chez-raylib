@@ -2184,25 +2184,25 @@
       (lambda (file-name) (f file-name))))
   (define compress-data
     (let ([f (foreign-procedure "CompressData"
-               ((* unsigned-8) int (* int))
+               ((* unsigned-8) int u8*)
                (* unsigned-8))])
       (lambda (data data-size comp-data-size)
         (f data data-size comp-data-size))))
   (define decompress-data
     (let ([f (foreign-procedure "DecompressData"
-               ((* unsigned-8) int (* int))
+               ((* unsigned-8) int u8*)
                (* unsigned-8))])
       (lambda (comp-data comp-data-size data-size)
         (f comp-data comp-data-size data-size))))
   (define encode-data-base-64
     (let ([f (foreign-procedure "EncodeDataBase64"
-               ((* unsigned-8) int (* int))
+               ((* unsigned-8) int u8*)
                string)])
       (lambda (data data-size output-size)
         (f data data-size output-size))))
   (define decode-data-base-64
     (let ([f (foreign-procedure "DecodeDataBase64"
-               ((* unsigned-8) (* int))
+               ((* unsigned-8) u8*)
                (* unsigned-8))])
       (lambda (data output-size) (f data output-size))))
   (define is-key-pressed
@@ -2783,7 +2783,7 @@
          struct])))
   (define load-image-anim
     (let ([f (foreign-procedure "LoadImageAnim"
-               (string (* int))
+               (string u8*)
                (& Image))])
       (case-lambda
         [(file-name frames)
@@ -3119,7 +3119,7 @@
       (lambda (image) (f image))))
   (define load-image-palette
     (let ([f (foreign-procedure "LoadImagePalette"
-               ((& Image) int (* int))
+               ((& Image) int u8*)
                (* Color))])
       (lambda (image max-palette-size color-count)
         (f image max-palette-size color-count))))
@@ -3552,7 +3552,7 @@
         [(file-name struct) (f struct file-name) struct])))
   (define load-font-ex
     (let ([f (foreign-procedure "LoadFontEx"
-               (string int (* int) int)
+               (string int u8* int)
                (& Font))])
       (case-lambda
         [(file-name font-size font-chars glyph-count)
@@ -3580,7 +3580,7 @@
          struct])))
   (define load-font-from-memory
     (let ([f (foreign-procedure "LoadFontFromMemory"
-               (string (* unsigned-8) int int (* int) int)
+               (string (* unsigned-8) int int u8* int)
                (& Font))])
       (case-lambda
         [(file-type file-data data-size font-size font-chars
@@ -3598,7 +3598,7 @@
          struct])))
   (define load-font-data
     (let ([f (foreign-procedure "LoadFontData"
-               ((* unsigned-8) int int (* int) int int)
+               ((* unsigned-8) int int u8* int int)
                (* Glyph-Info))])
       (lambda (file-data data-size font-size font-chars
                glyph-count type)
@@ -3655,7 +3655,7 @@
         (f font codepoint position font-size tint))))
   (define draw-text-codepoints
     (let ([f (foreign-procedure "DrawTextCodepoints"
-               ((& Font) (* int) int (& Vector-2) float float (& Color))
+               ((& Font) u8* int (& Vector-2) float float (& Color))
                void)])
       (lambda (font codepoints count position font-size spacing
                tint)
@@ -3714,13 +3714,11 @@
          struct])))
   (define load-codepoints
     (let ([f (foreign-procedure "LoadCodepoints"
-               (string (* int))
-               (* int))])
+               (string u8*)
+               u8*)])
       (lambda (text count) (f text count))))
   (define unload-codepoints
-    (let ([f (foreign-procedure "UnloadCodepoints"
-               ((* int))
-               void)])
+    (let ([f (foreign-procedure "UnloadCodepoints" (u8*) void)])
       (lambda (codepoints) (f codepoints))))
   (define get-codepoint-count
     (let ([f (foreign-procedure "GetCodepointCount"
@@ -3729,12 +3727,12 @@
       (lambda (text) (f text))))
   (define get-codepoint
     (let ([f (foreign-procedure "GetCodepoint"
-               (string (* int))
+               (string u8*)
                int)])
       (lambda (text codepoint-size) (f text codepoint-size))))
   (define codepoint-to-utf8
     (let ([f (foreign-procedure "CodepointToUTF8"
-               (int (* int))
+               (int u8*)
                string)])
       (lambda (codepoint utf-8size) (f codepoint utf-8size))))
   (define text-copy
@@ -3769,7 +3767,7 @@
       (lambda (text insert position) (f text insert position))))
   (define text-append
     (let ([f (foreign-procedure "TextAppend"
-               (string string (* int))
+               (string string u8*)
                void)])
       (lambda (text append position) (f text append position))))
   (define text-find-index
@@ -4242,7 +4240,7 @@
          struct])))
   (define load-materials
     (let ([f (foreign-procedure "LoadMaterials"
-               (string (* int))
+               (string u8*)
                (* Material))])
       (lambda (file-name material-count)
         (f file-name material-count))))
