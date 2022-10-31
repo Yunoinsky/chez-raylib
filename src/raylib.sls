@@ -219,14 +219,16 @@
    npatch-info-ref& npatch-info-get npatch-info-set!
    Npatch-Info make-render-texture render-texture-ref&
    render-texture-get render-texture-set! Render-Texture
-   make-texture texture-ref& texture-get texture-set! Texture
-   make-image image-ref& image-get image-set! Image
-   make-rectangle rectangle-ref& rectangle-get rectangle-set!
-   Rectangle make-color color-ref& color-get color-set! Color
-   make-matrix matrix-ref& matrix-get matrix-set! Matrix
-   make-vector-4 vector-4-ref& vector-4-get vector-4-set!
-   Vector-4 make-vector-3 vector-3-ref& vector-3-get
-   vector-3-set! Vector-3 make-vector-2 vector-2-ref&
+   copy-texture make-texture texture-ref& texture-get
+   texture-set! Texture make-image image-ref& image-get
+   image-set! Image copy-rectangle make-rectangle
+   rectangle-ref& rectangle-get rectangle-set! Rectangle
+   copy-color make-color color-ref& color-get color-set! Color
+   copy-matrix make-matrix matrix-ref& matrix-get matrix-set!
+   Matrix copy-vector-4 make-vector-4 vector-4-ref&
+   vector-4-get vector-4-set! Vector-4 copy-vector-3
+   make-vector-3 vector-3-ref& vector-3-get vector-3-set!
+   Vector-3 copy-vector-2 make-vector-2 vector-2-ref&
    vector-2-get vector-2-set! Vector-2
    NPATCH_THREE_PATCH_HORIZONTAL NPATCH_THREE_PATCH_VERTICAL
    NPATCH_NINE_PATCH CAMERA_ORTHOGRAPHIC CAMERA_PERSPECTIVE
@@ -345,20 +347,20 @@
     (lambda (position target up fovy projection)
       (let ([camera (make-camera-3d)])
         (make-vector-3
+          (camera-3d-ref& camera position)
           (car position)
           (cadr position)
-          (caddr position)
-          (camera-3d-ref& camera position))
+          (caddr position))
         (make-vector-3
+          (camera-3d-ref& camera target)
           (car target)
           (cadr target)
-          (caddr target)
-          (camera-3d-ref& camera target))
+          (caddr target))
         (make-vector-3
+          (camera-3d-ref& camera up)
           (car up)
           (cadr up)
-          (caddr up)
-          (camera-3d-ref& camera up))
+          (caddr up))
         (camera-3d-set! camera fovy fovy)
         (camera-3d-set! camera projection projection)
         camera)))
@@ -384,9 +386,7 @@
              i
              (apply
                maker-fn
-               (append
-                 (car dl)
-                 (list (make-ftype-pointer ftype-name addr)))))))]))
+               (cons (make-ftype-pointer ftype-name addr) (car dl))))))]))
   (define-syntax arr*
     (syntax-rules () [(_ arr) (vector-ref arr 0)]))
   (define-syntax int
@@ -720,13 +720,17 @@
   (define NPATCH_THREE_PATCH_HORIZONTAL 2)
   (define-ftype Vector-2 (struct [x float] [y float]))
   (define-syntax vector-2-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Vector-2 (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Vector-2 (f ...) s v)]
+      [(_ s f v) (ftype-set! Vector-2 (f) s v)]))
   (define-syntax vector-2-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Vector-2 (f ...) s)]
       [(_ s f) (ftype-ref Vector-2 (f) s)]))
   (define-syntax vector-2-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Vector-2 (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Vector-2 (f ...) s)]
+      [(_ s f) (ftype-&ref Vector-2 (f) s)]))
   (define make-vector-2
     (case-lambda
       [(x y)
@@ -736,20 +740,36 @@
          (ftype-set! Vector-2 (x) struct x)
          (ftype-set! Vector-2 (y) struct y)
          struct)]
-      [(x y struct)
+      [(struct x y)
        (ftype-set! Vector-2 (x) struct x)
        (ftype-set! Vector-2 (y) struct y)
        struct]))
+  (define copy-vector-2
+    (case-lambda
+      [(src dst)
+       (make-vector-2
+         dst
+         (ftype-ref Vector-2 (x) src)
+         (ftype-ref Vector-2 (y) src))]
+      [(src)
+       (let ([dst (make-ftype-pointer
+                    Vector-2
+                    (foreign-alloc (ftype-sizeof Vector-2)))])
+         (copy-vector-2 src dst))]))
   (define-ftype Vector-3
     (struct [x float] [y float] [z float]))
   (define-syntax vector-3-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Vector-3 (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Vector-3 (f ...) s v)]
+      [(_ s f v) (ftype-set! Vector-3 (f) s v)]))
   (define-syntax vector-3-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Vector-3 (f ...) s)]
       [(_ s f) (ftype-ref Vector-3 (f) s)]))
   (define-syntax vector-3-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Vector-3 (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Vector-3 (f ...) s)]
+      [(_ s f) (ftype-&ref Vector-3 (f) s)]))
   (define make-vector-3
     (case-lambda
       [(x y z)
@@ -760,21 +780,38 @@
          (ftype-set! Vector-3 (y) struct y)
          (ftype-set! Vector-3 (z) struct z)
          struct)]
-      [(x y z struct)
+      [(struct x y z)
        (ftype-set! Vector-3 (x) struct x)
        (ftype-set! Vector-3 (y) struct y)
        (ftype-set! Vector-3 (z) struct z)
        struct]))
+  (define copy-vector-3
+    (case-lambda
+      [(src dst)
+       (make-vector-3
+         dst
+         (ftype-ref Vector-3 (x) src)
+         (ftype-ref Vector-3 (y) src)
+         (ftype-ref Vector-3 (z) src))]
+      [(src)
+       (let ([dst (make-ftype-pointer
+                    Vector-3
+                    (foreign-alloc (ftype-sizeof Vector-3)))])
+         (copy-vector-3 src dst))]))
   (define-ftype Vector-4
     (struct [x float] [y float] [z float] [w float]))
   (define-syntax vector-4-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Vector-4 (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Vector-4 (f ...) s v)]
+      [(_ s f v) (ftype-set! Vector-4 (f) s v)]))
   (define-syntax vector-4-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Vector-4 (f ...) s)]
       [(_ s f) (ftype-ref Vector-4 (f) s)]))
   (define-syntax vector-4-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Vector-4 (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Vector-4 (f ...) s)]
+      [(_ s f) (ftype-&ref Vector-4 (f) s)]))
   (define make-vector-4
     (case-lambda
       [(x y z w)
@@ -786,12 +823,23 @@
          (ftype-set! Vector-4 (z) struct z)
          (ftype-set! Vector-4 (w) struct w)
          struct)]
-      [(x y z w struct)
+      [(struct x y z w)
        (ftype-set! Vector-4 (x) struct x)
        (ftype-set! Vector-4 (y) struct y)
        (ftype-set! Vector-4 (z) struct z)
        (ftype-set! Vector-4 (w) struct w)
        struct]))
+  (define copy-vector-4
+    (case-lambda
+      [(src dst)
+       (make-vector-4 dst (ftype-ref Vector-4 (x) src)
+         (ftype-ref Vector-4 (y) src) (ftype-ref Vector-4 (z) src)
+         (ftype-ref Vector-4 (w) src))]
+      [(src)
+       (let ([dst (make-ftype-pointer
+                    Vector-4
+                    (foreign-alloc (ftype-sizeof Vector-4)))])
+         (copy-vector-4 src dst))]))
   (define-ftype Matrix
     (struct
       [m0 float]
@@ -811,13 +859,17 @@
       [m11 float]
       [m15 float]))
   (define-syntax matrix-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Matrix (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Matrix (f ...) s v)]
+      [(_ s f v) (ftype-set! Matrix (f) s v)]))
   (define-syntax matrix-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Matrix (f ...) s)]
       [(_ s f) (ftype-ref Matrix (f) s)]))
   (define-syntax matrix-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Matrix (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Matrix (f ...) s)]
+      [(_ s f) (ftype-&ref Matrix (f) s)]))
   (define make-matrix
     (case-lambda
       [(m0 m4 m8 m12 m1 m5 m9 m13 m2 m6 m10 m14 m3 m7 m11 m15)
@@ -841,8 +893,8 @@
          (ftype-set! Matrix (m11) struct m11)
          (ftype-set! Matrix (m15) struct m15)
          struct)]
-      [(m0 m4 m8 m12 m1 m5 m9 m13 m2 m6 m10 m14 m3 m7 m11 m15
-        struct)
+      [(struct m0 m4 m8 m12 m1 m5 m9 m13 m2 m6 m10 m14 m3 m7 m11
+        m15)
        (ftype-set! Matrix (m0) struct m0)
        (ftype-set! Matrix (m4) struct m4)
        (ftype-set! Matrix (m8) struct m8)
@@ -860,6 +912,22 @@
        (ftype-set! Matrix (m11) struct m11)
        (ftype-set! Matrix (m15) struct m15)
        struct]))
+  (define copy-matrix
+    (case-lambda
+      [(src dst)
+       (make-matrix dst (ftype-ref Matrix (m0) src) (ftype-ref Matrix (m4) src)
+         (ftype-ref Matrix (m8) src) (ftype-ref Matrix (m12) src)
+         (ftype-ref Matrix (m1) src) (ftype-ref Matrix (m5) src)
+         (ftype-ref Matrix (m9) src) (ftype-ref Matrix (m13) src)
+         (ftype-ref Matrix (m2) src) (ftype-ref Matrix (m6) src)
+         (ftype-ref Matrix (m10) src) (ftype-ref Matrix (m14) src)
+         (ftype-ref Matrix (m3) src) (ftype-ref Matrix (m7) src)
+         (ftype-ref Matrix (m11) src) (ftype-ref Matrix (m15) src))]
+      [(src)
+       (let ([dst (make-ftype-pointer
+                    Matrix
+                    (foreign-alloc (ftype-sizeof Matrix)))])
+         (copy-matrix src dst))]))
   (define-ftype Color
     (struct
       [r unsigned-8]
@@ -867,13 +935,17 @@
       [b unsigned-8]
       [a unsigned-8]))
   (define-syntax color-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Color (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Color (f ...) s v)]
+      [(_ s f v) (ftype-set! Color (f) s v)]))
   (define-syntax color-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Color (f ...) s)]
       [(_ s f) (ftype-ref Color (f) s)]))
   (define-syntax color-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Color (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Color (f ...) s)]
+      [(_ s f) (ftype-&ref Color (f) s)]))
   (define make-color
     (case-lambda
       [(r g b a)
@@ -885,23 +957,36 @@
          (ftype-set! Color (b) struct b)
          (ftype-set! Color (a) struct a)
          struct)]
-      [(r g b a struct)
+      [(struct r g b a)
        (ftype-set! Color (r) struct r)
        (ftype-set! Color (g) struct g)
        (ftype-set! Color (b) struct b)
        (ftype-set! Color (a) struct a)
        struct]))
+  (define copy-color
+    (case-lambda
+      [(src dst)
+       (make-color dst (ftype-ref Color (r) src) (ftype-ref Color (g) src)
+         (ftype-ref Color (b) src) (ftype-ref Color (a) src))]
+      [(src)
+       (let ([dst (make-ftype-pointer
+                    Color
+                    (foreign-alloc (ftype-sizeof Color)))])
+         (copy-color src dst))]))
   (define-ftype Rectangle
     (struct [x float] [y float] [width float] [height float]))
   (define-syntax rectangle-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Rectangle (f ...) s v)]
       [(_ s f v) (ftype-set! Rectangle (f) s v)]))
   (define-syntax rectangle-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Rectangle (f ...) s)]
       [(_ s f) (ftype-ref Rectangle (f) s)]))
   (define-syntax rectangle-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Rectangle (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Rectangle (f ...) s)]
+      [(_ s f) (ftype-&ref Rectangle (f) s)]))
   (define make-rectangle
     (case-lambda
       [(x y width height)
@@ -913,12 +998,24 @@
          (ftype-set! Rectangle (width) struct width)
          (ftype-set! Rectangle (height) struct height)
          struct)]
-      [(x y width height struct)
+      [(struct x y width height)
        (ftype-set! Rectangle (x) struct x)
        (ftype-set! Rectangle (y) struct y)
        (ftype-set! Rectangle (width) struct width)
        (ftype-set! Rectangle (height) struct height)
        struct]))
+  (define copy-rectangle
+    (case-lambda
+      [(src dst)
+       (make-rectangle dst (ftype-ref Rectangle (x) src)
+         (ftype-ref Rectangle (y) src)
+         (ftype-ref Rectangle (width) src)
+         (ftype-ref Rectangle (height) src))]
+      [(src)
+       (let ([dst (make-ftype-pointer
+                    Rectangle
+                    (foreign-alloc (ftype-sizeof Rectangle)))])
+         (copy-rectangle src dst))]))
   (define-ftype Image
     (struct
       [data void*]
@@ -927,13 +1024,17 @@
       [mipmaps int]
       [format int]))
   (define-syntax image-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Image (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Image (f ...) s v)]
+      [(_ s f v) (ftype-set! Image (f) s v)]))
   (define-syntax image-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Image (f ...) s)]
       [(_ s f) (ftype-ref Image (f) s)]))
   (define-syntax image-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Image (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Image (f ...) s)]
+      [(_ s f) (ftype-&ref Image (f) s)]))
   (define make-image
     (lambda ()
       (make-ftype-pointer
@@ -947,13 +1048,17 @@
       [mipmaps int]
       [format int]))
   (define-syntax texture-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Texture (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Texture (f ...) s v)]
+      [(_ s f v) (ftype-set! Texture (f) s v)]))
   (define-syntax texture-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Texture (f ...) s)]
       [(_ s f) (ftype-ref Texture (f) s)]))
   (define-syntax texture-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Texture (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Texture (f ...) s)]
+      [(_ s f) (ftype-&ref Texture (f) s)]))
   (define make-texture
     (case-lambda
       [(id width height mipmaps format)
@@ -966,17 +1071,31 @@
          (ftype-set! Texture (mipmaps) struct mipmaps)
          (ftype-set! Texture (format) struct format)
          struct)]
-      [(id width height mipmaps format struct)
+      [(struct id width height mipmaps format)
        (ftype-set! Texture (id) struct id)
        (ftype-set! Texture (width) struct width)
        (ftype-set! Texture (height) struct height)
        (ftype-set! Texture (mipmaps) struct mipmaps)
        (ftype-set! Texture (format) struct format)
        struct]))
+  (define copy-texture
+    (case-lambda
+      [(src dst)
+       (make-texture dst (ftype-ref Texture (id) src)
+         (ftype-ref Texture (width) src)
+         (ftype-ref Texture (height) src)
+         (ftype-ref Texture (mipmaps) src)
+         (ftype-ref Texture (format) src))]
+      [(src)
+       (let ([dst (make-ftype-pointer
+                    Texture
+                    (foreign-alloc (ftype-sizeof Texture)))])
+         (copy-texture src dst))]))
   (define-ftype Render-Texture
     (struct [id unsigned] [texture Texture] [depth Texture]))
   (define-syntax render-texture-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Render-Texture (f ...) s v)]
       [(_ s f v) (ftype-set! Render-Texture (f) s v)]))
   (define-syntax render-texture-get
     (syntax-rules ()
@@ -984,6 +1103,7 @@
       [(_ s f) (ftype-ref Render-Texture (f) s)]))
   (define-syntax render-texture-ref&
     (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Render-Texture (f ...) s)]
       [(_ s f) (ftype-&ref Render-Texture (f) s)]))
   (define make-render-texture
     (lambda ()
@@ -1000,13 +1120,16 @@
       [layout int]))
   (define-syntax npatch-info-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Npatch-Info (f ...) s v)]
       [(_ s f v) (ftype-set! Npatch-Info (f) s v)]))
   (define-syntax npatch-info-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Npatch-Info (f ...) s)]
       [(_ s f) (ftype-ref Npatch-Info (f) s)]))
   (define-syntax npatch-info-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Npatch-Info (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Npatch-Info (f ...) s)]
+      [(_ s f) (ftype-&ref Npatch-Info (f) s)]))
   (define make-npatch-info
     (lambda ()
       (make-ftype-pointer
@@ -1021,13 +1144,16 @@
       [image Image]))
   (define-syntax glyph-info-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Glyph-Info (f ...) s v)]
       [(_ s f v) (ftype-set! Glyph-Info (f) s v)]))
   (define-syntax glyph-info-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Glyph-Info (f ...) s)]
       [(_ s f) (ftype-ref Glyph-Info (f) s)]))
   (define-syntax glyph-info-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Glyph-Info (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Glyph-Info (f ...) s)]
+      [(_ s f) (ftype-&ref Glyph-Info (f) s)]))
   (define make-glyph-info
     (lambda ()
       (make-ftype-pointer
@@ -1042,13 +1168,17 @@
       [recs (* Rectangle)]
       [glyphs (* Glyph-Info)]))
   (define-syntax font-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Font (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Font (f ...) s v)]
+      [(_ s f v) (ftype-set! Font (f) s v)]))
   (define-syntax font-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Font (f ...) s)]
       [(_ s f) (ftype-ref Font (f) s)]))
   (define-syntax font-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Font (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Font (f ...) s)]
+      [(_ s f) (ftype-&ref Font (f) s)]))
   (define make-font
     (lambda ()
       (make-ftype-pointer
@@ -1063,13 +1193,16 @@
       [projection int]))
   (define-syntax camera-3d-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Camera-3D (f ...) s v)]
       [(_ s f v) (ftype-set! Camera-3D (f) s v)]))
   (define-syntax camera-3d-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Camera-3D (f ...) s)]
       [(_ s f) (ftype-ref Camera-3D (f) s)]))
   (define-syntax camera-3d-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Camera-3D (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Camera-3D (f ...) s)]
+      [(_ s f) (ftype-&ref Camera-3D (f) s)]))
   (define make-camera-3d
     (lambda ()
       (make-ftype-pointer
@@ -1083,13 +1216,16 @@
       [zoom float]))
   (define-syntax camera-2d-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Camera-2D (f ...) s v)]
       [(_ s f v) (ftype-set! Camera-2D (f) s v)]))
   (define-syntax camera-2d-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Camera-2D (f ...) s)]
       [(_ s f) (ftype-ref Camera-2D (f) s)]))
   (define-syntax camera-2d-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Camera-2D (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Camera-2D (f ...) s)]
+      [(_ s f) (ftype-&ref Camera-2D (f) s)]))
   (define make-camera-2d
     (lambda ()
       (make-ftype-pointer
@@ -1113,13 +1249,17 @@
       [vao-id unsigned]
       [vbo-id (* unsigned)]))
   (define-syntax mesh-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Mesh (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Mesh (f ...) s v)]
+      [(_ s f v) (ftype-set! Mesh (f) s v)]))
   (define-syntax mesh-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Mesh (f ...) s)]
       [(_ s f) (ftype-ref Mesh (f) s)]))
   (define-syntax mesh-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Mesh (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Mesh (f ...) s)]
+      [(_ s f) (ftype-&ref Mesh (f) s)]))
   (define make-mesh
     (lambda ()
       (make-ftype-pointer
@@ -1127,13 +1267,17 @@
         (foreign-alloc (ftype-sizeof Mesh)))))
   (define-ftype Shader (struct [id unsigned] [locs (* int)]))
   (define-syntax shader-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Shader (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Shader (f ...) s v)]
+      [(_ s f v) (ftype-set! Shader (f) s v)]))
   (define-syntax shader-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Shader (f ...) s)]
       [(_ s f) (ftype-ref Shader (f) s)]))
   (define-syntax shader-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Shader (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Shader (f ...) s)]
+      [(_ s f) (ftype-&ref Shader (f) s)]))
   (define make-shader
     (lambda ()
       (make-ftype-pointer
@@ -1143,13 +1287,16 @@
     (struct [texture Texture] [color Color] [value float]))
   (define-syntax material-map-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Material-Map (f ...) s v)]
       [(_ s f v) (ftype-set! Material-Map (f) s v)]))
   (define-syntax material-map-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Material-Map (f ...) s)]
       [(_ s f) (ftype-ref Material-Map (f) s)]))
   (define-syntax material-map-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Material-Map (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Material-Map (f ...) s)]
+      [(_ s f) (ftype-&ref Material-Map (f) s)]))
   (define make-material-map
     (lambda ()
       (make-ftype-pointer
@@ -1161,13 +1308,17 @@
       [maps (* Material-Map)]
       [params (array 4 float)]))
   (define-syntax material-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Material (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Material (f ...) s v)]
+      [(_ s f v) (ftype-set! Material (f) s v)]))
   (define-syntax material-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Material (f ...) s)]
       [(_ s f) (ftype-ref Material (f) s)]))
   (define-syntax material-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Material (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Material (f ...) s)]
+      [(_ s f) (ftype-&ref Material (f) s)]))
   (define make-material
     (lambda ()
       (make-ftype-pointer
@@ -1180,13 +1331,16 @@
       [scale Vector-3]))
   (define-syntax transform-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Transform (f ...) s v)]
       [(_ s f v) (ftype-set! Transform (f) s v)]))
   (define-syntax transform-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Transform (f ...) s)]
       [(_ s f) (ftype-ref Transform (f) s)]))
   (define-syntax transform-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Transform (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Transform (f ...) s)]
+      [(_ s f) (ftype-&ref Transform (f) s)]))
   (define make-transform
     (lambda ()
       (make-ftype-pointer
@@ -1196,13 +1350,16 @@
     (struct [name (array 32 char)] [parent int]))
   (define-syntax bone-info-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Bone-Info (f ...) s v)]
       [(_ s f v) (ftype-set! Bone-Info (f) s v)]))
   (define-syntax bone-info-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Bone-Info (f ...) s)]
       [(_ s f) (ftype-ref Bone-Info (f) s)]))
   (define-syntax bone-info-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Bone-Info (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Bone-Info (f ...) s)]
+      [(_ s f) (ftype-&ref Bone-Info (f) s)]))
   (define make-bone-info
     (lambda ()
       (make-ftype-pointer
@@ -1220,13 +1377,17 @@
       [bones (* Bone-Info)]
       [bind-pose (* Transform)]))
   (define-syntax model-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Model (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Model (f ...) s v)]
+      [(_ s f v) (ftype-set! Model (f) s v)]))
   (define-syntax model-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Model (f ...) s)]
       [(_ s f) (ftype-ref Model (f) s)]))
   (define-syntax model-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Model (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Model (f ...) s)]
+      [(_ s f) (ftype-&ref Model (f) s)]))
   (define make-model
     (lambda ()
       (make-ftype-pointer
@@ -1240,6 +1401,7 @@
       [frame-poses (* (* Transform))]))
   (define-syntax model-animation-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Model-Animation (f ...) s v)]
       [(_ s f v) (ftype-set! Model-Animation (f) s v)]))
   (define-syntax model-animation-get
     (syntax-rules ()
@@ -1247,6 +1409,7 @@
       [(_ s f) (ftype-ref Model-Animation (f) s)]))
   (define-syntax model-animation-ref&
     (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Model-Animation (f ...) s)]
       [(_ s f) (ftype-&ref Model-Animation (f) s)]))
   (define make-model-animation
     (lambda ()
@@ -1256,13 +1419,17 @@
   (define-ftype Ray
     (struct [position Vector-3] [direction Vector-3]))
   (define-syntax ray-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Ray (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Ray (f ...) s v)]
+      [(_ s f v) (ftype-set! Ray (f) s v)]))
   (define-syntax ray-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Ray (f ...) s)]
       [(_ s f) (ftype-ref Ray (f) s)]))
   (define-syntax ray-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Ray (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Ray (f ...) s)]
+      [(_ s f) (ftype-&ref Ray (f) s)]))
   (define make-ray
     (lambda ()
       (make-ftype-pointer
@@ -1276,6 +1443,7 @@
       [normal Vector-3]))
   (define-syntax ray-collision-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Ray-Collision (f ...) s v)]
       [(_ s f v) (ftype-set! Ray-Collision (f) s v)]))
   (define-syntax ray-collision-get
     (syntax-rules ()
@@ -1283,6 +1451,7 @@
       [(_ s f) (ftype-ref Ray-Collision (f) s)]))
   (define-syntax ray-collision-ref&
     (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Ray-Collision (f ...) s)]
       [(_ s f) (ftype-&ref Ray-Collision (f) s)]))
   (define make-ray-collision
     (lambda ()
@@ -1293,13 +1462,16 @@
     (struct [min Vector-3] [max Vector-3]))
   (define-syntax bounding-box-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Bounding-Box (f ...) s v)]
       [(_ s f v) (ftype-set! Bounding-Box (f) s v)]))
   (define-syntax bounding-box-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Bounding-Box (f ...) s)]
       [(_ s f) (ftype-ref Bounding-Box (f) s)]))
   (define-syntax bounding-box-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Bounding-Box (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Bounding-Box (f ...) s)]
+      [(_ s f) (ftype-&ref Bounding-Box (f) s)]))
   (define make-bounding-box
     (lambda ()
       (make-ftype-pointer
@@ -1313,13 +1485,17 @@
       [channels unsigned]
       [data void*]))
   (define-syntax wave-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Wave (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Wave (f ...) s v)]
+      [(_ s f v) (ftype-set! Wave (f) s v)]))
   (define-syntax wave-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Wave (f ...) s)]
       [(_ s f) (ftype-ref Wave (f) s)]))
   (define-syntax wave-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Wave (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Wave (f ...) s)]
+      [(_ s f) (ftype-&ref Wave (f) s)]))
   (define make-wave
     (lambda ()
       (make-ftype-pointer
@@ -1334,13 +1510,16 @@
       [channels unsigned]))
   (define-syntax audio-stream-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Audio-Stream (f ...) s v)]
       [(_ s f v) (ftype-set! Audio-Stream (f) s v)]))
   (define-syntax audio-stream-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Audio-Stream (f ...) s)]
       [(_ s f) (ftype-ref Audio-Stream (f) s)]))
   (define-syntax audio-stream-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Audio-Stream (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Audio-Stream (f ...) s)]
+      [(_ s f) (ftype-&ref Audio-Stream (f) s)]))
   (define make-audio-stream
     (lambda ()
       (make-ftype-pointer
@@ -1349,13 +1528,17 @@
   (define-ftype Sound
     (struct [stream Audio-Stream] [frame-count unsigned]))
   (define-syntax sound-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Sound (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Sound (f ...) s v)]
+      [(_ s f v) (ftype-set! Sound (f) s v)]))
   (define-syntax sound-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Sound (f ...) s)]
       [(_ s f) (ftype-ref Sound (f) s)]))
   (define-syntax sound-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Sound (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Sound (f ...) s)]
+      [(_ s f) (ftype-&ref Sound (f) s)]))
   (define make-sound
     (lambda ()
       (make-ftype-pointer
@@ -1369,13 +1552,17 @@
       [ctx-type int]
       [ctx-data void*]))
   (define-syntax music-set!
-    (syntax-rules () [(_ s f v) (ftype-set! Music (f) s v)]))
+    (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Music (f ...) s v)]
+      [(_ s f v) (ftype-set! Music (f) s v)]))
   (define-syntax music-get
     (syntax-rules ()
       [(_ s (f ...)) (ftype-ref Music (f ...) s)]
       [(_ s f) (ftype-ref Music (f) s)]))
   (define-syntax music-ref&
-    (syntax-rules () [(_ s f) (ftype-&ref Music (f) s)]))
+    (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Music (f ...) s)]
+      [(_ s f) (ftype-&ref Music (f) s)]))
   (define make-music
     (lambda ()
       (make-ftype-pointer
@@ -1395,6 +1582,7 @@
       [chroma-ab-correction (array 4 float)]))
   (define-syntax vr-device-info-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Vr-Device-Info (f ...) s v)]
       [(_ s f v) (ftype-set! Vr-Device-Info (f) s v)]))
   (define-syntax vr-device-info-get
     (syntax-rules ()
@@ -1402,6 +1590,7 @@
       [(_ s f) (ftype-ref Vr-Device-Info (f) s)]))
   (define-syntax vr-device-info-ref&
     (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Vr-Device-Info (f ...) s)]
       [(_ s f) (ftype-&ref Vr-Device-Info (f) s)]))
   (define make-vr-device-info
     (lambda ()
@@ -1420,6 +1609,7 @@
       [scale-in (array 2 float)]))
   (define-syntax vr-stereo-config-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref Vr-Stereo-Config (f ...) s v)]
       [(_ s f v) (ftype-set! Vr-Stereo-Config (f) s v)]))
   (define-syntax vr-stereo-config-get
     (syntax-rules ()
@@ -1427,6 +1617,7 @@
       [(_ s f) (ftype-ref Vr-Stereo-Config (f) s)]))
   (define-syntax vr-stereo-config-ref&
     (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref Vr-Stereo-Config (f ...) s)]
       [(_ s f) (ftype-&ref Vr-Stereo-Config (f) s)]))
   (define make-vr-stereo-config
     (lambda ()
@@ -1440,6 +1631,7 @@
       [paths (* (* char))]))
   (define-syntax file-path-list-set!
     (syntax-rules ()
+      [(_ s (f ...) v) (ftype-ref File-Path-List (f ...) s v)]
       [(_ s f v) (ftype-set! File-Path-List (f) s v)]))
   (define-syntax file-path-list-get
     (syntax-rules ()
@@ -1447,6 +1639,7 @@
       [(_ s f) (ftype-ref File-Path-List (f) s)]))
   (define-syntax file-path-list-ref&
     (syntax-rules ()
+      [(_ s (f ...)) (ftype-&ref File-Path-List (f ...) s)]
       [(_ s f) (ftype-&ref File-Path-List (f) s)]))
   (define make-file-path-list
     (lambda ()
@@ -1627,7 +1820,7 @@
                       (foreign-alloc (ftype-sizeof Vector-2)))])
            (f ret monitor)
            ret)]
-        [(monitor struct) (f struct monitor) struct])))
+        [(struct monitor) (f struct monitor) struct])))
   (define get-monitor-width
     (let ([f (foreign-procedure "GetMonitorWidth" (int) int)])
       (lambda (monitor) (f monitor))))
@@ -1793,7 +1986,7 @@
                       (foreign-alloc (ftype-sizeof Vr-Stereo-Config)))])
            (f ret device)
            ret)]
-        [(device struct) (f struct device) struct])))
+        [(struct device) (f struct device) struct])))
   (define unload-vr-stereo-config
     (let ([f (foreign-procedure "UnloadVrStereoConfig"
                ((& Vr-Stereo-Config))
@@ -1810,7 +2003,7 @@
                       (foreign-alloc (ftype-sizeof Shader)))])
            (f ret vs-file-name fs-file-name)
            ret)]
-        [(vs-file-name fs-file-name struct)
+        [(struct vs-file-name fs-file-name)
          (f struct vs-file-name fs-file-name)
          struct])))
   (define load-shader-from-memory
@@ -1824,7 +2017,7 @@
                       (foreign-alloc (ftype-sizeof Shader)))])
            (f ret vs-code fs-code)
            ret)]
-        [(vs-code fs-code struct)
+        [(struct vs-code fs-code)
          (f struct vs-code fs-code)
          struct])))
   (define get-shader-location
@@ -1876,7 +2069,7 @@
                       (foreign-alloc (ftype-sizeof Ray)))])
            (f ret mouse-position camera)
            ret)]
-        [(mouse-position camera struct)
+        [(struct mouse-position camera)
          (f struct mouse-position camera)
          struct])))
   (define get-camera-matrix
@@ -1890,7 +2083,7 @@
                       (foreign-alloc (ftype-sizeof Matrix)))])
            (f ret camera)
            ret)]
-        [(camera struct) (f struct camera) struct])))
+        [(struct camera) (f struct camera) struct])))
   (define get-camera-matrix-2d
     (let ([f (foreign-procedure "GetCameraMatrix2D"
                ((& Camera-2D))
@@ -1902,7 +2095,7 @@
                       (foreign-alloc (ftype-sizeof Matrix)))])
            (f ret camera)
            ret)]
-        [(camera struct) (f struct camera) struct])))
+        [(struct camera) (f struct camera) struct])))
   (define get-world-to-screen
     (let ([f (foreign-procedure "GetWorldToScreen"
                ((& Vector-3) (& Camera-3D))
@@ -1914,7 +2107,7 @@
                       (foreign-alloc (ftype-sizeof Vector-2)))])
            (f ret position camera)
            ret)]
-        [(position camera struct)
+        [(struct position camera)
          (f struct position camera)
          struct])))
   (define get-screen-to-world-2d
@@ -1928,7 +2121,7 @@
                       (foreign-alloc (ftype-sizeof Vector-2)))])
            (f ret position camera)
            ret)]
-        [(position camera struct)
+        [(struct position camera)
          (f struct position camera)
          struct])))
   (define get-world-to-screen-ex
@@ -1942,7 +2135,7 @@
                       (foreign-alloc (ftype-sizeof Vector-2)))])
            (f ret position camera width height)
            ret)]
-        [(position camera width height struct)
+        [(struct position camera width height)
          (f struct position camera width height)
          struct])))
   (define get-world-to-screen-2d
@@ -1956,7 +2149,7 @@
                       (foreign-alloc (ftype-sizeof Vector-2)))])
            (f ret position camera)
            ret)]
-        [(position camera struct)
+        [(struct position camera)
          (f struct position camera)
          struct])))
   (define set-target-fps
@@ -2137,7 +2330,7 @@
                       (foreign-alloc (ftype-sizeof File-Path-List)))])
            (f ret dir-path)
            ret)]
-        [(dir-path struct) (f struct dir-path) struct])))
+        [(struct dir-path) (f struct dir-path) struct])))
   (define load-directory-files-ex
     (let ([f (foreign-procedure "LoadDirectoryFilesEx"
                (string string boolean)
@@ -2149,7 +2342,7 @@
                       (foreign-alloc (ftype-sizeof File-Path-List)))])
            (f ret base-path filter scan-subdirs)
            ret)]
-        [(base-path filter scan-subdirs struct)
+        [(struct base-path filter scan-subdirs)
          (f struct base-path filter scan-subdirs)
          struct])))
   (define unload-directory-files
@@ -2374,7 +2567,7 @@
                       (foreign-alloc (ftype-sizeof Vector-2)))])
            (f ret index)
            ret)]
-        [(index struct) (f struct index) struct])))
+        [(struct index) (f struct index) struct])))
   (define get-touch-point-id
     (let ([f (foreign-procedure "GetTouchPointId" (int) int)])
       (lambda (index) (f index))))
@@ -2754,7 +2947,7 @@
                       (foreign-alloc (ftype-sizeof Rectangle)))])
            (f ret rec-1 rec-2)
            ret)]
-        [(rec-1 rec-2 struct) (f struct rec-1 rec-2) struct])))
+        [(struct rec-1 rec-2) (f struct rec-1 rec-2) struct])))
   (define load-image
     (let ([f (foreign-procedure "LoadImage"
                (string)
@@ -2766,7 +2959,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret file-name)
            ret)]
-        [(file-name struct) (f struct file-name) struct])))
+        [(struct file-name) (f struct file-name) struct])))
   (define load-image-raw
     (let ([f (foreign-procedure "LoadImageRaw"
                (string int int int int)
@@ -2778,7 +2971,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret file-name width height format header-size)
            ret)]
-        [(file-name width height format header-size struct)
+        [(struct file-name width height format header-size)
          (f struct file-name width height format header-size)
          struct])))
   (define load-image-anim
@@ -2792,7 +2985,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret file-name frames)
            ret)]
-        [(file-name frames struct)
+        [(struct file-name frames)
          (f struct file-name frames)
          struct])))
   (define load-image-from-memory
@@ -2806,7 +2999,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret file-type file-data data-size)
            ret)]
-        [(file-type file-data data-size struct)
+        [(struct file-type file-data data-size)
          (f struct file-type file-data data-size)
          struct])))
   (define load-image-from-texture
@@ -2820,7 +3013,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret texture)
            ret)]
-        [(texture struct) (f struct texture) struct])))
+        [(struct texture) (f struct texture) struct])))
   (define load-image-from-screen
     (let ([f (foreign-procedure "LoadImageFromScreen"
                ()
@@ -2859,7 +3052,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret width height color)
            ret)]
-        [(width height color struct)
+        [(struct width height color)
          (f struct width height color)
          struct])))
   (define gen-image-gradient-v
@@ -2873,7 +3066,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret width height top bottom)
            ret)]
-        [(width height top bottom struct)
+        [(struct width height top bottom)
          (f struct width height top bottom)
          struct])))
   (define gen-image-gradient-h
@@ -2887,7 +3080,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret width height left right)
            ret)]
-        [(width height left right struct)
+        [(struct width height left right)
          (f struct width height left right)
          struct])))
   (define gen-image-gradient-radial
@@ -2901,7 +3094,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret width height density inner outer)
            ret)]
-        [(width height density inner outer struct)
+        [(struct width height density inner outer)
          (f struct width height density inner outer)
          struct])))
   (define gen-image-checked
@@ -2915,7 +3108,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret width height checks-x checks-y col-1 col-2)
            ret)]
-        [(width height checks-x checks-y col-1 col-2 struct)
+        [(struct width height checks-x checks-y col-1 col-2)
          (f struct width height checks-x checks-y col-1 col-2)
          struct])))
   (define gen-image-white-noise
@@ -2929,7 +3122,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret width height factor)
            ret)]
-        [(width height factor struct)
+        [(struct width height factor)
          (f struct width height factor)
          struct])))
   (define gen-image-cellular
@@ -2943,7 +3136,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret width height tile-size)
            ret)]
-        [(width height tile-size struct)
+        [(struct width height tile-size)
          (f struct width height tile-size)
          struct])))
   (define image-copy
@@ -2957,7 +3150,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret image)
            ret)]
-        [(image struct) (f struct image) struct])))
+        [(struct image) (f struct image) struct])))
   (define image-from-image
     (let ([f (foreign-procedure "ImageFromImage"
                ((& Image) (& Rectangle))
@@ -2969,7 +3162,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret image rec)
            ret)]
-        [(image rec struct) (f struct image rec) struct])))
+        [(struct image rec) (f struct image rec) struct])))
   (define image-text
     (let ([f (foreign-procedure "ImageText"
                (string int (& Color))
@@ -2981,7 +3174,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret text font-size color)
            ret)]
-        [(text font-size color struct)
+        [(struct text font-size color)
          (f struct text font-size color)
          struct])))
   (define image-text-ex
@@ -2995,7 +3188,7 @@
                       (foreign-alloc (ftype-sizeof Image)))])
            (f ret font text font-size spacing tint)
            ret)]
-        [(font text font-size spacing tint struct)
+        [(struct font text font-size spacing tint)
          (f struct font text font-size spacing tint)
          struct])))
   (define image-format
@@ -3144,7 +3337,7 @@
                       (foreign-alloc (ftype-sizeof Rectangle)))])
            (f ret image threshold)
            ret)]
-        [(image threshold struct)
+        [(struct image threshold)
          (f struct image threshold)
          struct])))
   (define get-image-color
@@ -3158,7 +3351,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret image x y)
            ret)]
-        [(image x y struct) (f struct image x y) struct])))
+        [(struct image x y) (f struct image x y) struct])))
   (define image-clear-background
     (let ([f (foreign-procedure "ImageClearBackground"
                ((* Image) (& Color))
@@ -3255,7 +3448,7 @@
                       (foreign-alloc (ftype-sizeof Texture)))])
            (f ret file-name)
            ret)]
-        [(file-name struct) (f struct file-name) struct])))
+        [(struct file-name) (f struct file-name) struct])))
   (define load-texture-from-image
     (let ([f (foreign-procedure "LoadTextureFromImage"
                ((& Image))
@@ -3267,7 +3460,7 @@
                       (foreign-alloc (ftype-sizeof Texture)))])
            (f ret image)
            ret)]
-        [(image struct) (f struct image) struct])))
+        [(struct image) (f struct image) struct])))
   (define load-texture-cubemap
     (let ([f (foreign-procedure "LoadTextureCubemap"
                ((& Image) int)
@@ -3279,7 +3472,7 @@
                       (foreign-alloc (ftype-sizeof Texture)))])
            (f ret image layout)
            ret)]
-        [(image layout struct) (f struct image layout) struct])))
+        [(struct image layout) (f struct image layout) struct])))
   (define load-render-texture
     (let ([f (foreign-procedure "LoadRenderTexture"
                (int int)
@@ -3291,7 +3484,7 @@
                       (foreign-alloc (ftype-sizeof Render-Texture)))])
            (f ret width height)
            ret)]
-        [(width height struct) (f struct width height) struct])))
+        [(struct width height) (f struct width height) struct])))
   (define unload-texture
     (let ([f (foreign-procedure "UnloadTexture"
                ((& Texture))
@@ -3416,7 +3609,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret color alpha)
            ret)]
-        [(color alpha struct) (f struct color alpha) struct])))
+        [(struct color alpha) (f struct color alpha) struct])))
   (define color-to-int
     (let ([f (foreign-procedure "ColorToInt" ((& Color)) int)])
       (lambda (color) (f color))))
@@ -3431,7 +3624,7 @@
                       (foreign-alloc (ftype-sizeof Vector-4)))])
            (f ret color)
            ret)]
-        [(color struct) (f struct color) struct])))
+        [(struct color) (f struct color) struct])))
   (define color-from-normalized
     (let ([f (foreign-procedure "ColorFromNormalized"
                ((& Vector-4))
@@ -3443,7 +3636,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret normalized)
            ret)]
-        [(normalized struct) (f struct normalized) struct])))
+        [(struct normalized) (f struct normalized) struct])))
   (define color-to-hsv
     (let ([f (foreign-procedure "ColorToHSV"
                ((& Color))
@@ -3455,7 +3648,7 @@
                       (foreign-alloc (ftype-sizeof Vector-3)))])
            (f ret color)
            ret)]
-        [(color struct) (f struct color) struct])))
+        [(struct color) (f struct color) struct])))
   (define color-from-hsv
     (let ([f (foreign-procedure "ColorFromHSV"
                (float float float)
@@ -3467,7 +3660,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret hue saturation value)
            ret)]
-        [(hue saturation value struct)
+        [(struct hue saturation value)
          (f struct hue saturation value)
          struct])))
   (define color-alpha
@@ -3481,7 +3674,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret color alpha)
            ret)]
-        [(color alpha struct) (f struct color alpha) struct])))
+        [(struct color alpha) (f struct color alpha) struct])))
   (define color-alpha-blend
     (let ([f (foreign-procedure "ColorAlphaBlend"
                ((& Color) (& Color) (& Color))
@@ -3493,7 +3686,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret dst src tint)
            ret)]
-        [(dst src tint struct) (f struct dst src tint) struct])))
+        [(struct dst src tint) (f struct dst src tint) struct])))
   (define get-color
     (let ([f (foreign-procedure "GetColor"
                (unsigned)
@@ -3505,7 +3698,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret hex-value)
            ret)]
-        [(hex-value struct) (f struct hex-value) struct])))
+        [(struct hex-value) (f struct hex-value) struct])))
   (define get-pixel-color
     (let ([f (foreign-procedure "GetPixelColor"
                (void* int)
@@ -3517,7 +3710,7 @@
                       (foreign-alloc (ftype-sizeof Color)))])
            (f ret src-ptr format)
            ret)]
-        [(src-ptr format struct)
+        [(struct src-ptr format)
          (f struct src-ptr format)
          struct])))
   (define set-pixel-color
@@ -3549,7 +3742,7 @@
                       (foreign-alloc (ftype-sizeof Font)))])
            (f ret file-name)
            ret)]
-        [(file-name struct) (f struct file-name) struct])))
+        [(struct file-name) (f struct file-name) struct])))
   (define load-font-ex
     (let ([f (foreign-procedure "LoadFontEx"
                (string int u8* int)
@@ -3561,7 +3754,7 @@
                       (foreign-alloc (ftype-sizeof Font)))])
            (f ret file-name font-size font-chars glyph-count)
            ret)]
-        [(file-name font-size font-chars glyph-count struct)
+        [(struct file-name font-size font-chars glyph-count)
          (f struct file-name font-size font-chars glyph-count)
          struct])))
   (define load-font-from-image
@@ -3575,7 +3768,7 @@
                       (foreign-alloc (ftype-sizeof Font)))])
            (f ret image key first-char)
            ret)]
-        [(image key first-char struct)
+        [(struct image key first-char)
          (f struct image key first-char)
          struct])))
   (define load-font-from-memory
@@ -3591,8 +3784,8 @@
            (f ret file-type file-data data-size font-size font-chars
               glyph-count)
            ret)]
-        [(file-type file-data data-size font-size font-chars
-          glyph-count struct)
+        [(struct file-type file-data data-size font-size font-chars
+          glyph-count)
          (f struct file-type file-data data-size font-size font-chars
             glyph-count)
          struct])))
@@ -3676,7 +3869,7 @@
                       (foreign-alloc (ftype-sizeof Vector-2)))])
            (f ret font text font-size spacing)
            ret)]
-        [(font text font-size spacing struct)
+        [(struct font text font-size spacing)
          (f struct font text font-size spacing)
          struct])))
   (define get-glyph-index
@@ -3695,7 +3888,7 @@
                       (foreign-alloc (ftype-sizeof Glyph-Info)))])
            (f ret font codepoint)
            ret)]
-        [(font codepoint struct)
+        [(struct font codepoint)
          (f struct font codepoint)
          struct])))
   (define get-glyph-atlas-rec
@@ -3709,7 +3902,7 @@
                       (foreign-alloc (ftype-sizeof Rectangle)))])
            (f ret font codepoint)
            ret)]
-        [(font codepoint struct)
+        [(struct font codepoint)
          (f struct font codepoint)
          struct])))
   (define load-codepoints
@@ -3927,7 +4120,7 @@
                       (foreign-alloc (ftype-sizeof Model)))])
            (f ret file-name)
            ret)]
-        [(file-name struct) (f struct file-name) struct])))
+        [(struct file-name) (f struct file-name) struct])))
   (define load-model-from-mesh
     (let ([f (foreign-procedure "LoadModelFromMesh"
                ((& Mesh))
@@ -3939,7 +4132,7 @@
                       (foreign-alloc (ftype-sizeof Model)))])
            (f ret mesh)
            ret)]
-        [(mesh struct) (f struct mesh) struct])))
+        [(struct mesh) (f struct mesh) struct])))
   (define unload-model
     (let ([f (foreign-procedure "UnloadModel"
                ((& Model))
@@ -3961,7 +4154,7 @@
                       (foreign-alloc (ftype-sizeof Bounding-Box)))])
            (f ret model)
            ret)]
-        [(model struct) (f struct model) struct])))
+        [(struct model) (f struct model) struct])))
   (define draw-model
     (let ([f (foreign-procedure "DrawModel"
                ((& Model) (& Vector-3) float (& Color))
@@ -4080,7 +4273,7 @@
                       (foreign-alloc (ftype-sizeof Bounding-Box)))])
            (f ret mesh)
            ret)]
-        [(mesh struct) (f struct mesh) struct])))
+        [(struct mesh) (f struct mesh) struct])))
   (define gen-mesh-tangents
     (let ([f (foreign-procedure "GenMeshTangents"
                ((* Mesh))
@@ -4097,7 +4290,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret sides radius)
            ret)]
-        [(sides radius struct) (f struct sides radius) struct])))
+        [(struct sides radius) (f struct sides radius) struct])))
   (define gen-mesh-plane
     (let ([f (foreign-procedure "GenMeshPlane"
                (float float int int)
@@ -4109,7 +4302,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret width length res-x res-z)
            ret)]
-        [(width length res-x res-z struct)
+        [(struct width length res-x res-z)
          (f struct width length res-x res-z)
          struct])))
   (define gen-mesh-cube
@@ -4123,7 +4316,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret width height length)
            ret)]
-        [(width height length struct)
+        [(struct width height length)
          (f struct width height length)
          struct])))
   (define gen-mesh-sphere
@@ -4137,7 +4330,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret radius rings slices)
            ret)]
-        [(radius rings slices struct)
+        [(struct radius rings slices)
          (f struct radius rings slices)
          struct])))
   (define gen-mesh-hemi-sphere
@@ -4151,7 +4344,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret radius rings slices)
            ret)]
-        [(radius rings slices struct)
+        [(struct radius rings slices)
          (f struct radius rings slices)
          struct])))
   (define gen-mesh-cylinder
@@ -4165,7 +4358,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret radius height slices)
            ret)]
-        [(radius height slices struct)
+        [(struct radius height slices)
          (f struct radius height slices)
          struct])))
   (define gen-mesh-cone
@@ -4179,7 +4372,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret radius height slices)
            ret)]
-        [(radius height slices struct)
+        [(struct radius height slices)
          (f struct radius height slices)
          struct])))
   (define gen-mesh-torus
@@ -4193,7 +4386,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret radius size rad-seg sides)
            ret)]
-        [(radius size rad-seg sides struct)
+        [(struct radius size rad-seg sides)
          (f struct radius size rad-seg sides)
          struct])))
   (define gen-mesh-knot
@@ -4207,7 +4400,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret radius size rad-seg sides)
            ret)]
-        [(radius size rad-seg sides struct)
+        [(struct radius size rad-seg sides)
          (f struct radius size rad-seg sides)
          struct])))
   (define gen-mesh-heightmap
@@ -4221,7 +4414,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret heightmap size)
            ret)]
-        [(heightmap size struct)
+        [(struct heightmap size)
          (f struct heightmap size)
          struct])))
   (define gen-mesh-cubicmap
@@ -4235,7 +4428,7 @@
                       (foreign-alloc (ftype-sizeof Mesh)))])
            (f ret cubicmap cube-size)
            ret)]
-        [(cubicmap cube-size struct)
+        [(struct cubicmap cube-size)
          (f struct cubicmap cube-size)
          struct])))
   (define load-materials
@@ -4325,7 +4518,7 @@
                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
            (f ret ray center radius)
            ret)]
-        [(ray center radius struct)
+        [(struct ray center radius)
          (f struct ray center radius)
          struct])))
   (define get-ray-collision-box
@@ -4339,7 +4532,7 @@
                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
            (f ret ray box)
            ret)]
-        [(ray box struct) (f struct ray box) struct])))
+        [(struct ray box) (f struct ray box) struct])))
   (define get-ray-collision-mesh
     (let ([f (foreign-procedure "GetRayCollisionMesh"
                ((& Ray) (& Mesh) (& Matrix))
@@ -4351,7 +4544,7 @@
                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
            (f ret ray mesh transform)
            ret)]
-        [(ray mesh transform struct)
+        [(struct ray mesh transform)
          (f struct ray mesh transform)
          struct])))
   (define get-ray-collision-triangle
@@ -4365,7 +4558,7 @@
                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
            (f ret ray p1 p2 p3)
            ret)]
-        [(ray p1 p2 p3 struct) (f struct ray p1 p2 p3) struct])))
+        [(struct ray p1 p2 p3) (f struct ray p1 p2 p3) struct])))
   (define get-ray-collision-quad
     (let ([f (foreign-procedure "GetRayCollisionQuad"
                ((& Ray)
@@ -4381,7 +4574,7 @@
                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
            (f ret ray p1 p2 p3 p4)
            ret)]
-        [(ray p1 p2 p3 p4 struct)
+        [(struct ray p1 p2 p3 p4)
          (f struct ray p1 p2 p3 p4)
          struct])))
   (define init-audio-device
@@ -4409,7 +4602,7 @@
                       (foreign-alloc (ftype-sizeof Wave)))])
            (f ret file-name)
            ret)]
-        [(file-name struct) (f struct file-name) struct])))
+        [(struct file-name) (f struct file-name) struct])))
   (define load-wave-from-memory
     (let ([f (foreign-procedure "LoadWaveFromMemory"
                (string (* unsigned-8) int)
@@ -4421,7 +4614,7 @@
                       (foreign-alloc (ftype-sizeof Wave)))])
            (f ret file-type file-data data-size)
            ret)]
-        [(file-type file-data data-size struct)
+        [(struct file-type file-data data-size)
          (f struct file-type file-data data-size)
          struct])))
   (define load-sound
@@ -4435,7 +4628,7 @@
                       (foreign-alloc (ftype-sizeof Sound)))])
            (f ret file-name)
            ret)]
-        [(file-name struct) (f struct file-name) struct])))
+        [(struct file-name) (f struct file-name) struct])))
   (define load-sound-from-wave
     (let ([f (foreign-procedure "LoadSoundFromWave"
                ((& Wave))
@@ -4447,7 +4640,7 @@
                       (foreign-alloc (ftype-sizeof Sound)))])
            (f ret wave)
            ret)]
-        [(wave struct) (f struct wave) struct])))
+        [(struct wave) (f struct wave) struct])))
   (define update-sound
     (let ([f (foreign-procedure "UpdateSound"
                ((& Sound) void* int)
@@ -4528,7 +4721,7 @@
                       (foreign-alloc (ftype-sizeof Wave)))])
            (f ret wave)
            ret)]
-        [(wave struct) (f struct wave) struct])))
+        [(struct wave) (f struct wave) struct])))
   (define wave-crop
     (let ([f (foreign-procedure "WaveCrop"
                ((* Wave) int int)
@@ -4562,7 +4755,7 @@
                       (foreign-alloc (ftype-sizeof Music)))])
            (f ret file-name)
            ret)]
-        [(file-name struct) (f struct file-name) struct])))
+        [(struct file-name) (f struct file-name) struct])))
   (define load-music-stream-from-memory
     (let ([f (foreign-procedure "LoadMusicStreamFromMemory"
                (string (* unsigned-8) int)
@@ -4574,7 +4767,7 @@
                       (foreign-alloc (ftype-sizeof Music)))])
            (f ret file-type data data-size)
            ret)]
-        [(file-type data data-size struct)
+        [(struct file-type data data-size)
          (f struct file-type data data-size)
          struct])))
   (define unload-music-stream
@@ -4653,7 +4846,7 @@
                       (foreign-alloc (ftype-sizeof Audio-Stream)))])
            (f ret sample-rate sample-size channels)
            ret)]
-        [(sample-rate sample-size channels struct)
+        [(struct sample-rate sample-size channels)
          (f struct sample-rate sample-size channels)
          struct])))
   (define unload-audio-stream

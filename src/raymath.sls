@@ -11,9 +11,9 @@
   (define vector->vector-2
     (case-lambda
       [(src dst)
-       (make-vector-2 (float (vector-ref src 0))
-                      (float (vector-ref src 1))
-                      dst)]
+       (make-vector-2 dst
+                      (float (vector-ref src 0))
+                      (float (vector-ref src 1)))]
       [(src)
        (make-vector-2 (float (vector-ref src 0))
                       (float (vector-ref src 1)))]))
@@ -21,10 +21,10 @@
   (define vector->vector-3
     (case-lambda
       [(src dst)
-       (make-vector-3 (float (vector-ref src 0))
+       (make-vector-3 dst
+                      (float (vector-ref src 0))
                       (float (vector-ref src 1))
-                      (float (vector-ref src 2))
-                      dst)]
+                      (float (vector-ref src 2)))]
       [(src)
        (make-vector-3 (float (vector-ref src 0))
                       (float (vector-ref src 1))
@@ -33,11 +33,11 @@
   (define vector->vector-4
     (case-lambda
       [(src dst)
-       (make-vector-4 (float (vector-ref src 0))
+       (make-vector-4 dst
+                      (float (vector-ref src 0))
                       (float (vector-ref src 1))
                       (float (vector-ref src 2))
-                      (float (vector-ref src 3))
-                      dst)]
+                      (float (vector-ref src 3)))]
       [(src)
        (make-vector-4 (float (vector-ref src 0))
                       (float (vector-ref src 1))
@@ -51,9 +51,9 @@
              [y (vector-2-get src y)])
          (let ([cos-res (cos rad)]
                [sin-res (sin rad)])
-           (make-vector-2 (- (* x cos-res) (* y sin-res))
-                          (+ (* x sin-res) (* y cos-res))
-                          dst)))]
+           (make-vector-2 dst
+                          (- (* x cos-res) (* y sin-res))
+                          (+ (* x sin-res) (* y cos-res)))))]
       [(vec rad)
        (let ([x (vector-2-get vec x)]
              [y (vector-2-get vec y)])

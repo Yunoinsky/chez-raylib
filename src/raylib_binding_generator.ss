@@ -207,28 +207,46 @@
                           name-str) #f)]
             [field-name-list (map car fields)])
         (if scalar-field
-            `(define ,maker-name
-               (case-lambda
-                 [,field-name-list
-                  (let ([struct (make-ftype-pointer
+            (let ([cloner-name (string->var-name
+                                (string-append
+                                 "Copy"
+                                 name-str) #f)])
+              (cons 
+               `(define ,maker-name
+                  (case-lambda
+                    [,field-name-list
+                     (let ([struct (make-ftype-pointer
+                                    ,name
+                                    (foreign-alloc
+                                     (ftype-sizeof ,name)))])
+                       ,@(map (lambda (f)
+                                `(ftype-set! ,name (,f) struct ,f))
+                              field-name-list)
+                       struct)]
+                    [,(cons 'struct field-name-list)
+                     ,@(map (lambda (f)
+                              `(ftype-set! ,name (,f) struct ,f))
+                            field-name-list)
+                     struct]))
+               `(define ,cloner-name
+                  (case-lambda
+                    [(src dst)
+                     (,maker-name
+                      dst
+                      ,@(map (lambda (f)
+                              `(ftype-ref ,name (,f) src))
+                            field-name-list))]
+                    [(src)
+                     (let ([dst (make-ftype-pointer
                                  ,name
                                  (foreign-alloc
                                   (ftype-sizeof ,name)))])
-                    ,@(map (lambda (f)
-                             `(ftype-set! ,name (,f) struct ,f))
-                           field-name-list)
-                    struct)]
-                 [,(append field-name-list '(struct))
-                  ,@(map (lambda (f)
-                           `(ftype-set! ,name (,f) struct ,f))
-                         field-name-list)
-                  struct]))
-            `(define ,maker-name
-               (lambda () (make-ftype-pointer
-                           ,name
-                           (foreign-alloc
-                            (ftype-sizeof ,name))))))))
-
+                       (,cloner-name src dst))]))))
+            (cons `(define ,maker-name
+                     (lambda () (make-ftype-pointer
+                                 ,name
+                                 (foreign-alloc
+                                  (ftype-sizeof ,name))))) '()))))
      (let ([set-name (string->var-name (string-append
                                         name-str "-set!") #f)]
            [get-name (string->var-name (string-append
@@ -238,6 +256,7 @@
        (list
         `(define-syntax ,set-name
            (syntax-rules ()
+             [(_ s (f ...) v) (ftype-ref ,name (f ...) s v)]
              [(_ s f v) (ftype-set! ,name (f) s v)]))
         `(define-syntax ,get-name
            (syntax-rules ()
@@ -245,6 +264,7 @@
              [(_ s f) (ftype-ref ,name (f) s)]))
         `(define-syntax ,ref-name
            (syntax-rules ()
+             [(_ s (f ...)) (ftype-&ref ,name (f ...) s)]
              [(_ s f) (ftype-&ref ,name (f) s)])))))))
 
 (define (make-trace-log-callback p)
@@ -343,7 +363,7 @@
                                   ,(cadr ret-type))))])
                       (f ret ,@(car params))
                       ret)]
-                   [(,@(car params) struct)
+                   [(struct ,@(car params))
                     (f struct ,@(car params))
                     struct])))
             `(define ,func-name
@@ -457,28 +477,28 @@
              (vector-set! arr i
                           (apply
                            maker-fn
-                           (append (car dl)
-                                   (list (make-ftype-pointer
-                                          ftype-name
-                                          addr)))))))]))
+                           (cons (make-ftype-pointer
+                                  ftype-name
+                                  addr)
+                                 (car dl))))))]))
     (define make-camera3d
       (lambda (position target up fovy projection)
         (let ([camera (make-camera-3d)])
           (make-vector-3
+           (camera-3d-ref& camera position)
            (car position)
            (cadr position)
-           (caddr position)
-           (camera-3d-ref& camera position))
+           (caddr position))
           (make-vector-3
+           (camera-3d-ref& camera target)
            (car target)
            (cadr target)
-           (caddr target)
-           (camera-3d-ref& camera target))
+           (caddr target))
           (make-vector-3
+           (camera-3d-ref& camera up)
            (car up)
            (cadr up)
-           (caddr up)
-           (camera-3d-ref& camera up))
+           (caddr up))
           (camera-3d-set! camera fovy fovy)
           (camera-3d-set! camera
                           projection
@@ -504,24 +524,29 @@
             api-enums)
 
   (for-each (lambda (struct-xml)
-              (let* ([sexpr (struct-generator struct-xml)]
-                     [def-sexpr (caar sexpr)]
-                     [def-make-sexpr (cdar sexpr)]
-                     [set-sexpr (cadr sexpr)]
-                     [get-sexpr (caddr sexpr)]
-                     [ref-sexpr (cadddr sexpr)])
-                (push! sexpr-list def-sexpr)
-                (push! sexpr-list set-sexpr)                
-                (push! sexpr-list get-sexpr)
-                (push! sexpr-list ref-sexpr)
-                (push! export-list (cadr def-sexpr))
-                (push! export-list (cadr set-sexpr))
-                (push! export-list (cadr get-sexpr))
-                (push! export-list (cadr ref-sexpr)) 
-                (unless (null? def-make-sexpr)
-                  (push! sexpr-list def-make-sexpr)
-                  (push! export-list
-                         (cadr def-make-sexpr)))))
+              (let ([sexpr (struct-generator struct-xml)])
+                (let ([def-sexpr (caar sexpr)]
+                      [def-make-sexpr (cadar sexpr)]
+                      [def-cloner-sexpr (cddar sexpr)]
+                      [set-sexpr (cadr sexpr)]
+                      [get-sexpr (caddr sexpr)]
+                      [ref-sexpr (cadddr sexpr)])
+                  (push! sexpr-list def-sexpr)
+                  (push! sexpr-list set-sexpr) 
+                  (push! sexpr-list get-sexpr)
+                  (push! sexpr-list ref-sexpr)
+                  (push! export-list (cadr def-sexpr))
+                  (push! export-list (cadr set-sexpr))
+                  (push! export-list (cadr get-sexpr))
+                  (push! export-list (cadr ref-sexpr)) 
+                  (unless (null? def-make-sexpr)
+                    (push! sexpr-list def-make-sexpr)
+                    (push! export-list
+                           (cadr def-make-sexpr)))
+                  (unless (null? def-cloner-sexpr)
+                    (push! sexpr-list def-cloner-sexpr)
+                    (push! export-list
+                           (cadr def-cloner-sexpr))))))
             api-structs)
   
   (for-each (lambda (cb-xml)
