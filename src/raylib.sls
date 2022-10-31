@@ -6,7 +6,7 @@
     (if (file-exists? libpath)
         (load-shared-object libpath)
         (load-loop (cdr libs)))))
-(library (raylib raylib (0 1))
+(library (raylib raylib (0 2))
   (export RAYWHITE MAGENTA BLANK BLACK WHITE DARKBROWN BROWN
    BEIGE DARKPURPLE VIOLET PURPLE DARKBLUE BLUE SKYBLUE
    DARKGREEN LIME GREEN MAROON RED PINK ORANGE GOLD YELLOW
@@ -341,7 +341,7 @@
    FLAG_WINDOW_RESIZABLE FLAG_FULLSCREEN_MODE FLAG_VSYNC_HINT
    rad->deg deg->rad PI drawing-begin mode-3d-begin
    blend-mode-begin scissor-mode-begin float int arr*
-   make-array make-camera3d)
+   make-array trace-log make-camera3d)
   (import (chezscheme))
   (define make-camera3d
     (lambda (position target up fovy projection)
@@ -364,6 +364,23 @@
         (camera-3d-set! camera fovy fovy)
         (camera-3d-set! camera projection projection)
         camera)))
+  (define-syntax trace-log
+    (syntax-rules ()
+      [(_ log-type text)
+       (begin
+         (display
+           (case log-type
+             [1 "\x1B;[32mTRACE: \x1B;[0m"]
+             [2 "\x1B;[34mDEBUG: \x1B;[0m"]
+             [3 "\x1B;[36mINFO: \x1B;[0m"]
+             [4 "\x1B;[33mWARNING: \x1B;[0m"]
+             [5 "\x1B;[31mERROR: \x1B;[0m"]
+             [6 "\x1B;[35mFATAL: \x1B;[0m"]
+             [else ""]))
+         (display text)
+         (newline))]
+      [(_ log-type text args ...)
+       (trace-log log-type (format text args ...))]))
   (define-syntax make-array
     (syntax-rules ()
       [(_ num ftype-name)

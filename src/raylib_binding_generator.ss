@@ -481,6 +481,23 @@
                                   ftype-name
                                   addr)
                                  (car dl))))))]))
+    (define-syntax trace-log
+      (syntax-rules ()
+        [(_ log-type text)
+         (begin
+           (display (case log-type
+                      [1 "[32mTRACE: [0m"]
+                      [2 "[34mDEBUG: [0m"]
+                      [3 "[36mINFO: [0m"]
+                      [4 "[33mWARNING: [0m"]
+                      [5 "[31mERROR: [0m"]
+                      [6 "[35mFATAL: [0m"]
+                      [else ""]))
+           (display text)
+           (newline))]
+        [(_ log-type text args ...)
+         (trace-log log-type (format text args ...))]))
+          
     (define make-camera3d
       (lambda (position target up fovy projection)
         (let ([camera (make-camera-3d)])
@@ -584,7 +601,7 @@
             (load-loop (cdr libs)))))
    write-fp)
   (pretty-print
-   `(library (raylib raylib (0 1))
+   `(library (raylib raylib (0 2))
       (export ,@export-list)
       (import (chezscheme))
       ,@(reverse sexpr-list))
