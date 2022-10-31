@@ -1,4 +1,4 @@
-(import (raylib))
+(import (raylib raylib))
 
 (init-window 800 450 "raylib [core] example - mouse input")
 (set-target-fps 60)

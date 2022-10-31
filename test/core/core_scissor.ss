@@ -1,4 +1,4 @@
-(import (raylib))
+(import (raylib raylib))
 
 (define width 800)
 (define height 450)
@@ -10,7 +10,7 @@
 
 (do ([scissor-area
       (make-rectangle 0.0 0.0 300.0 300.0)
-      (make-rectangle s-x s-y 300.0 300.0 scissor-area)]
+      (make-rectangle scissor-area s-x s-y 300.0 300.0)]
      [s-x 0.0 (- (get-mouse-x) 150.0)]
      [s-y 0.0 (- (get-mouse-y) 150.0)]
      [s-w 300]

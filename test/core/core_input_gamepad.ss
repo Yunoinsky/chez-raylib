@@ -1,4 +1,4 @@
-(import (raylib))
+(import (raylib raylib))
 (set-config-flags FLAG_MSAA_4X_HINT)
 (init-window 800 450 "raylib [core] example - gamepad input")
 
