@@ -1,4 +1,4 @@
-(import (raylib))
+(import (raylib raylib))
 
 (define MAX_PARTICLES 200)
 

@@ -1,4 +1,4 @@
-(import (raylib))
+(import (raylib raylib))
 
 (define width 900)
 (define height 450)

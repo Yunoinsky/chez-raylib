@@ -1,9 +1,10 @@
+(import (raylib raylib))
 (define width 900)
 (define height 450)
 
 (init-window width height "raylib [textures] example - image loading")
 
-(define image (load-image "resources/raylib_logo.png"))
+(define image (load-image "./test/resources/raylib_logo.png"))
 (define texture (load-texture-from-image image))
 
 (unload-image image)
@@ -23,5 +24,5 @@
                     (div (texture-get texture height) 2))
                  WHITE)
    (draw-text "this IS a texture loaded from an image!"
-              300 370 10 GRAY)))
+              350 370 10 GRAY)))
 
