@@ -14,9 +14,9 @@
     ((window-should-close)
      (close-window))
   (drawing-begin
+   (clear-background RAYWHITE)
    (mode-3d-begin
     camera
-    (clear-background RAYWHITE)
     (draw-cube (make-vector-3 tmp-v3 -4.0 0.0 2.0)
                2.0 5.0 2.0 RED)
     (draw-cube-wires tmp-v3
@@ -34,5 +34,6 @@
 
     (draw-cylinder (make-vector-3 tmp-v3 1.0 0.0 -4.0)
                    0.0 1.5 3.0 8 GOLD)
-    (draw-cylinder-wires tmp-v3 0.0 1.5 3.0 8 PINK))))
+    (draw-cylinder-wires tmp-v3 0.0 1.5 3.0 8 PINK)
+    (draw-grid 10 1.0))))
     
