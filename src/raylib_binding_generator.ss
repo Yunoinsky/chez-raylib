@@ -103,7 +103,7 @@
     ["unsigned char" 'unsigned-8]
     ["unsigned short" 'unsigned-short]
     ["unsigned int" 'unsigned]
-    ["bool" 'boolean]
+    ["bool" 'unsigned-8]
     ["long" 'long]
     ["void" 'void]
     [else #f]))
@@ -325,8 +325,11 @@
 (define (fn-generator func-xml)
   (let* ([name-str (xml-get-attr func-xml "name")]
          [func-name (string->var-name name-str #f)]
-         [ret-type (param-str->type
-                    (xml-get-attr func-xml "retType"))]
+         [ret-bool #f]
+         [ret-type (let ([rt-str (xml-get-attr func-xml "retType")])
+                     (when (string=? rt-str "bool")
+                       (set! ret-bool #t))
+                     (param-str->type rt-str))]
          [skip-func #f]
          [params (fold-right
                   (lambda (param-xml l)
@@ -349,29 +352,27 @@
     (if (or skip-func
             (memq func-name fn-black-list))
         #f
-        (if v-ret
-            `(define ,func-name
-               (let ([f (foreign-procedure
-                         ,name-str
-                         ,(cdr params) ,ret-type)])
-                 (case-lambda
-                   [,(car params)
-                    (let ([ret (make-ftype-pointer
-                                ,(cadr ret-type)
-                                (foreign-alloc 
-                                 (ftype-sizeof
-                                  ,(cadr ret-type))))])
-                      (f ret ,@(car params))
-                      ret)]
-                   [(struct ,@(car params))
-                    (f struct ,@(car params))
-                    struct])))
-            `(define ,func-name
-               (let ([f (foreign-procedure
-                         ,name-str
-                         ,(cdr params) ,ret-type)])
-                 (lambda ,(car params)
-                   (f ,@(car params)))))))))
+        `(define ,func-name
+           (let ([f (foreign-procedure
+                     ,name-str
+                     ,(cdr params) ,ret-type)])
+             ,(if v-ret
+                  `(case-lambda
+                     [,(car params)
+                      (let ([ret (make-ftype-pointer
+                                  ,(cadr ret-type)
+                                  (foreign-alloc 
+                                   (ftype-sizeof
+                                    ,(cadr ret-type))))])
+                        (f ret ,@(car params))
+                        ret)]
+                     [(struct ,@(car params))
+                      (f struct ,@(car params))
+                      struct])
+                  `(lambda ,(car params)
+                     ,(if ret-bool
+                          `(not (= (f ,@(car params)) 0))
+                          `(f ,@(car params))))))))))
 
 (define (color-generator color-xml)
   (let* ([name (string->symbol
@@ -438,6 +439,9 @@
            (apply begin-scissor-mode rect-l)
            e0 e1 ...
            (end-blend-mode))]))
+    (define-syntax bool
+      (syntax-rules ()
+        [(_ f) (not (= f 0))]))
     (define-syntax float
       (syntax-rules ()
         [(_ f) (if (fixnum? f)

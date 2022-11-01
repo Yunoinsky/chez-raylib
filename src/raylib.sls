@@ -340,7 +340,7 @@
    FLAG_WINDOW_HIDDEN FLAG_WINDOW_UNDECORATED
    FLAG_WINDOW_RESIZABLE FLAG_FULLSCREEN_MODE FLAG_VSYNC_HINT
    rad->deg deg->rad PI drawing-begin mode-3d-begin
-   blend-mode-begin scissor-mode-begin float int arr*
+   blend-mode-begin scissor-mode-begin bool float int arr*
    make-array trace-log make-camera3d)
   (import (chezscheme))
   (define make-camera3d
@@ -412,6 +412,7 @@
   (define-syntax float
     (syntax-rules ()
       [(_ f) (if (fixnum? f) (fixnum->flonum f) f)]))
+  (define-syntax bool (syntax-rules () [(_ f) (not (= f 0))]))
   (define-syntax scissor-mode-begin
     (syntax-rules ()
       [(_ rect-l e0 e1 ...)
@@ -1454,7 +1455,7 @@
         (foreign-alloc (ftype-sizeof Ray)))))
   (define-ftype Ray-Collision
     (struct
-      [hit boolean]
+      [hit unsigned-8]
       [distance float]
       [point Vector-3]
       [normal Vector-3]))
@@ -1565,7 +1566,7 @@
     (struct
       [stream Audio-Stream]
       [frame-count unsigned]
-      [looping boolean]
+      [looping unsigned-8]
       [ctx-type int]
       [ctx-data void*]))
   (define-syntax music-set!
@@ -1681,7 +1682,7 @@
     (let ([code (foreign-callable __collect_safe
                   p
                   (string void* unsigned)
-                  boolean)])
+                  unsigned-8)])
       (lock-object code)
       (foreign-callable-entry-point code)))
   (define (make-load-file-text-callback p)
@@ -1695,7 +1696,7 @@
     (let ([code (foreign-callable __collect_safe
                   p
                   (string (* char))
-                  boolean)])
+                  unsigned-8)])
       (lock-object code)
       (foreign-callable-entry-point code)))
   (define (make-audio-callback p)
@@ -1713,43 +1714,49 @@
   (define window-should-close
     (let ([f (foreign-procedure "WindowShouldClose"
                ()
-               boolean)])
-      (lambda () (f))))
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define close-window
     (let ([f (foreign-procedure "CloseWindow" () void)])
       (lambda () (f))))
   (define is-window-ready
-    (let ([f (foreign-procedure "IsWindowReady" () boolean)])
-      (lambda () (f))))
+    (let ([f (foreign-procedure "IsWindowReady" () unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define is-window-fullscreen
     (let ([f (foreign-procedure "IsWindowFullscreen"
                ()
-               boolean)])
-      (lambda () (f))))
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define is-window-hidden
-    (let ([f (foreign-procedure "IsWindowHidden" () boolean)])
-      (lambda () (f))))
+    (let ([f (foreign-procedure "IsWindowHidden"
+               ()
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define is-window-minimized
     (let ([f (foreign-procedure "IsWindowMinimized"
                ()
-               boolean)])
-      (lambda () (f))))
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define is-window-maximized
     (let ([f (foreign-procedure "IsWindowMaximized"
                ()
-               boolean)])
-      (lambda () (f))))
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define is-window-focused
-    (let ([f (foreign-procedure "IsWindowFocused" () boolean)])
-      (lambda () (f))))
+    (let ([f (foreign-procedure "IsWindowFocused"
+               ()
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define is-window-resized
-    (let ([f (foreign-procedure "IsWindowResized" () boolean)])
-      (lambda () (f))))
+    (let ([f (foreign-procedure "IsWindowResized"
+               ()
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define is-window-state
     (let ([f (foreign-procedure "IsWindowState"
                (unsigned)
-               boolean)])
-      (lambda (flag) (f flag))))
+               unsigned-8)])
+      (lambda (flag) (not (= (f flag) 0)))))
   (define set-window-state
     (let ([f (foreign-procedure "SetWindowState"
                (unsigned)
@@ -1916,8 +1923,10 @@
     (let ([f (foreign-procedure "HideCursor" () void)])
       (lambda () (f))))
   (define is-cursor-hidden
-    (let ([f (foreign-procedure "IsCursorHidden" () boolean)])
-      (lambda () (f))))
+    (let ([f (foreign-procedure "IsCursorHidden"
+               ()
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define enable-cursor
     (let ([f (foreign-procedure "EnableCursor" () void)])
       (lambda () (f))))
@@ -1925,8 +1934,10 @@
     (let ([f (foreign-procedure "DisableCursor" () void)])
       (lambda () (f))))
   (define is-cursor-on-screen
-    (let ([f (foreign-procedure "IsCursorOnScreen" () boolean)])
-      (lambda () (f))))
+    (let ([f (foreign-procedure "IsCursorOnScreen"
+               ()
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define clear-background
     (let ([f (foreign-procedure "ClearBackground"
                ((& Color))
@@ -2256,14 +2267,15 @@
   (define save-file-data
     (let ([f (foreign-procedure "SaveFileData"
                (string void* unsigned)
-               boolean)])
+               unsigned-8)])
       (lambda (file-name data bytes-to-write)
-        (f file-name data bytes-to-write))))
+        (not (= (f file-name data bytes-to-write) 0)))))
   (define export-data-as-code
     (let ([f (foreign-procedure "ExportDataAsCode"
                (string unsigned string)
-               boolean)])
-      (lambda (data size file-name) (f data size file-name))))
+               unsigned-8)])
+      (lambda (data size file-name)
+        (not (= (f data size file-name) 0)))))
   (define load-file-text
     (let ([f (foreign-procedure "LoadFileText"
                (string)
@@ -2277,21 +2289,23 @@
   (define save-file-text
     (let ([f (foreign-procedure "SaveFileText"
                (string string)
-               boolean)])
-      (lambda (file-name text) (f file-name text))))
+               unsigned-8)])
+      (lambda (file-name text) (not (= (f file-name text) 0)))))
   (define file-exists
-    (let ([f (foreign-procedure "FileExists" (string) boolean)])
-      (lambda (file-name) (f file-name))))
+    (let ([f (foreign-procedure "FileExists"
+               (string)
+               unsigned-8)])
+      (lambda (file-name) (not (= (f file-name) 0)))))
   (define directory-exists
     (let ([f (foreign-procedure "DirectoryExists"
                (string)
-               boolean)])
-      (lambda (dir-path) (f dir-path))))
+               unsigned-8)])
+      (lambda (dir-path) (not (= (f dir-path) 0)))))
   (define is-file-extension
     (let ([f (foreign-procedure "IsFileExtension"
                (string string)
-               boolean)])
-      (lambda (file-name ext) (f file-name ext))))
+               unsigned-8)])
+      (lambda (file-name ext) (not (= (f file-name ext) 0)))))
   (define get-file-length
     (let ([f (foreign-procedure "GetFileLength" (string) int)])
       (lambda (file-name) (f file-name))))
@@ -2331,11 +2345,13 @@
   (define change-directory
     (let ([f (foreign-procedure "ChangeDirectory"
                (string)
-               boolean)])
-      (lambda (dir) (f dir))))
+               unsigned-8)])
+      (lambda (dir) (not (= (f dir) 0)))))
   (define is-path-file
-    (let ([f (foreign-procedure "IsPathFile" (string) boolean)])
-      (lambda (path) (f path))))
+    (let ([f (foreign-procedure "IsPathFile"
+               (string)
+               unsigned-8)])
+      (lambda (path) (not (= (f path) 0)))))
   (define load-directory-files
     (let ([f (foreign-procedure "LoadDirectoryFiles"
                (string)
@@ -2350,7 +2366,7 @@
         [(struct dir-path) (f struct dir-path) struct])))
   (define load-directory-files-ex
     (let ([f (foreign-procedure "LoadDirectoryFilesEx"
-               (string string boolean)
+               (string string unsigned-8)
                (& File-Path-List))])
       (case-lambda
         [(base-path filter scan-subdirs)
@@ -2368,8 +2384,8 @@
                void)])
       (lambda (files) (f files))))
   (define is-file-dropped
-    (let ([f (foreign-procedure "IsFileDropped" () boolean)])
-      (lambda () (f))))
+    (let ([f (foreign-procedure "IsFileDropped" () unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define load-dropped-files
     (let ([f (foreign-procedure "LoadDroppedFiles"
                ()
@@ -2416,17 +2432,21 @@
                (* unsigned-8))])
       (lambda (data output-size) (f data output-size))))
   (define is-key-pressed
-    (let ([f (foreign-procedure "IsKeyPressed" (int) boolean)])
-      (lambda (key) (f key))))
+    (let ([f (foreign-procedure "IsKeyPressed"
+               (int)
+               unsigned-8)])
+      (lambda (key) (not (= (f key) 0)))))
   (define is-key-down
-    (let ([f (foreign-procedure "IsKeyDown" (int) boolean)])
-      (lambda (key) (f key))))
+    (let ([f (foreign-procedure "IsKeyDown" (int) unsigned-8)])
+      (lambda (key) (not (= (f key) 0)))))
   (define is-key-released
-    (let ([f (foreign-procedure "IsKeyReleased" (int) boolean)])
-      (lambda (key) (f key))))
+    (let ([f (foreign-procedure "IsKeyReleased"
+               (int)
+               unsigned-8)])
+      (lambda (key) (not (= (f key) 0)))))
   (define is-key-up
-    (let ([f (foreign-procedure "IsKeyUp" (int) boolean)])
-      (lambda (key) (f key))))
+    (let ([f (foreign-procedure "IsKeyUp" (int) unsigned-8)])
+      (lambda (key) (not (= (f key) 0)))))
   (define set-exit-key
     (let ([f (foreign-procedure "SetExitKey" (int) void)])
       (lambda (key) (f key))))
@@ -2439,31 +2459,31 @@
   (define is-gamepad-available
     (let ([f (foreign-procedure "IsGamepadAvailable"
                (int)
-               boolean)])
-      (lambda (gamepad) (f gamepad))))
+               unsigned-8)])
+      (lambda (gamepad) (not (= (f gamepad) 0)))))
   (define get-gamepad-name
     (let ([f (foreign-procedure "GetGamepadName" (int) string)])
       (lambda (gamepad) (f gamepad))))
   (define is-gamepad-button-pressed
     (let ([f (foreign-procedure "IsGamepadButtonPressed"
                (int int)
-               boolean)])
-      (lambda (gamepad button) (f gamepad button))))
+               unsigned-8)])
+      (lambda (gamepad button) (not (= (f gamepad button) 0)))))
   (define is-gamepad-button-down
     (let ([f (foreign-procedure "IsGamepadButtonDown"
                (int int)
-               boolean)])
-      (lambda (gamepad button) (f gamepad button))))
+               unsigned-8)])
+      (lambda (gamepad button) (not (= (f gamepad button) 0)))))
   (define is-gamepad-button-released
     (let ([f (foreign-procedure "IsGamepadButtonReleased"
                (int int)
-               boolean)])
-      (lambda (gamepad button) (f gamepad button))))
+               unsigned-8)])
+      (lambda (gamepad button) (not (= (f gamepad button) 0)))))
   (define is-gamepad-button-up
     (let ([f (foreign-procedure "IsGamepadButtonUp"
                (int int)
-               boolean)])
-      (lambda (gamepad button) (f gamepad button))))
+               unsigned-8)])
+      (lambda (gamepad button) (not (= (f gamepad button) 0)))))
   (define get-gamepad-button-pressed
     (let ([f (foreign-procedure "GetGamepadButtonPressed"
                ()
@@ -2487,23 +2507,23 @@
   (define is-mouse-button-pressed
     (let ([f (foreign-procedure "IsMouseButtonPressed"
                (int)
-               boolean)])
-      (lambda (button) (f button))))
+               unsigned-8)])
+      (lambda (button) (not (= (f button) 0)))))
   (define is-mouse-button-down
     (let ([f (foreign-procedure "IsMouseButtonDown"
                (int)
-               boolean)])
-      (lambda (button) (f button))))
+               unsigned-8)])
+      (lambda (button) (not (= (f button) 0)))))
   (define is-mouse-button-released
     (let ([f (foreign-procedure "IsMouseButtonReleased"
                (int)
-               boolean)])
-      (lambda (button) (f button))))
+               unsigned-8)])
+      (lambda (button) (not (= (f button) 0)))))
   (define is-mouse-button-up
     (let ([f (foreign-procedure "IsMouseButtonUp"
                (int)
-               boolean)])
-      (lambda (button) (f button))))
+               unsigned-8)])
+      (lambda (button) (not (= (f button) 0)))))
   (define get-mouse-x
     (let ([f (foreign-procedure "GetMouseX" () int)])
       (lambda () (f))))
@@ -2599,8 +2619,8 @@
   (define is-gesture-detected
     (let ([f (foreign-procedure "IsGestureDetected"
                (int)
-               boolean)])
-      (lambda (gesture) (f gesture))))
+               unsigned-8)])
+      (lambda (gesture) (not (= (f gesture) 0)))))
   (define get-gesture-detected
     (let ([f (foreign-procedure "GetGestureDetected" () int)])
       (lambda () (f))))
@@ -2908,34 +2928,36 @@
   (define check-collision-recs
     (let ([f (foreign-procedure "CheckCollisionRecs"
                ((& Rectangle) (& Rectangle))
-               boolean)])
-      (lambda (rec-1 rec-2) (f rec-1 rec-2))))
+               unsigned-8)])
+      (lambda (rec-1 rec-2) (not (= (f rec-1 rec-2) 0)))))
   (define check-collision-circles
     (let ([f (foreign-procedure "CheckCollisionCircles"
                ((& Vector-2) float (& Vector-2) float)
-               boolean)])
+               unsigned-8)])
       (lambda (center-1 radius-1 center-2 radius-2)
-        (f center-1 radius-1 center-2 radius-2))))
+        (not (= (f center-1 radius-1 center-2 radius-2) 0)))))
   (define check-collision-circle-rec
     (let ([f (foreign-procedure "CheckCollisionCircleRec"
                ((& Vector-2) float (& Rectangle))
-               boolean)])
-      (lambda (center radius rec) (f center radius rec))))
+               unsigned-8)])
+      (lambda (center radius rec)
+        (not (= (f center radius rec) 0)))))
   (define check-collision-point-rec
     (let ([f (foreign-procedure "CheckCollisionPointRec"
                ((& Vector-2) (& Rectangle))
-               boolean)])
-      (lambda (point rec) (f point rec))))
+               unsigned-8)])
+      (lambda (point rec) (not (= (f point rec) 0)))))
   (define check-collision-point-circle
     (let ([f (foreign-procedure "CheckCollisionPointCircle"
                ((& Vector-2) (& Vector-2) float)
-               boolean)])
-      (lambda (point center radius) (f point center radius))))
+               unsigned-8)])
+      (lambda (point center radius)
+        (not (= (f point center radius) 0)))))
   (define check-collision-point-triangle
     (let ([f (foreign-procedure "CheckCollisionPointTriangle"
                ((& Vector-2) (& Vector-2) (& Vector-2) (& Vector-2))
-               boolean)])
-      (lambda (point p1 p2 p3) (f point p1 p2 p3))))
+               unsigned-8)])
+      (lambda (point p1 p2 p3) (not (= (f point p1 p2 p3) 0)))))
   (define check-collision-lines
     (let ([f (foreign-procedure "CheckCollisionLines"
                ((& Vector-2)
@@ -2943,16 +2965,18 @@
                 (& Vector-2)
                 (& Vector-2)
                 (* Vector-2))
-               boolean)])
+               unsigned-8)])
       (lambda (start-pos-1 end-pos-1 start-pos-2 end-pos-2
                collision-point)
-        (f start-pos-1 end-pos-1 start-pos-2 end-pos-2
-           collision-point))))
+        (not (= (f start-pos-1 end-pos-1 start-pos-2 end-pos-2
+                   collision-point)
+                0)))))
   (define check-collision-point-line
     (let ([f (foreign-procedure "CheckCollisionPointLine"
                ((& Vector-2) (& Vector-2) (& Vector-2) int)
-               boolean)])
-      (lambda (point p1 p2 threshold) (f point p1 p2 threshold))))
+               unsigned-8)])
+      (lambda (point p1 p2 threshold)
+        (not (= (f point p1 p2 threshold) 0)))))
   (define get-collision-rec
     (let ([f (foreign-procedure "GetCollisionRec"
                ((& Rectangle) (& Rectangle))
@@ -3051,13 +3075,13 @@
   (define export-image
     (let ([f (foreign-procedure "ExportImage"
                ((& Image) string)
-               boolean)])
-      (lambda (image file-name) (f image file-name))))
+               unsigned-8)])
+      (lambda (image file-name) (not (= (f image file-name) 0)))))
   (define export-image-as-code
     (let ([f (foreign-procedure "ExportImageAsCode"
                ((& Image) string)
-               boolean)])
-      (lambda (image file-name) (f image file-name))))
+               unsigned-8)])
+      (lambda (image file-name) (not (= (f image file-name) 0)))))
   (define gen-image-color
     (let ([f (foreign-procedure "GenImageColor"
                (int int (& Color))
@@ -3825,8 +3849,8 @@
   (define export-font-as-code
     (let ([f (foreign-procedure "ExportFontAsCode"
                ((& Font) string)
-               boolean)])
-      (lambda (font file-name) (f font file-name))))
+               unsigned-8)])
+      (lambda (font file-name) (not (= (f font file-name) 0)))))
   (define draw-fps
     (let ([f (foreign-procedure "DrawFPS" (int int) void)])
       (lambda (pos-x pos-y) (f pos-x pos-y))))
@@ -3953,8 +3977,8 @@
   (define text-is-equal
     (let ([f (foreign-procedure "TextIsEqual"
                (string string)
-               boolean)])
-      (lambda (text-1 text-2) (f text-1 text-2))))
+               unsigned-8)])
+      (lambda (text-1 text-2) (not (= (f text-1 text-2) 0)))))
   (define text-length
     (let ([f (foreign-procedure "TextLength"
                (string)
@@ -4250,7 +4274,7 @@
            tint))))
   (define upload-mesh
     (let ([f (foreign-procedure "UploadMesh"
-               ((* Mesh) boolean)
+               ((* Mesh) unsigned-8)
                void)])
       (lambda (mesh dynamic) (f mesh dynamic))))
   (define update-mesh-buffer
@@ -4277,8 +4301,8 @@
   (define export-mesh
     (let ([f (foreign-procedure "ExportMesh"
                ((& Mesh) string)
-               boolean)])
-      (lambda (mesh file-name) (f mesh file-name))))
+               unsigned-8)])
+      (lambda (mesh file-name) (not (= (f mesh file-name) 0)))))
   (define get-mesh-bounding-box
     (let ([f (foreign-procedure "GetMeshBoundingBox"
                ((& Mesh))
@@ -4506,24 +4530,25 @@
   (define is-model-animation-valid
     (let ([f (foreign-procedure "IsModelAnimationValid"
                ((& Model) (& Model-Animation))
-               boolean)])
-      (lambda (model anim) (f model anim))))
+               unsigned-8)])
+      (lambda (model anim) (not (= (f model anim) 0)))))
   (define check-collision-spheres
     (let ([f (foreign-procedure "CheckCollisionSpheres"
                ((& Vector-3) float (& Vector-3) float)
-               boolean)])
+               unsigned-8)])
       (lambda (center-1 radius-1 center-2 radius-2)
-        (f center-1 radius-1 center-2 radius-2))))
+        (not (= (f center-1 radius-1 center-2 radius-2) 0)))))
   (define check-collision-boxes
     (let ([f (foreign-procedure "CheckCollisionBoxes"
                ((& Bounding-Box) (& Bounding-Box))
-               boolean)])
-      (lambda (box-1 box-2) (f box-1 box-2))))
+               unsigned-8)])
+      (lambda (box-1 box-2) (not (= (f box-1 box-2) 0)))))
   (define check-collision-box-sphere
     (let ([f (foreign-procedure "CheckCollisionBoxSphere"
                ((& Bounding-Box) (& Vector-3) float)
-               boolean)])
-      (lambda (box center radius) (f box center radius))))
+               unsigned-8)])
+      (lambda (box center radius)
+        (not (= (f box center radius) 0)))))
   (define get-ray-collision-sphere
     (let ([f (foreign-procedure "GetRayCollisionSphere"
                ((& Ray) (& Vector-3) float)
@@ -4603,8 +4628,8 @@
   (define is-audio-device-ready
     (let ([f (foreign-procedure "IsAudioDeviceReady"
                ()
-               boolean)])
-      (lambda () (f))))
+               unsigned-8)])
+      (lambda () (not (= (f) 0)))))
   (define set-master-volume
     (let ([f (foreign-procedure "SetMasterVolume"
                (float)
@@ -4675,13 +4700,13 @@
   (define export-wave
     (let ([f (foreign-procedure "ExportWave"
                ((& Wave) string)
-               boolean)])
-      (lambda (wave file-name) (f wave file-name))))
+               unsigned-8)])
+      (lambda (wave file-name) (not (= (f wave file-name) 0)))))
   (define export-wave-as-code
     (let ([f (foreign-procedure "ExportWaveAsCode"
                ((& Wave) string)
-               boolean)])
-      (lambda (wave file-name) (f wave file-name))))
+               unsigned-8)])
+      (lambda (wave file-name) (not (= (f wave file-name) 0)))))
   (define play-sound
     (let ([f (foreign-procedure "PlaySound" ((& Sound)) void)])
       (lambda (sound) (f sound))))
@@ -4710,8 +4735,8 @@
   (define is-sound-playing
     (let ([f (foreign-procedure "IsSoundPlaying"
                ((& Sound))
-               boolean)])
-      (lambda (sound) (f sound))))
+               unsigned-8)])
+      (lambda (sound) (not (= (f sound) 0)))))
   (define set-sound-volume
     (let ([f (foreign-procedure "SetSoundVolume"
                ((& Sound) float)
@@ -4800,8 +4825,8 @@
   (define is-music-stream-playing
     (let ([f (foreign-procedure "IsMusicStreamPlaying"
                ((& Music))
-               boolean)])
-      (lambda (music) (f music))))
+               unsigned-8)])
+      (lambda (music) (not (= (f music) 0)))))
   (define update-music-stream
     (let ([f (foreign-procedure "UpdateMusicStream"
                ((& Music))
@@ -4880,8 +4905,8 @@
   (define is-audio-stream-processed
     (let ([f (foreign-procedure "IsAudioStreamProcessed"
                ((& Audio-Stream))
-               boolean)])
-      (lambda (stream) (f stream))))
+               unsigned-8)])
+      (lambda (stream) (not (= (f stream) 0)))))
   (define play-audio-stream
     (let ([f (foreign-procedure "PlayAudioStream"
                ((& Audio-Stream))
@@ -4900,8 +4925,8 @@
   (define is-audio-stream-playing
     (let ([f (foreign-procedure "IsAudioStreamPlaying"
                ((& Audio-Stream))
-               boolean)])
-      (lambda (stream) (f stream))))
+               unsigned-8)])
+      (lambda (stream) (not (= (f stream) 0)))))
   (define stop-audio-stream
     (let ([f (foreign-procedure "StopAudioStream"
                ((& Audio-Stream))
