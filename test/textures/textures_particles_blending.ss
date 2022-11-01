@@ -20,7 +20,7 @@
                              (random 256)
                              255)
                  1.0 (random 1.5) (random 360.0) #f))
-              (make-vector MAX_PARTICLES 0)))
+              (make-vector MAX_PARTICLES)))
 
 (define screen-width 800)
 (define screen-height 450)
