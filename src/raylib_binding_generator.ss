@@ -455,6 +455,28 @@
     (define-syntax arr*
       (syntax-rules ()
         [(_ arr) (vector-ref arr 0)]))
+    (define-syntax arr&
+      (syntax-rules ()
+        [(_ num ftype-name arr-0)
+         (let ([arr (make-vector num)]
+               [size (ftype-sizeof ftype-name)])
+           (do ([i 0 (1+ i)]
+                [addr (ftype-pointer-address arr-0) (+ addr size)])
+               ((= i num)
+                arr)
+             (vector-set! arr
+                          i (make-ftype-pointer ftype-name addr))))]))
+    (define-syntax arr-ind
+      (syntax-rules (*)
+        [(_ arr (* ftype-name) ind)
+         (make-ftype-pointer
+          ftype-name
+          (ftype-ref void* ()
+                     (arr-ind arr void* ind)))]
+        [(_ arr ftype-name ind)
+         (make-ftype-pointer ftype-name
+                             (+ (ftype-pointer-address arr)
+                                (* ind (ftype-sizeof ftype-name))))]))
     (define-syntax make-array
       (syntax-rules ()
         [(_ num ftype-name)

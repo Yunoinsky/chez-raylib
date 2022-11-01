@@ -340,8 +340,8 @@
    FLAG_WINDOW_HIDDEN FLAG_WINDOW_UNDECORATED
    FLAG_WINDOW_RESIZABLE FLAG_FULLSCREEN_MODE FLAG_VSYNC_HINT
    rad->deg deg->rad PI drawing-begin mode-3d-begin
-   blend-mode-begin scissor-mode-begin bool float int arr*
-   make-array trace-log make-camera3d)
+   blend-mode-begin scissor-mode-begin bool float int arr* arr&
+   arr-ind make-array trace-log make-camera3d)
   (import (chezscheme))
   (define make-camera3d
     (lambda (position target up fovy projection)
@@ -404,6 +404,29 @@
              (apply
                maker-fn
                (cons (make-ftype-pointer ftype-name addr) (car dl))))))]))
+  (define-syntax arr-ind
+    (syntax-rules (*)
+      [(_ arr (* ftype-name) ind)
+       (make-ftype-pointer
+         ftype-name
+         (ftype-ref void* () (arr-ind arr void* ind)))]
+      [(_ arr ftype-name ind)
+       (make-ftype-pointer
+         ftype-name
+         (+ (ftype-pointer-address arr)
+            (* ind (ftype-sizeof ftype-name))))]))
+  (define-syntax arr&
+    (syntax-rules ()
+      [(_ num ftype-name arr-0)
+       (let ([arr (make-vector num)]
+             [size (ftype-sizeof ftype-name)])
+         (do ([i 0 (\x31;+ i)]
+              [addr (ftype-pointer-address arr-0) (+ addr size)])
+             ((= i num) arr)
+           (vector-set!
+             arr
+             i
+             (make-ftype-pointer ftype-name addr))))]))
   (define-syntax arr*
     (syntax-rules () [(_ arr) (vector-ref arr 0)]))
   (define-syntax int
