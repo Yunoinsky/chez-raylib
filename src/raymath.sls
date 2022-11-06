@@ -1,5 +1,6 @@
 (library (raylib raymath (0 2))
   (export vector-2-rotate vector-2-rotate!
+          vector-2->vector vector-3->vector
           vector->vector-2 vector->vector-3
           matrix-translate mat->matrix matrix->mat)
 
@@ -12,7 +13,7 @@
          make-matrix
          matrix-get
          make-vector-3 make-vector-4
-         make-vector-2 vector-2-get float))
+         make-vector-2 vector-3-get vector-2-get float))
 
   (define matrix-translate
     (case-lambda
@@ -61,7 +62,18 @@
        (assert (equal? (mat-shape mat) '(4 . 4)))       
        (apply make-matrix
               (vector->list (mat->vector mat)))]))
-    
+
+  (define vector-2->vector
+    (lambda (v2)
+      (vector (vector-2-get v2 x)
+              (vector-2-get v2 y))))
+
+  (define vector-3->vector
+    (lambda (v3)
+      (vector (vector-3-get v3 x)
+              (vector-3-get v3 y)
+              (vector-3-get v3 z))))
+
   (define vector->vector-2
     (case-lambda
       [(src dst)

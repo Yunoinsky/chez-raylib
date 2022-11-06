@@ -425,6 +425,13 @@
            (begin-mode-3d camera)
            e0 e1 ...
            (end-mode-3d))]))
+    (define-syntax mode-2d-begin
+      (syntax-rules ()
+        [(_ camera e0 e1 ...)
+         (begin
+           (begin-mode-2d camera)
+           e0 e1 ...
+           (end-mode-2d))]))
     (define-syntax blend-mode-begin
       (syntax-rules ()
         [(_ blend-mode e0 e1 ...)
@@ -523,6 +530,19 @@
            (newline))]
         [(_ log-type text args ...)
          (trace-log log-type (format text args ...))]))
+
+    (define make-camera2d
+      (lambda (offset target rotation zoom)
+        (let ([camera (make-camera-2d)])
+          (apply make-vector-2
+                 `(,(camera-2d-ref& camera offset)
+                   ,@offset))
+          (apply make-vector-2
+                 `(,(camera-2d-ref& camera target)
+                   ,@target))
+          (camera-2d-set! camera rotation rotation)
+          (camera-2d-set! camera zoom zoom)
+          camera)))
           
     (define make-camera3d
       (lambda (position target up fovy projection)

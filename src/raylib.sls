@@ -340,8 +340,9 @@
    FLAG_WINDOW_HIDDEN FLAG_WINDOW_UNDECORATED
    FLAG_WINDOW_RESIZABLE FLAG_FULLSCREEN_MODE FLAG_VSYNC_HINT
    rad->deg deg->rad PI drawing-begin mode-3d-begin
-   blend-mode-begin scissor-mode-begin bool float int arr* arr&
-   arr-ind make-array trace-log make-camera3d)
+   mode-2d-begin blend-mode-begin scissor-mode-begin bool float
+   int arr* arr& arr-ind make-array trace-log make-camera2d
+   make-camera3d)
   (import (chezscheme))
   (define make-camera3d
     (lambda (position target up fovy projection)
@@ -363,6 +364,18 @@
           (caddr up))
         (camera-3d-set! camera fovy fovy)
         (camera-3d-set! camera projection projection)
+        camera)))
+  (define make-camera2d
+    (lambda (offset target rotation zoom)
+      (let ([camera (make-camera-2d)])
+        (apply
+          make-vector-2
+          `(,(camera-2d-ref& camera offset) ,@offset))
+        (apply
+          make-vector-2
+          `(,(camera-2d-ref& camera target) ,@target))
+        (camera-2d-set! camera rotation rotation)
+        (camera-2d-set! camera zoom zoom)
         camera)))
   (define-syntax trace-log
     (syntax-rules ()
@@ -454,6 +467,10 @@
          e1
          ...
          (end-blend-mode))]))
+  (define-syntax mode-2d-begin
+    (syntax-rules ()
+      [(_ camera e0 e1 ...)
+       (begin (begin-mode-2d camera) e0 e1 ... (end-mode-2d))]))
   (define-syntax mode-3d-begin
     (syntax-rules ()
       [(_ camera e0 e1 ...)
