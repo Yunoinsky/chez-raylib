@@ -652,6 +652,7 @@
       (import (chezscheme))
       ,@(reverse sexpr-list))
    write-fp)
+  
   (close-port write-fp)
   
   (let ([lib-dir
@@ -663,8 +664,11 @@
              (if (file-exists? (string-append libpath "/raylib/"))
                  libpath
                  (lib-loop (cdr libs)))))])
+    
     (compile-file output-file-path
                   (string-append lib-dir "/raylib/raylib.so"))
     (compile-file "./src/raymath.sls"
-                  (string-append lib-dir "/raylib/raymath.so")) ))
+                  (string-append lib-dir "/raylib/raymath.so"))
+    (compile-file "./src/rlgl.sls"
+                  (string-append lib-dir "/raylib/rlgl.so"))))
 

@@ -1,5 +1,6 @@
 (import (raylib raylib))
 (import (raylib raymath))
+(import (raylib rlgl))
 (import (matrix))
 
 (init-window 800 450 "raylib [core] example - 2d camera mouse zoom")
@@ -11,7 +12,6 @@
    0.0 1.0))
 
 (set-target-fps 60)
-
 
 (do ([zoom-increment 0.125])
     ((window-should-close)
@@ -39,14 +39,12 @@
      
      (mode-2d-begin
       camera
-      
-      ((foreign-procedure "rlPushMatrix" () void))
-      ((foreign-procedure "rlTranslatef" (float float float) void)
-       0.0 (* 25.0 50.0) 0.0)
-      ((foreign-procedure "rlRotatef" (float float float float) void)
-       90.0 1.0 0.0 0.0)
-      (draw-grid 100 50.0)
-      ((foreign-procedure "rlPopMatrix" () void))
+
+      (rl-matrix-begin
+       (rl-translate 0 (* 25 50) 0)
+       (rl-rotate 90 1 0 0)
+       (draw-grid 100 50.0))
       
       (draw-circle 100 100 50.0 YELLOW))
+     
      (draw-text "Mouse right button drag to move, mouse wheel to zoom" 10 10 20 WHITE))))
