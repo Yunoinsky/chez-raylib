@@ -1,4 +1,4 @@
-#+TITLE: Chez-Raylib λ-0.2
+#+TITLE: Chez-Raylib λ-0.3
 #+AUTHOR: Yunoinsky Chen
 
 ** Introduction
@@ -6,19 +6,67 @@
    Raylib in ChezScheme, with an automatic binding generator.
 
    Inspired by Petelliott's fantastic [[https://github.com/petelliott/raylib-guile][raylib-guile]].
-   
-   Thanks for Raysan's outstanding work - [[https://github.com/raysan5/raylib][Raylib]]!
 
-   
+   Thanks for Raysan's outstanding work - [[https://github.com/raysan5/raylib][Raylib]].
+
+   *λ-0.3 changes:*
+   - Generator reads s-expression sources from ~raylib/tools/rlparser/~ (no XML,
+     no ~chez-xml~ dependency).
+   - Generator produces three libraries: ~(raylib raylib)~, ~(raylib rlgl)~,
+     ~(raylib raymath)~, all at version ~(0 3)~.
+   - ~raymath.sls~ is preserved hand-written to keep ~(matrix)~ library
+     interop; only ~raylib.sls~ and ~rlgl.sls~ are auto-generated.
+   - Lazy foreign-procedure resolution: each raylib function call resolves
+     its C address on first use, so ~load-shared-object~ can live at the
+     bottom of the library body.
+   - C preprocessor artifacts (~#if~ / ~#endif~) in rlgl are filtered out.
+
+** Source format
+
+   The generator consumes one s-expression file per raylib header, produced by
+   =rlparser=:
+   - ~raylib_api.sexpr~ — high-level raylib.h (Defines, Structs, Enums,
+     Callbacks, Functions)
+   - ~rlgl_api.sexpr~ — rlgl.h (immediatemode OpenGL layer, statically
+     compiled into libraylib.dylib on Apple Silicon)
+   - ~raymath_api.sexpr~ — raymath.h (used to verify the generator; the
+     shipped ~raymath.sls~ is hand-written and imports ~(matrix)~).
+
+   Regenerate after upgrading raylib:
+   #+begin_example
+   cd $RAYLIB/tools/rlparser
+   FORMAT=SEXPR EXTENSION=sexpr make raylib_api.sexpr raymath_api.sexpr rlgl_api.sexpr
+   cp {raylib,rlgl,raymath}_api.sexpr "$CHEZRAYLIB/src/"
+   cd "$CHEZRAYLIB"
+   scheme --script ./src/raylib_binding_generator.ss
+   #+end_example
+
 ** Installation
 
-   ([[https://github.com/cisco/ChezScheme][Chez Scheme (v9.5.8)]] is required)
+   *Chez Scheme (≥9.5.8)* is required. Tested with Chez 10.5.0-pre-release.
 
-   - ~git clone https://github.com/Yunoinsky/chez-raylib~
-   - ~cd chez-raylib~
-   - Download ~raylib.dll~ and put it into ~~/Library/chezscheme/raylib/~.
-   - append ~~/Library/chezscheme/~ to the environment variable ~CHEZSCHEMELIBDIRS~.
-   - Make sure ~raylib_api.xml~ is existed in ~./src/~
-   - Globally install [[https://github.com/Yunoinsky/chez-xml][chez-xml]].
-   - Automatic generate and compile binding library: ~scheme --script ./src/raylib_binding_generator.ss~
-   - run the test: ~scheme --script ./test/core/core_basic_window.ss~
+   - Build or download a libraylib dynamic library (~libraylib.dylib~ on macOS,
+     ~libraylib.so~ on Linux, ~raylib.dll~ on Windows). The ~rlgl~ symbols are
+     statically compiled into the same ~libraylib.dylib~ by every ~r*.c~
+     translation unit, so no separate ~librlgl~ is needed.
+   - Drop the dynamic library into ~~/Library/chezscheme/raylib/~ (or any
+     directory on ~CHEZSCHEMELIBDIRS~).
+   - Place the generated ~raylib.so~, ~rlgl.so~ (and ~raymath.so~ if you build
+     it) into the same directory.
+   - Set ~CHEZSCHEMELIBDIRS~ to include that directory.
+   - From the project root run =scheme --script ./src/raylib_binding_generator.ss=.
+   - Run any test: =scheme --script ./test/core/core_basic_window.ss=.
+
+** Notes on Chez idiom
+
+   The generated ~(raylib raylib)~ library uses features idiomatic to Chez
+   Scheme:
+   - ~define-ftype~ + ~define-syntax~ for ~<struct>-set!~ / ~<struct>-get~ /
+     ~<struct>-ref&~ accessors.
+   - ~case-lambda~ for functions with both a buffer and a struct-mode
+     arity (e.g. ~GetCameraMatrix2D~).
+   - Lazy ~foreign-procedure~ resolution so ~load-shared-object~ is only
+     called once per library and does not need to precede definitions.
+   - ~printf~ + ~cond~ for ~trace-log~ instead of three side effects.
+   - ~define~ (with formals) rather than ~define-name+(lambda …)~ for the
+     helper procedures.

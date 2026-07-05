@@ -1,0 +1,1218 @@
+((defines
+   ((name "RAYMATH_H")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RMAPI")
+    (type "UNKNOWN")
+    (value "__declspec(dllexport) extern inline")
+    (description "Building raylib as a Win32 shared library (.dll)"))
+   ((name "PI")
+    (type "FLOAT")
+    (value 3.14159265358979323846)
+    (description ""))
+   ((name "EPSILON")
+    (type "FLOAT")
+    (value 0.000001)
+    (description ""))
+   ((name "DEG2RAD")
+    (type "FLOAT_MATH")
+    (value "(PI/180.0f)")
+    (description ""))
+   ((name "RAD2DEG")
+    (type "FLOAT_MATH")
+    (value "(180.0f/PI)")
+    (description ""))
+   ((name "MatrixToFloat(mat)")
+    (type "MACRO")
+    (value "(MatrixToFloatV(mat).v)")
+    (description ""))
+   ((name "Vector3ToFloat(vec)")
+    (type "MACRO")
+    (value "(Vector3ToFloatV(vec).v)")
+    (description ""))
+   ((name "RL_VECTOR2_TYPE")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RL_VECTOR3_TYPE")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RL_VECTOR4_TYPE")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RL_QUATERNION_TYPE")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RL_MATRIX_TYPE")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RL_FLOAT3_TYPE")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RL_FLOAT16_TYPE")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RAYMATH_SSE42_ENABLED")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RAYMATH_SSE41_ENABLED")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RAYMATH_SSSE3_ENABLED")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RAYMATH_SSE3_ENABLED")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RAYMATH_SSE2_ENABLED")
+    (type "GUARD")
+    (value "")
+    (description ""))
+   ((name "RAYMATH_SSE_ENABLED")
+    (type "GUARD")
+    (value "")
+    (description "")))
+
+ (structs
+   ((name "Vector2")
+    (description "Vector2 type")
+    (fields 
+      ((type "float")
+       (name "x")
+       (description ""))
+      ((type "float")
+       (name "y")
+       (description ""))))
+
+   ((name "Vector3")
+    (description "Vector3 type")
+    (fields 
+      ((type "float")
+       (name "x")
+       (description ""))
+      ((type "float")
+       (name "y")
+       (description ""))
+      ((type "float")
+       (name "z")
+       (description ""))))
+
+   ((name "Vector4")
+    (description "Vector4 type")
+    (fields 
+      ((type "float")
+       (name "x")
+       (description ""))
+      ((type "float")
+       (name "y")
+       (description ""))
+      ((type "float")
+       (name "z")
+       (description ""))
+      ((type "float")
+       (name "w")
+       (description ""))))
+
+   ((name "Matrix")
+    (description "Matrix type (OpenGL style 4x4 - right handed, column major)")
+    (fields 
+      ((type "float")
+       (name "m0")
+       (description "Matrix first row (4 components)"))
+      ((type "float")
+       (name "m4")
+       (description "Matrix first row (4 components)"))
+      ((type "float")
+       (name "m8")
+       (description "Matrix first row (4 components)"))
+      ((type "float")
+       (name "m12")
+       (description "Matrix first row (4 components)"))
+      ((type "float")
+       (name "m1")
+       (description "Matrix second row (4 components)"))
+      ((type "float")
+       (name "m5")
+       (description "Matrix second row (4 components)"))
+      ((type "float")
+       (name "m9")
+       (description "Matrix second row (4 components)"))
+      ((type "float")
+       (name "m13")
+       (description "Matrix second row (4 components)"))
+      ((type "float")
+       (name "m2")
+       (description "Matrix third row (4 components)"))
+      ((type "float")
+       (name "m6")
+       (description "Matrix third row (4 components)"))
+      ((type "float")
+       (name "m10")
+       (description "Matrix third row (4 components)"))
+      ((type "float")
+       (name "m14")
+       (description "Matrix third row (4 components)"))
+      ((type "float")
+       (name "m3")
+       (description "Matrix fourth row (4 components)"))
+      ((type "float")
+       (name "m7")
+       (description "Matrix fourth row (4 components)"))
+      ((type "float")
+       (name "m11")
+       (description "Matrix fourth row (4 components)"))
+      ((type "float")
+       (name "m15")
+       (description "Matrix fourth row (4 components)"))))
+
+   ((name "float3")
+    (description "")
+    (fields 
+      ((type "float[3]")
+       (name "v")
+       (description ""))))
+
+   ((name "float16")
+    (description "")
+    (fields 
+      ((type "float[16]")
+       (name "v")
+       (description "")))))
+
+  (aliases
+    ((type "Vector4")
+     (name "Quaternion")
+     (description "Quaternion type")))
+
+  (enums
+)
+
+  (callbacks
+)
+
+  (functions
+    ((name "Clamp")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "float") (name "value"))
+       ((type "float") (name "min"))
+       ((type "float") (name "max"))))
+
+    ((name "Lerp")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "float") (name "start"))
+       ((type "float") (name "end"))
+       ((type "float") (name "amount"))))
+
+    ((name "Normalize")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "float") (name "value"))
+       ((type "float") (name "start"))
+       ((type "float") (name "end"))))
+
+    ((name "Remap")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "float") (name "value"))
+       ((type "float") (name "inputStart"))
+       ((type "float") (name "inputEnd"))
+       ((type "float") (name "outputStart"))
+       ((type "float") (name "outputEnd"))))
+
+    ((name "Wrap")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "float") (name "value"))
+       ((type "float") (name "min"))
+       ((type "float") (name "max"))))
+
+    ((name "FloatEquals")
+     (description "")
+     (return-type "int")
+     (params
+       ((type "float") (name "x"))
+       ((type "float") (name "y"))))
+
+    ((name "Vector2Zero")
+     (description "")
+     (return-type "Vector2"))
+
+    ((name "Vector2One")
+     (description "")
+     (return-type "Vector2"))
+
+    ((name "Vector2Add")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2AddValue")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "float") (name "add"))))
+
+    ((name "Vector2Subtract")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2SubtractValue")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "float") (name "sub"))))
+
+    ((name "Vector2Length")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "v"))))
+
+    ((name "Vector2LengthSqr")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "v"))))
+
+    ((name "Vector2DotProduct")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2CrossProduct")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2Distance")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2DistanceSqr")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2Angle")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2LineAngle")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector2") (name "start"))
+       ((type "Vector2") (name "end"))))
+
+    ((name "Vector2Scale")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "float") (name "scale"))))
+
+    ((name "Vector2Multiply")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2Negate")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))))
+
+    ((name "Vector2Divide")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2Normalize")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))))
+
+    ((name "Vector2Transform")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "Matrix") (name "mat"))))
+
+    ((name "Vector2Lerp")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))
+       ((type "float") (name "amount"))))
+
+    ((name "Vector2Reflect")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "Vector2") (name "normal"))))
+
+    ((name "Vector2Min")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2Max")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v1"))
+       ((type "Vector2") (name "v2"))))
+
+    ((name "Vector2Rotate")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "float") (name "angle"))))
+
+    ((name "Vector2MoveTowards")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "Vector2") (name "target"))
+       ((type "float") (name "maxDistance"))))
+
+    ((name "Vector2Invert")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))))
+
+    ((name "Vector2Clamp")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "Vector2") (name "min"))
+       ((type "Vector2") (name "max"))))
+
+    ((name "Vector2ClampValue")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "float") (name "min"))
+       ((type "float") (name "max"))))
+
+    ((name "Vector2Equals")
+     (description "")
+     (return-type "int")
+     (params
+       ((type "Vector2") (name "p"))
+       ((type "Vector2") (name "q"))))
+
+    ((name "Vector2Refract")
+     (description "")
+     (return-type "Vector2")
+     (params
+       ((type "Vector2") (name "v"))
+       ((type "Vector2") (name "n"))
+       ((type "float") (name "r"))))
+
+    ((name "Vector3Zero")
+     (description "")
+     (return-type "Vector3"))
+
+    ((name "Vector3One")
+     (description "")
+     (return-type "Vector3"))
+
+    ((name "Vector3Add")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3AddValue")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "float") (name "add"))))
+
+    ((name "Vector3Subtract")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3SubtractValue")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "float") (name "sub"))))
+
+    ((name "Vector3Scale")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "float") (name "scalar"))))
+
+    ((name "Vector3Multiply")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3CrossProduct")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Perpendicular")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))))
+
+    ((name "Vector3Length")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "const Vector3") (name "v"))))
+
+    ((name "Vector3LengthSqr")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "const Vector3") (name "v"))))
+
+    ((name "Vector3DotProduct")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Distance")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3DistanceSqr")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Angle")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Negate")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))))
+
+    ((name "Vector3Divide")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Normalize")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))))
+
+    ((name "Vector3Project")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Reject")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3OrthoNormalize")
+     (description "")
+     (return-type "void")
+     (params
+       ((type "Vector3 *") (name "v1"))
+       ((type "Vector3 *") (name "v2"))))
+
+    ((name "Vector3Transform")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "Matrix") (name "mat"))))
+
+    ((name "Vector3RotateByQuaternion")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "Quaternion") (name "q"))))
+
+    ((name "Vector3RotateByAxisAngle")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "Vector3") (name "axis"))
+       ((type "float") (name "angle"))))
+
+    ((name "Vector3MoveTowards")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "Vector3") (name "target"))
+       ((type "float") (name "maxDistance"))))
+
+    ((name "Vector3Lerp")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))
+       ((type "float") (name "amount"))))
+
+    ((name "Vector3CubicHermite")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "tangent1"))
+       ((type "Vector3") (name "v2"))
+       ((type "Vector3") (name "tangent2"))
+       ((type "float") (name "amount"))))
+
+    ((name "Vector3Reflect")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "Vector3") (name "normal"))))
+
+    ((name "Vector3Min")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Max")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v1"))
+       ((type "Vector3") (name "v2"))))
+
+    ((name "Vector3Barycenter")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "p"))
+       ((type "Vector3") (name "a"))
+       ((type "Vector3") (name "b"))
+       ((type "Vector3") (name "c"))))
+
+    ((name "Vector3Unproject")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "source"))
+       ((type "Matrix") (name "projection"))
+       ((type "Matrix") (name "view"))))
+
+    ((name "Vector3ToFloatV")
+     (description "")
+     (return-type "float3")
+     (params
+       ((type "Vector3") (name "v"))))
+
+    ((name "Vector3Invert")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))))
+
+    ((name "Vector3Clamp")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "Vector3") (name "min"))
+       ((type "Vector3") (name "max"))))
+
+    ((name "Vector3ClampValue")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "float") (name "min"))
+       ((type "float") (name "max"))))
+
+    ((name "Vector3Equals")
+     (description "")
+     (return-type "int")
+     (params
+       ((type "Vector3") (name "p"))
+       ((type "Vector3") (name "q"))))
+
+    ((name "Vector3Refract")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Vector3") (name "v"))
+       ((type "Vector3") (name "n"))
+       ((type "float") (name "r"))))
+
+    ((name "Vector4Zero")
+     (description "")
+     (return-type "Vector4"))
+
+    ((name "Vector4One")
+     (description "")
+     (return-type "Vector4"))
+
+    ((name "Vector4Add")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4AddValue")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v"))
+       ((type "float") (name "add"))))
+
+    ((name "Vector4Subtract")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4SubtractValue")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v"))
+       ((type "float") (name "add"))))
+
+    ((name "Vector4Length")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector4") (name "v"))))
+
+    ((name "Vector4LengthSqr")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector4") (name "v"))))
+
+    ((name "Vector4DotProduct")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4Distance")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4DistanceSqr")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4Scale")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v"))
+       ((type "float") (name "scale"))))
+
+    ((name "Vector4Multiply")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4Negate")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v"))))
+
+    ((name "Vector4Divide")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4Normalize")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v"))))
+
+    ((name "Vector4Min")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4Max")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))))
+
+    ((name "Vector4Lerp")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v1"))
+       ((type "Vector4") (name "v2"))
+       ((type "float") (name "amount"))))
+
+    ((name "Vector4MoveTowards")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v"))
+       ((type "Vector4") (name "target"))
+       ((type "float") (name "maxDistance"))))
+
+    ((name "Vector4Invert")
+     (description "")
+     (return-type "Vector4")
+     (params
+       ((type "Vector4") (name "v"))))
+
+    ((name "Vector4Equals")
+     (description "")
+     (return-type "int")
+     (params
+       ((type "Vector4") (name "p"))
+       ((type "Vector4") (name "q"))))
+
+    ((name "MatrixDeterminant")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Matrix") (name "mat"))))
+
+    ((name "MatrixTrace")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Matrix") (name "mat"))))
+
+    ((name "MatrixTranspose")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Matrix") (name "mat"))))
+
+    ((name "MatrixInvert")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Matrix") (name "mat"))))
+
+    ((name "MatrixIdentity")
+     (description "")
+     (return-type "Matrix"))
+
+    ((name "MatrixAdd")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Matrix") (name "left"))
+       ((type "Matrix") (name "right"))))
+
+    ((name "MatrixSubtract")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Matrix") (name "left"))
+       ((type "Matrix") (name "right"))))
+
+    ((name "MatrixMultiply")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Matrix") (name "left"))
+       ((type "Matrix") (name "right"))))
+
+    ((name "MatrixMultiplyValue")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Matrix") (name "left"))
+       ((type "float") (name "value"))))
+
+    ((name "MatrixTranslate")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "float") (name "x"))
+       ((type "float") (name "y"))
+       ((type "float") (name "z"))))
+
+    ((name "MatrixRotate")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Vector3") (name "axis"))
+       ((type "float") (name "angle"))))
+
+    ((name "MatrixRotateX")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "float") (name "angle"))))
+
+    ((name "MatrixRotateY")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "float") (name "angle"))))
+
+    ((name "MatrixRotateZ")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "float") (name "angle"))))
+
+    ((name "MatrixRotateXYZ")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Vector3") (name "angle"))))
+
+    ((name "MatrixRotateZYX")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Vector3") (name "angle"))))
+
+    ((name "MatrixScale")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "float") (name "x"))
+       ((type "float") (name "y"))
+       ((type "float") (name "z"))))
+
+    ((name "MatrixFrustum")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "double") (name "left"))
+       ((type "double") (name "right"))
+       ((type "double") (name "bottom"))
+       ((type "double") (name "top"))
+       ((type "double") (name "nearPlane"))
+       ((type "double") (name "farPlane"))))
+
+    ((name "MatrixPerspective")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "double") (name "fovY"))
+       ((type "double") (name "aspect"))
+       ((type "double") (name "nearPlane"))
+       ((type "double") (name "farPlane"))))
+
+    ((name "MatrixOrtho")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "double") (name "left"))
+       ((type "double") (name "right"))
+       ((type "double") (name "bottom"))
+       ((type "double") (name "top"))
+       ((type "double") (name "nearPlane"))
+       ((type "double") (name "farPlane"))))
+
+    ((name "MatrixLookAt")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Vector3") (name "eye"))
+       ((type "Vector3") (name "target"))
+       ((type "Vector3") (name "up"))))
+
+    ((name "MatrixToFloatV")
+     (description "")
+     (return-type "float16")
+     (params
+       ((type "Matrix") (name "mat"))))
+
+    ((name "QuaternionAdd")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "q2"))))
+
+    ((name "QuaternionAddValue")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q"))
+       ((type "float") (name "add"))))
+
+    ((name "QuaternionSubtract")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "q2"))))
+
+    ((name "QuaternionSubtractValue")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q"))
+       ((type "float") (name "sub"))))
+
+    ((name "QuaternionIdentity")
+     (description "")
+     (return-type "Quaternion"))
+
+    ((name "QuaternionLength")
+     (description "")
+     (return-type "float")
+     (params
+       ((type "Quaternion") (name "q"))))
+
+    ((name "QuaternionNormalize")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q"))))
+
+    ((name "QuaternionInvert")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q"))))
+
+    ((name "QuaternionMultiply")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "q2"))))
+
+    ((name "QuaternionScale")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q"))
+       ((type "float") (name "mul"))))
+
+    ((name "QuaternionDivide")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "q2"))))
+
+    ((name "QuaternionLerp")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "q2"))
+       ((type "float") (name "amount"))))
+
+    ((name "QuaternionNlerp")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "q2"))
+       ((type "float") (name "amount"))))
+
+    ((name "QuaternionSlerp")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "q2"))
+       ((type "float") (name "amount"))))
+
+    ((name "QuaternionCubicHermiteSpline")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q1"))
+       ((type "Quaternion") (name "outTangent1"))
+       ((type "Quaternion") (name "q2"))
+       ((type "Quaternion") (name "inTangent2"))
+       ((type "float") (name "t"))))
+
+    ((name "QuaternionFromVector3ToVector3")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Vector3") (name "from"))
+       ((type "Vector3") (name "to"))))
+
+    ((name "QuaternionFromMatrix")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Matrix") (name "mat"))))
+
+    ((name "QuaternionToMatrix")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Quaternion") (name "q"))))
+
+    ((name "QuaternionFromAxisAngle")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Vector3") (name "axis"))
+       ((type "float") (name "angle"))))
+
+    ((name "QuaternionToAxisAngle")
+     (description "")
+     (return-type "void")
+     (params
+       ((type "Quaternion") (name "q"))
+       ((type "Vector3 *") (name "outAxis"))
+       ((type "float *") (name "outAngle"))))
+
+    ((name "QuaternionFromEuler")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "float") (name "pitch"))
+       ((type "float") (name "yaw"))
+       ((type "float") (name "roll"))))
+
+    ((name "QuaternionToEuler")
+     (description "")
+     (return-type "Vector3")
+     (params
+       ((type "Quaternion") (name "q"))))
+
+    ((name "QuaternionTransform")
+     (description "")
+     (return-type "Quaternion")
+     (params
+       ((type "Quaternion") (name "q"))
+       ((type "Matrix") (name "mat"))))
+
+    ((name "QuaternionEquals")
+     (description "")
+     (return-type "int")
+     (params
+       ((type "Quaternion") (name "p"))
+       ((type "Quaternion") (name "q"))))
+
+    ((name "MatrixCompose")
+     (description "")
+     (return-type "Matrix")
+     (params
+       ((type "Vector3") (name "translation"))
+       ((type "Quaternion") (name "rotation"))
+       ((type "Vector3") (name "scale"))))
+
+    ((name "MatrixDecompose")
+     (description "")
+     (return-type "void")
+     (params
+       ((type "Matrix") (name "mat"))
+       ((type "Vector3 *") (name "translation"))
+       ((type "Quaternion *") (name "rotation"))
+       ((type "Vector3 *") (name "scale"))))))

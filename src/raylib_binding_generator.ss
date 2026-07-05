@@ -1,674 +1,446 @@
-;; Raylib binding generator
+;; Raylib binding generator — sexpr-based, Chez Scheme, λ-0.3
+(import (chezscheme))
 
-(define input-file-path "./src/raylib_api.xml")
-(define output-file-path "./src/raylib.sls")
+;; ===== accessors =====
+(define (attr node key)
+  (let ([p (assq (string->symbol key) node)])
+    (and p (cadr p))))
 
-(define-syntax push!
-  (syntax-rules ()
-    [(_ rl item) (set! rl (cons item rl))]))
+(define (attr-list node key)
+  (let ([p (assq (string->symbol key) node)])
+    (and p (cdr p))))
 
-(import (xml))
+;; ===== name munging =====
+(define (symbol-append . parts)
+  (string->symbol (apply string-append (map symbol->string parts))))
 
-(define (xml-get-attr xml-node key)
-  (cdr (assoc key
-              (xml-get-attrs xml-node))))
+(define (kebab-ize name-str)
+  (let loop ([i 0] [out '()] [last-upper #t])
+    (if (>= i (string-length name-str))
+        (string->symbol (apply string-append (reverse out)))
+        (let ([ch (string-ref name-str i)])
+          (cond
+           [(char-upper-case? ch)
+            (cond [(not last-upper)
+                   (loop (+ i 1) (cons (string (char-downcase ch)) (cons "-" out)) #t)]
+                  [else
+                   (loop (+ i 1) (cons (string (char-downcase ch)) out) #t)])]
+           [(char-numeric? ch)
+            (if last-upper
+                (loop (+ i 1) (cons (string ch) (cons "-" out)) last-upper)
+                (loop (+ i 1) (cons (string ch) out) last-upper))]
+           [else
+            (loop (+ i 1) (cons (string ch) out) #f)])))))
 
-(define apis
-  (xml-load (open-input-file input-file-path)
-            #f))
+(define (ftype-name-of name-str)
+  (let loop ([i 0] [out '()] [last-upper #t])
+    (if (>= i (string-length name-str))
+        (string->symbol (apply string-append (reverse out)))
+        (let ([ch (string-ref name-str i)])
+          (cond
+           [(char-upper-case? ch)
+            (cond [(not last-upper)
+                   (loop (+ i 1) (cons (string ch) (cons "-" out)) #t)]
+                  [else
+                   (loop (+ i 1) (cons (string ch) out) #t)])]
+           [(char-numeric? ch)
+            (if (and (not last-upper) (not (null? out)))
+                (loop (+ i 1) (cons (string ch) (cons "-" out)) last-upper)
+                (loop (+ i 1) (cons (string ch) out) last-upper))]
+           [else
+            (loop (+ i 1) (cons (string ch) out) #f)])))))
 
-(assert (string=? (xml-get-name apis) "raylibAPI"))
+;; ===== type conversion =====
+(define (ctype->type str)
+  (case str
+    [("int") 'int] [("float") 'float] [("double") 'double] [("char") 'char]
+    [("unsigned char") 'unsigned-8] [("unsigned short") 'unsigned-short]
+    [("unsigned int") 'unsigned] [("bool") 'unsigned-8] [("long") 'long]
+    [("void") 'void] [else #f]))
 
-(define type-list
-  '("Defines"
-    "Structs"
-    "Aliases"
-    "Enums"
-    "Callbacks"
-    "Functions"))
+(define array-type-alist
+  '(("float[2]" . (array 2 float)) ("float[3]" . (array 3 float))
+    ("float[4]" . (array 4 float)) ("float[16]" . (array 16 float))
+    ("int[4]" . (array 4 int)) ("unsigned int[5]" . (array 5 unsigned))
+    ("Matrix[2]" . (array 2 Matrix)) ("char[32]" . (array 32 char))))
 
-(for-each (lambda (name child)
-            (let ([name-s (string->symbol
-                           (string-append
-                            "api-"
-                            (string-downcase name)))])
-              (let ([children-list (xml-get-children child)])
-                (eval `(define ,name-s ',children-list)))
-              (assert (string=? (xml-get-name child)
-                                name))))
-          type-list
-          (xml-get-children apis))
+(define opaque-strings
+  '("char **" "void *" "const char *" "Rectangle **"
+    "rAudioBuffer *" "rAudioProcessor *"
+    "va_list" "TraceLogCallback" "LoadFileDataCallback" "SaveFileDataCallback"
+    "LoadFileTextCallback" "SaveFileTextCallback" "AudioCallback"))
 
-(define aliases '())
+;; Alias map: type-name -> canonical-name (strings), built from aliases section
+(define alias-map (make-parameter '()))
 
-(define (string->var-name string is-struct)
-  (or
-   (let ([alias (assoc string aliases)])
-     (and alias
-          (string->var-name (cdr alias) is-struct)))
-   (let ([len (string-length string)])
-     (let loop ([start-ind 0]
-                [end-ind 1]
-                [result-string ""]
-                [last-upcase #t])
-       (if (< end-ind len)
-           
-           (let* ([ch (string-ref string end-ind)]
-                  [this-upcase (or (char-upper-case? ch)
-                                   (char-numeric? ch))])
-             (if (and this-upcase
-                      (not last-upcase))
-                 (loop end-ind (+ end-ind 1)
-                       (string-append
-                        result-string
-                        (string-downcase
-                         (substring string
-                                    start-ind
-                                    (if (char=?
-                                         #\-
-                                         (string-ref
-                                          string
-                                          (- end-ind 1)))
-                                        (- end-ind 1)
-                                        end-ind)))
-                        "-")
-                       this-upcase)
-                 (loop start-ind (+ end-ind 1)
-                       result-string this-upcase)))
-           (string->symbol
-            ((if is-struct
-                string-titlecase
-                (lambda (x) x))
-             (string-append result-string
-                            (string-downcase
-                             (substring string
-                                        start-ind
-                                        end-ind))))))))))
+(define (resolve-alias str)
+  (let loop ([s str] [visited '()])
+    (if (let search ([vs visited]) (and (pair? vs) (or (string=? s (car vs)) (search (cdr vs)))))
+        s
+        (let ([p (let search ([alist (alias-map)])
+                   (and (pair? alist)
+                        (or (and (string=? s (caar alist)) (car alist))
+                            (search (cdr alist)))))])
+          (if p (loop (cdr p) (cons s visited)) s)))))
 
-(for-each
- (lambda (alias-xml)
-   (assert (string=? (xml-get-name alias-xml)
-                     "Alias"))
-   (push! aliases
-    (cons (xml-get-attr alias-xml "type")
-          (xml-get-attr alias-xml "name"))))
- api-aliases)
+;; ===== type converters =====
 
-(define (ctype-str->type type-str)
-  (case type-str
-    ["int" 'int]
-    ["float" 'float]
-    ["double" 'double]
-    ["char" 'char]
-    ["unsigned char" 'unsigned-8]
-    ["unsigned short" 'unsigned-short]
-    ["unsigned int" 'unsigned]
-    ["bool" 'unsigned-8]
-    ["long" 'long]
-    ["void" 'void]
-    [else #f]))
+;; Field type: for struct field definitions (no & wrapping)
+(define (field-type str)
+  (define (pointer-type? s)
+    (and (> (string-length s) 2)
+         (string=? (substring s (- (string-length s) 2) (string-length s)) " *")))
+  (define (strip-ptr s) (substring s 0 (- (string-length s) 2)))
+  (define (arr-type s)
+    (let loop ([alist array-type-alist])
+      (and (pair? alist)
+           (or (and (string=? s (caar alist)) (cdar alist))
+               (loop (cdr alist))))))
+  ;; Filter C preprocessor garbage from rlparser
+  (define (cpp-line? s)
+    (and (> (string-length s) 0) (char=? (string-ref s 0) #\#)))
+  (or (and (cpp-line? str) 'void*)
+      (ctype->type str)
+      (and (member str opaque-strings) 'void*)
+      (arr-type str)
+      (and (pointer-type? str)
+           (let ([base (ctype->type (strip-ptr str))])
+             (and base (if (eq? base 'void) 'void* (list '* base)))))
+      (and (pointer-type? str)
+           (let ([r (resolve-alias (strip-ptr str))])
+             (and (not (string=? r (strip-ptr str)))
+                  (let ([base (or (ctype->type r) (ftype-name-of r))])
+                    (if (symbol? base) (list '* base) (list '* (ftype-name-of r)))))))
+      (and (pointer-type? str)
+           (list '* (ftype-name-of (strip-ptr str))))
+      (let ([r (resolve-alias str)])
+        (and (not (string=? r str))
+             (or (ctype->type r) (ftype-name-of r))))
+      (ftype-name-of str)))
 
-  
-(define (raytype-str->type type-str)
-  (case type-str
-    ["void *" 'void*]
-    ["unsigned char *" '(* unsigned-8)]
-    ["char *" '(* char)]
-    ["char[32]" '(array 32 char)]
-    ["const char *" 'string]
-    ["char **" '(* (* char))]
-    ["int *" '(* int)]
-    ["float[2]" '(array 2 float)]
-    ["float[4]" '(array 4 float)]    
-    ["float *" '(* float)]
-    ["Matrix[2]" '(array 2 Matrix)]
-    [("rAudioBuffer *" "rAudioProcessor *" "va_list"
-      "TraceLogCallback" "LoadFileDataCallback"
-      "SaveFileDataCallback" "LoadFileTextCallback"
-      "SaveFileTextCallback" "AudioCallback")
-     'void*]
-    [else
-     (let* ([len (string-length type-str)])
-       (if (char=? (string-ref type-str (- len 1))
-                   #\*)
-           (list '*
-                 (let ([sub-str
-                        (if
-                         (char=? (string-ref type-str
-                                             (- len 2))
-                                 #\space)
-                         (substring type-str 0
-                                    (- len 2))
-                         (substring type-str 0
-                                    (- len 1)))])
-                   (or (ctype-str->type sub-str)
-                       (raytype-str->type sub-str))))
-           (string->var-name type-str #t)))]))
+;; Param type: for function parameters and return types
+;; Bare struct → ftype name (wrapped with & in fn-form)
+(define (param-type str)
+  (define (pointer-type? s)
+    (and (> (string-length s) 2)
+         (string=? (substring s (- (string-length s) 2) (string-length s)) " *")))
+  (define (strip-ptr s) (substring s 0 (- (string-length s) 2)))
+  (define (strip-const s)
+    (and (> (string-length s) 6) (string=? (substring s 0 6) "const ")
+         (param-type (substring s 6 (string-length s)))))
+  (define (arr-type s)
+    (let loop ([alist array-type-alist])
+      (and (pair? alist)
+           (or (and (string=? s (caar alist)) (cdar alist)) (loop (cdr alist))))))
+  (define (cpp-line? s)
+    (and (> (string-length s) 0) (char=? (string-ref s 0) #\#)))
+  (or (and (cpp-line? str) 'void*)
+      (strip-const str)
+      (arr-type str)
+      (and (member str opaque-strings) 'void*)
+      (ctype->type str)
+      ;; char * / const char * -> string (before pointer-to-ctype to avoid (* char))
+      (and (or (string=? str "char *") (string=? str "const char *")) 'string)
+      ;; Pointer to ctype
+      (and (pointer-type? str)
+           (let ([base (ctype->type (strip-ptr str))])
+             (and base (list '* base))))
+      ;; Pointer to alias
+      (and (pointer-type? str)
+           (let ([r (resolve-alias (strip-ptr str))])
+             (and (not (string=? r (strip-ptr str)))
+                  (param-type (string-append r " *")))))
+      ;; Pointer to struct
+      (and (pointer-type? str)
+           (list '* (ftype-name-of (strip-ptr str))))
+      ;; Alias for bare type
+      (let ([r (resolve-alias str)])
+        (and (not (string=? r str)) (param-type r)))
+      ;; Bare struct
+      (ftype-name-of str)))
 
+;; Known scalar ftype names (vs struct names)
+(define scalar-ftype-names
+  '(int float double char unsigned-8 unsigned-short unsigned long void void*))
 
-(define (param-str->type str)
-  (let in-loop ([str str]
-                [pass-value #t])
-    (let ([len (string-length str)])
-      (or (and (> len 5)
-               (string=? (substring str 0 6)
-                         "const ")
-               (in-loop (substring str 6 len) pass-value))
-          (case str
-            ["char *" 'string]
-            ["int *" 'u8*]
-            [("rAudioBuffer *" "rAudioProcessor *"
-              "va_list" "TraceLogCallback"
-              "LoadFileDataCallback" "SaveFileDataCallback"
-              "LoadFileTextCallback" "SaveFileTextCallback"
-              "AudioCallback" "void *") 'void*]
-            [else #f])
-          (ctype-str->type str)
-          (case (string-ref str (- len 1))
-            [#\space (in-loop (substring str
-                                         0
-                                         (- len 1))
-                              pass-value)]
-            [#\* (list '* (in-loop
-                           (substring str
-                                      0
-                                      (- len 1))
-                           #f))]
-            [#\. #f]
-            [else (if pass-value
-                      (list '& (string->var-name str #t))
-                      (string->var-name str #t))])))))
+;; ===== struct forms =====
+(define (struct-form alist)
+  (let* ([name (ftype-name-of (attr alist "name"))]
+         [fields (or (attr-list alist "fields") '())]
+         [pairs (map (lambda (f) (cons (ftype-name-of (attr f "name")) (attr f "type")))
+                     fields)]
+         ;; Dedup: rlparser emits #if/#else variants, keep first of each name
+         [unique-pairs
+          (let loop ([ps pairs] [seen '()])
+            (if (null? ps) '()
+                (let ([n (caar ps)])
+                  (if (memq n seen)
+                      (loop (cdr ps) seen)
+                      (cons (car ps) (loop (cdr ps) (cons n seen)))))))]
+         [sx (cons 'struct (map (lambda (p) (list (car p) (field-type (cdr p)))) unique-pairs))])
+    `(define-ftype ,name ,sx)))
 
-(define (struct-generator struct-xml)
-  (let* ([name-str (xml-get-attr struct-xml "name")]
-         [name (string->var-name name-str #t)]
-         [scalar-field #t]
-         [fields (map
-                  (lambda (field)
-                    (let ([field-name-str
-                           (xml-get-attr field "name")]
-                          [field-type-str
-                           (xml-get-attr field "type")])
-                      (list
-                       (string->var-name field-name-str #f)
-                       (or (ctype-str->type
-                            field-type-str)
-                           (and (set! scalar-field #f)
-                                (raytype-str->type
-                                 field-type-str))))))
-                  (xml-get-children struct-xml))]
-         [struct-sexpr (cons 'struct fields)])
-    (cons
-     (cons
-      `(define-ftype ,name ,struct-sexpr)
-      (let ([maker-name (string->var-name
-                         (string-append
-                          "Make"
-                          name-str) #f)]
-            [field-name-list (map car fields)])
-        (if scalar-field
-            (let ([cloner-name (string->var-name
-                                (string-append
-                                 "Copy"
-                                 name-str) #f)])
-              (cons 
-               `(define ,maker-name
-                  (case-lambda
-                    [,field-name-list
-                     (let ([struct (make-ftype-pointer
-                                    ,name
-                                    (foreign-alloc
-                                     (ftype-sizeof ,name)))])
-                       ,@(map (lambda (f)
-                                `(ftype-set! ,name (,f) struct ,f))
-                              field-name-list)
-                       struct)]
-                    [,(cons 'struct field-name-list)
-                     ,@(map (lambda (f)
-                              `(ftype-set! ,name (,f) struct ,f))
-                            field-name-list)
-                     struct]))
-               `(define ,cloner-name
-                  (case-lambda
-                    [(src dst)
-                     (,maker-name
-                      dst
-                      ,@(map (lambda (f)
-                              `(ftype-ref ,name (,f) src))
-                            field-name-list))]
-                    [(src)
-                     (let ([dst (make-ftype-pointer
-                                 ,name
-                                 (foreign-alloc
-                                  (ftype-sizeof ,name)))])
-                       (,cloner-name src dst))]))))
-            (cons `(define ,maker-name
-                     (lambda () (make-ftype-pointer
-                                 ,name
-                                 (foreign-alloc
-                                  (ftype-sizeof ,name))))) '()))))
-     (let ([set-name (string->var-name (string-append
-                                        name-str "-set!") #f)]
-           [get-name (string->var-name (string-append
-                                        name-str "-get") #f)]
-           [ref-name (string->var-name (string-append
-                                        name-str "-ref&") #f)])
-       (list
-        `(define-syntax ,set-name
-           (syntax-rules ()
-             [(_ s (f ...) v) (ftype-ref ,name (f ...) s v)]
-             [(_ s f v) (ftype-set! ,name (f) s v)]))
-        `(define-syntax ,get-name
-           (syntax-rules ()
-             [(_ s (f ...)) (ftype-ref ,name (f ...) s)]
-             [(_ s f) (ftype-ref ,name (f) s)]))
-        `(define-syntax ,ref-name
-           (syntax-rules ()
-             [(_ s (f ...)) (ftype-&ref ,name (f ...) s)]
-             [(_ s f) (ftype-&ref ,name (f) s)])))))))
+(define (make-X-form alist)
+  (let* ([name (ftype-name-of (attr alist "name"))]
+         [fields (or (attr-list alist "fields") '())]
+         ;; Dedup fields
+         [unique-fields
+          (let loop ([fs fields] [seen '()])
+            (if (null? fs) '()
+                (let ([fn (ftype-name-of (attr (car fs) "name"))])
+                  (if (memq fn seen)
+                      (loop (cdr fs) seen)
+                      (cons (car fs) (loop (cdr fs) (cons fn seen)))))))]
+         [fnames (map (lambda (f) (ftype-name-of (attr f "name"))) unique-fields)]
+         [field-ts (map (lambda (f) (field-type (attr f "type"))) unique-fields)]
+         [scalar-set! (map (lambda (fn ft)
+                             (if (and (symbol? ft) (memq ft scalar-ftype-names))
+                                 `(ftype-set! ,name (,fn) s ,fn)
+                                 `(void)))
+                           fnames field-ts)]
+         [scalar-set!-struct (map (lambda (fn ft)
+                                    (if (and (symbol? ft) (memq ft scalar-ftype-names))
+                                        `(ftype-set! ,name (,fn) struct ,fn)
+                                        `(void)))
+                                  fnames field-ts)])
+    `(define ,(symbol-append 'Make name)
+       (case-lambda
+        [,fnames
+         (let ([s (make-ftype-pointer ,name (foreign-alloc (ftype-sizeof ,name)))])
+           ,@scalar-set! s)]
+        [(struct ,@fnames)
+         ,@scalar-set!-struct struct]))))
 
-(define (make-trace-log-callback p)
-  (let ([code (foreign-callable __collect_safe
-                                p
-                                (int string void*)
-                                void)])
-    (lock-object code)
-    (foreign-callable-entry-point code)))
+(define (copy-X-form alist)
+  (let* ([name (ftype-name-of (attr alist "name"))]
+         [fields (or (attr-list alist "fields") '())]
+         ;; Dedup fields
+         [unique-fields
+          (let loop ([fs fields] [seen '()])
+            (if (null? fs) '()
+                (let ([fn (ftype-name-of (attr (car fs) "name"))])
+                  (if (memq fn seen)
+                      (loop (cdr fs) seen)
+                      (cons (car fs) (loop (cdr fs) (cons fn seen)))))))]
+         [fnames (map (lambda (f) (ftype-name-of (attr f "name"))) unique-fields)]
+         [field-ts (map (lambda (f) (field-type (attr f "type"))) unique-fields)]
+         [scalar-copy! (map (lambda (fn ft)
+                              (if (and (symbol? ft) (memq ft scalar-ftype-names))
+                                  `(ftype-set! ,name (,fn) dst (ftype-ref ,name (,fn) src))
+                                  `(void)))
+                            fnames field-ts)])
+    `(define ,(symbol-append 'Copy name)
+       (lambda (src)
+         (let ([dst (make-ftype-pointer ,name (foreign-alloc (ftype-sizeof ,name)))])
+           ,@scalar-copy! dst)))))
 
-(define (cb-generator cb-xml)
-  (let* ([name-str (xml-get-attr cb-xml "name")]
-         [maker-name (string->var-name
-                      (string-append "Make"
-                                     name-str) #f)]
-         [ret-type (let ([ret-type-str
-                          (xml-get-attr cb-xml "retType")])
-                     (or (ctype-str->type ret-type-str)
-                         (raytype-str->type ret-type-str)))]
-         [params (map
-                  (lambda (param)
-                    (let ([param-type-str
-                           (xml-get-attr param "type")])
-                      (or (ctype-str->type
-                           param-type-str)
-                          (raytype-str->type
-                           param-type-str))))
-                  (xml-get-children cb-xml))])
-    `(define (,maker-name p)
-       (let ([code (foreign-callable __collect_safe
-                                     p
-                                     ,params
-                                     ,ret-type)])
-         (lock-object code)
-         (foreign-callable-entry-point code)))))
+(define (setter-form alist)
+  (let ([name (ftype-name-of (attr alist "name"))])
+    `(define-syntax ,(symbol-append name '-set!)
+       (syntax-rules () [(_ s (f ...) v) (ftype-set! ,name (f ...) s v)]
+                      [(_ s f v) (ftype-set! ,name (f) s v)]))))
 
-(define (enum-generator enum-item-xml)
-  (let ([name-str (xml-get-attr enum-item-xml
-                                "name")]
-        [int-str (xml-get-attr enum-item-xml
-                               "integer")])
-    `(define
-       ,(string->symbol name-str)
-       ,(string->number int-str))))
+(define (getter-form alist)
+  (let ([name (ftype-name-of (attr alist "name"))])
+    `(define-syntax ,(symbol-append name '-get)
+       (syntax-rules () [(_ s (f ...)) (ftype-ref ,name (f ...) s)]
+                      [(_ s f) (ftype-ref ,name (f) s)]))))
 
-(define fn-black-list
-  '(gen-image-font-atlas
-    text-join text-split
-    check-collision-point-poly
-    gen-image-perlin-noise
-    image-draw-circle-lines
-    image-draw-circle-lines-v
-    load-utf8
-    unload-utf8
-    get-codepoint-next
-    get-codepoint-previous))
+(define (refref-form alist)
+  (let ([name (ftype-name-of (attr alist "name"))])
+    `(define-syntax ,(symbol-append name '-ref&)
+       (syntax-rules () [(_ s (f ...)) (ftype-&ref ,name (f ...) s)]
+                      [(_ s f) (ftype-&ref ,name (f) s)]))))
 
-(define (fn-generator func-xml)
-  (let* ([name-str (xml-get-attr func-xml "name")]
-         [func-name (string->var-name name-str #f)]
-         [ret-bool #f]
-         [ret-type (let ([rt-str (xml-get-attr func-xml "retType")])
-                     (when (string=? rt-str "bool")
-                       (set! ret-bool #t))
-                     (param-str->type rt-str))]
-         [skip-func #f]
-         [params (fold-right
-                  (lambda (param-xml l)
-                    (let ([param-name
-                           (string->var-name
-                            (xml-get-attr param-xml
-                                          "name") #f)]
-                          [param-type
-                           (param-str->type
-                            (xml-get-attr param-xml
-                                          "type"))])
-                      (unless param-type
-                        (set! skip-func #t)) 
-                      (cons (cons param-name (car l))
-                            (cons param-type (cdr l)))))
-                  '(() . ())
-                  (xml-get-children func-xml))]
-         [v-ret (and (pair? ret-type)
-                     (eq? (car ret-type) '&))])
-    (if (or skip-func
-            (memq func-name fn-black-list))
-        #f
-        `(define ,func-name
-           (let ([f (foreign-procedure
-                     ,name-str
-                     ,(cdr params) ,ret-type)])
-             ,(if v-ret
-                  `(case-lambda
-                     [,(car params)
-                      (let ([ret (make-ftype-pointer
-                                  ,(cadr ret-type)
-                                  (foreign-alloc 
-                                   (ftype-sizeof
-                                    ,(cadr ret-type))))])
-                        (f ret ,@(car params))
-                        ret)]
-                     [(struct ,@(car params))
-                      (f struct ,@(car params))
-                      struct])
-                  `(lambda ,(car params)
-                     ,(if ret-bool
-                          `(not (= (f ,@(car params)) 0))
-                          `(f ,@(car params))))))))))
+(define (struct-defines alist)
+  `(,(struct-form alist) ,(make-X-form alist) ,(copy-X-form alist)
+    ,(setter-form alist) ,(getter-form alist) ,(refref-form alist)))
 
-(define (color-generator color-xml)
-  (let* ([name (string->symbol
-               (xml-get-attr color-xml "name"))]
-         [raw-value (xml-get-attr color-xml "value")]
-         [len (string-length raw-value)]
-         [value (substring
-                 raw-value
-                 (string-length "CLITERAL(Color){ ")
-                 (- len 2))])
-    `(define ,name
-       (make-color
-        ,@(let loop ([res-str value])
-            (let ([res-len (string-length res-str)])
-              (do ([i 0 (+ i 1)])
-                  ((or (= i res-len)
-                       (char=?
-                        (string-ref res-str i)
-                        #\,))
-                   (cons (string->number
-                          (substring res-str
-                                     0
-                                     i))
-                         (if (= i res-len)
-                             '()
-                             (loop (substring res-str
-                                              (+ i 2)
-                                              res-len))))))
-              ))))))
+;; ===== callback form =====
+(define (callback-form alist)
+  (let* ([name (symbol-append 'Make (ftype-name-of (attr alist "name")))]
+         [ret-str (attr alist "return-type")]
+         [ret-type (or (ctype->type ret-str) (param-type ret-str))]
+         [params (or (attr-list alist "params") '())]
+         [p-types (map (lambda (p) (param-type (attr p "type"))) params)])
+    `(define (,name p)
+       (let ([code (foreign-callable p ,p-types ,ret-type)])
+         (lock-object code) (foreign-callable-entry-point code)))))
 
-(define init-sexpr
-  '((define rad->deg
-      (lambda (rad)
-        (/ (* rad 180) PI)))
-    (define deg->rad
-      (lambda (deg)
-        (/ (* deg PI) 180)))
+;; ===== enum form =====
+(define (enum-form alist)
+  (map (lambda (v) `(define ,(string->symbol (attr v "name")) ,(attr v "value")))
+       (or (attr-list alist "values") '())))
+
+;; ===== function form =====
+(define scalar-ffi-types '(int float double char unsigned-8 unsigned-short
+                           unsigned long void void* string boolean ...))
+(define (struct-symbol? t) (and (symbol? t) (not (memq t scalar-ffi-types))))
+(define (wrap-ffi t) (if (struct-symbol? t) (list '& t) t))
+
+(define (fn-form alist)
+  (let* ([name-str (attr alist "name")]
+         [params (or (attr-list alist "params") '())])
+    ;; Skip variadic functions (Chez 10.5 does not support ... in foreign-procedure)
+    (define (variadic? ps)
+      (and (pair? ps) (or (string=? (attr (car ps) "type") "...") (variadic? (cdr ps)))))
+    (if (variadic? params)
+        'skip
+        (let* ([name (kebab-ize name-str)]
+               [ret-str (attr alist "return-type")]
+               [ret-bool? (string=? ret-str "bool")]
+               [param-names (map (lambda (p) (kebab-ize (attr p "name"))) params)]
+               [param-ftypes (map (lambda (p) (param-type (attr p "type"))) params)]
+               [ret-ftype (if ret-bool? 'unsigned-8
+                              (or (ctype->type ret-str) (param-type ret-str)))])
+          `(define ,name
+             (let ([f #f])
+               (lambda ,param-names
+                 (unless f
+                   (set! f (foreign-procedure ,name-str
+                                              ,(map wrap-ffi param-ftypes)
+                                              ,(wrap-ffi ret-ftype))))
+                 ,(if ret-bool?
+                      `(not (= (f ,@param-names) 0))
+                      `(f ,@param-names)))))))))
+
+;; ===== color form =====
+(define (color-form def)
+  (let* ([name (string->symbol (attr def "name"))]
+         [raw (attr def "value")]
+         [n (string-length raw)]
+         [nums-text (substring raw 17 (- n 2))])
+    (define (parse s len)
+      (let search ([i 0])
+        (cond [(or (>= i len) (char=? #\, (string-ref s i)))
+               (cons (string->number (substring s 0 i))
+                     (if (>= i len) '()
+                         (parse (substring s (+ i 2) len) (- len i 2))))]
+              [else (search (+ i 1))])))
+    `(define ,name (make-color ,@(parse nums-text (string-length nums-text))))))
+
+;; ===== section processing =====
+(define (process-section section-key api-root)
+  (let ([sec (assq section-key api-root)])
+    (if (not sec) (values '() '())
+        (let loop ([items (cdr sec)] [defs '()] [exports '()])
+          (if (null? items) (values (reverse defs) exports)
+              (let ([item (car items)] [rest (cdr items)])
+                (case section-key
+                  [(structs)
+                   (let ([forms (struct-defines item)])
+                     (loop rest (append defs forms) exports))]
+                  [(callbacks)
+                   (let ([f (callback-form item)])
+                     (loop rest (cons f defs) (cons (caadr f) exports)))]
+                  [(enums)
+                   (let ([forms (enum-form item)])
+                     (loop rest (append defs forms) exports))]
+                  [(functions)
+                   (let ([f (fn-form item)])
+                     (if (eq? f 'skip)
+                         (loop rest defs exports)
+                         (loop rest (cons f defs) (cons (cadr f) exports))))]
+                  [(defines)
+                   (if (string=? (or (attr item "type") "") "COLOR")
+                       (let ([f (color-form item)])
+                         (loop rest (cons f defs) (cons (cadr f) exports)))
+                       (loop rest defs exports))]
+                  [else (loop rest defs exports)])))))))
+
+(define (process-lib sections api-root init-sexpr)
+  (define (init-export x)
+    (cond [(and (pair? x) (pair? (cdr x)) (symbol? (cadr x))) (cadr x)]
+          [(and (pair? x) (pair? (cdr x)) (pair? (cadr x)) (symbol? (caadr x))) (caadr x)]
+          [else 'skip]))
+  (let loop ([sections sections] [defs '()] [exports (map init-export init-sexpr)])
+    (if (null? sections)
+        (values (reverse defs) (filter (lambda (x) (not (eq? x 'skip))) exports))
+        (let-values ([(more-defs more-exports) (process-section (car sections) api-root)])
+          (loop (cdr sections) (append defs more-defs) (append exports more-exports))))))
+
+;; ===== load-shared-object code =====
+(define raylib-load-code
+  '((load-shared-object
+     (let loop ([libs (library-directories)])
+       (cond [(null? libs) (error 'raylib "Raylib not found")]
+             [(file-exists? (string-append (caar libs) "/raylib/raylib.dll"))
+              (string-append (caar libs) "/raylib/raylib.dll")]
+             [else (loop (cdr libs))])))))
+
+(define rlgl-load-code
+  '((define (load-rlgl)
+      (load-shared-object
+       (let loop ([libs (library-directories)])
+         (cond [(null? libs) (error 'rlgl "rlgl not found")]
+               [(file-exists? (string-append (caar libs) "/raylib/rlgl.dll"))
+                (string-append (caar libs) "/raylib/rlgl.dll")]
+               [else (loop (cdr libs))]))))))
+
+;; ===== init-sexprs =====
+(define raylib-init-sexpr
+  '((define rad->deg (lambda (rad) (/ (* rad 180) PI)))
+    (define deg->rad (lambda (deg) (/ (* deg PI) 180)))
     (define PI 3.14159265358979323846)
+    (define make-color
+      (case-lambda
+       [(r g b a)
+        (let ([struct (make-ftype-pointer Color (foreign-alloc (ftype-sizeof Color)))])
+          (ftype-set! Color (r) struct r)
+          (ftype-set! Color (g) struct g)
+          (ftype-set! Color (b) struct b)
+          (ftype-set! Color (a) struct a)
+          struct)]
+       [(c r g b a)
+        (ftype-set! Color (r) c r)
+        (ftype-set! Color (g) c g)
+        (ftype-set! Color (b) c b)
+        (ftype-set! Color (a) c a)
+        c]))
     (define-syntax drawing-begin
-      (syntax-rules ()
-        [(_ e0 e1 ...)
-         (begin
-           (begin-drawing)
-           e0 e1 ...
-           (end-drawing))]))
-    (define-syntax mode-3d-begin
-      (syntax-rules ()
-        [(_ camera e0 e1 ...)
-         (begin
-           (begin-mode-3d camera)
-           e0 e1 ...
-           (end-mode-3d))]))
-    (define-syntax mode-2d-begin
-      (syntax-rules ()
-        [(_ camera e0 e1 ...)
-         (begin
-           (begin-mode-2d camera)
-           e0 e1 ...
-           (end-mode-2d))]))
-    (define-syntax blend-mode-begin
-      (syntax-rules ()
-        [(_ blend-mode e0 e1 ...)
-         (begin
-           (begin-blend-mode blend-mode)
-           e0 e1 ...
-           (end-blend-mode))]))
-    (define-syntax scissor-mode-begin
-      (syntax-rules ()
-        [(_ rect-l e0 e1 ...)
-         (begin
-           (apply begin-scissor-mode rect-l)
-           e0 e1 ...
-           (end-blend-mode))]))
-    (define-syntax bool
-      (syntax-rules ()
-        [(_ f) (not (= f 0))]))
-    (define-syntax float
-      (syntax-rules ()
-        [(_ f) (if (fixnum? f)
-                   (fixnum->flonum f)                                   
-                   f)]))
-    (define-syntax int
-      (syntax-rules ()
-        [(_ f) (if (flonum? f)
-                   (flonum->fixnum (round f))
-                   f)]))
-    (define-syntax arr*
-      (syntax-rules ()
-        [(_ arr) (vector-ref arr 0)]))
-    (define-syntax arr&
-      (syntax-rules ()
-        [(_ num ftype-name arr-0)
-         (let ([arr (make-vector num)]
-               [size (ftype-sizeof ftype-name)])
-           (do ([i 0 (1+ i)]
-                [addr (ftype-pointer-address arr-0) (+ addr size)])
-               ((= i num)
-                arr)
-             (vector-set! arr
-                          i (make-ftype-pointer ftype-name addr))))]))
-    (define-syntax arr-ind
-      (syntax-rules (*)
-        [(_ arr (* ftype-name) ind)
-         (make-ftype-pointer
-          ftype-name
-          (ftype-ref void* ()
-                     (arr-ind arr void* ind)))]
-        [(_ arr ftype-name ind)
-         (make-ftype-pointer ftype-name
-                             (+ (ftype-pointer-address arr)
-                                (* ind (ftype-sizeof ftype-name))))]))
-    (define-syntax make-array
-      (syntax-rules ()
-        [(_ num ftype-name)
-         (let ([size (ftype-sizeof ftype-name)]
-               [arr (make-vector num)])
-           (do ([i 0 (1+ i)]
-                [addr (foreign-alloc (* num size))
-                      (+ addr size)])
-               ((= i num)
-                arr)
-             (vector-set! arr
-                          i (make-ftype-pointer
-                             ftype-name addr))))]
-        [(_ data-list ftype-name maker-fn)
-         (let* ([size (ftype-sizeof ftype-name)]
-                [num (length data-list)]
-                [arr (make-vector num)])
-           (do ([i 0 (1+ i)]
-                [addr (foreign-alloc (* num size))
-                      (+ addr size)]
-                [dl data-list (cdr dl)])
-               ((= i num)
-                arr)
-             (vector-set! arr i
-                          (apply
-                           maker-fn
-                           (cons (make-ftype-pointer
-                                  ftype-name
-                                  addr)
-                                 (car dl))))))]))
-    (define-syntax trace-log
-      (syntax-rules ()
-        [(_ log-type text)
-         (begin
-           (display (case log-type
-                      [1 "[32mTRACE: [0m"]
-                      [2 "[34mDEBUG: [0m"]
-                      [3 "[36mINFO: [0m"]
-                      [4 "[33mWARNING: [0m"]
-                      [5 "[31mERROR: [0m"]
-                      [6 "[35mFATAL: [0m"]
-                      [else ""]))
-           (display text)
-           (newline))]
-        [(_ log-type text args ...)
-         (trace-log log-type (format text args ...))]))
+      (syntax-rules () [(_ e0 e1 ...) (begin (begin-drawing) e0 e1 ... (end-drawing))]))))
 
-    (define make-camera2d
-      (lambda (offset target rotation zoom)
-        (let ([camera (make-camera-2d)])
-          (apply make-vector-2
-                 `(,(camera-2d-ref& camera offset)
-                   ,@offset))
-          (apply make-vector-2
-                 `(,(camera-2d-ref& camera target)
-                   ,@target))
-          (camera-2d-set! camera rotation rotation)
-          (camera-2d-set! camera zoom zoom)
-          camera)))
-          
-    (define make-camera3d
-      (lambda (position target up fovy projection)
-        (let ([camera (make-camera-3d)])
-          (make-vector-3
-           (camera-3d-ref& camera position)
-           (car position)
-           (cadr position)
-           (caddr position))
-          (make-vector-3
-           (camera-3d-ref& camera target)
-           (car target)
-           (cadr target)
-           (caddr target))
-          (make-vector-3
-           (camera-3d-ref& camera up)
-           (car up)
-           (cadr up)
-           (caddr up))
-          (camera-3d-set! camera fovy fovy)
-          (camera-3d-set! camera
-                          projection
-                          projection)
-          camera)))))
+;; ===== regenerate =====
+(define (regenerate input-file output-file lib-name sections init-sexpr load-code)
+  (unless (file-exists? input-file)
+    (error 'regenerate "missing input: ~a" input-file))
+  (let* ([api-root (with-input-from-file input-file read)]
+         ;; Build alias map from aliases section
+         [aliases-sec (assq 'aliases api-root)])
+    (when aliases-sec
+      (let ([alist '()])
+        (for-each (lambda (entry)
+                    (let ([type-str (attr entry "type")]
+                          [name-str (attr entry "name")])
+                      ;; Strip leading * from alias names
+                      (let ([clean-name
+                             (if (and (> (string-length name-str) 0)
+                                      (char=? (string-ref name-str 0) #\*))
+                                 (substring name-str 1 (string-length name-str))
+                                 name-str)])
+                        (set! alist (cons (cons clean-name type-str) alist)))))
+                  (cdr aliases-sec))
+        (alias-map alist)))
+    ;; Generate
+    (let-values ([(defs exports) (process-lib sections api-root init-sexpr)])
+      (when (file-exists? output-file) (delete-file output-file))
+      (call-with-output-file output-file
+        (lambda (fp)
+          (pretty-print
+           `(library ,lib-name (export ,@exports) (import (chezscheme))
+              (begin ,@init-sexpr ,@defs ,@load-code))
+           fp))))
+    (printf "regenerated: ~a\n" output-file)))
 
-(let ([write-fp (if #t #;(output)
-                    (begin
-                      (when (file-exists? output-file-path)
-                        (delete-file output-file-path))
-                      (open-output-file output-file-path))
-                    (current-output-port))]
-      [export-list (map cadr init-sexpr)]
-      [sexpr-list init-sexpr])
-  (for-each (lambda (enum-xml)
-              (for-each
-               (lambda (enum-item)
-                 (let ([enum-expr
-                        (enum-generator enum-item)])
-                   (push! sexpr-list enum-expr)
-                   (push! export-list (cadr enum-expr))))
-               (xml-get-children enum-xml)))
-            api-enums)
+;; ===== entry point =====
+(regenerate "./src/raylib_api.sexpr" "./src/raylib.sls"
+            '(raylib raylib (0 3))
+            '(defines structs aliases enums callbacks functions)
+            raylib-init-sexpr raylib-load-code)
 
-  (for-each (lambda (struct-xml)
-              (let ([sexpr (struct-generator struct-xml)])
-                (let ([def-sexpr (caar sexpr)]
-                      [def-make-sexpr (cadar sexpr)]
-                      [def-cloner-sexpr (cddar sexpr)]
-                      [set-sexpr (cadr sexpr)]
-                      [get-sexpr (caddr sexpr)]
-                      [ref-sexpr (cadddr sexpr)])
-                  (push! sexpr-list def-sexpr)
-                  (push! sexpr-list set-sexpr) 
-                  (push! sexpr-list get-sexpr)
-                  (push! sexpr-list ref-sexpr)
-                  (push! export-list (cadr def-sexpr))
-                  (push! export-list (cadr set-sexpr))
-                  (push! export-list (cadr get-sexpr))
-                  (push! export-list (cadr ref-sexpr)) 
-                  (unless (null? def-make-sexpr)
-                    (push! sexpr-list def-make-sexpr)
-                    (push! export-list
-                           (cadr def-make-sexpr)))
-                  (unless (null? def-cloner-sexpr)
-                    (push! sexpr-list def-cloner-sexpr)
-                    (push! export-list
-                           (cadr def-cloner-sexpr))))))
-            api-structs)
-  
-  (for-each (lambda (cb-xml)
-              (let ([cb-expr (cb-generator cb-xml)])
-                (push! sexpr-list cb-expr)
-                (push! export-list (caadr cb-expr))))
-            api-callbacks)
-  
-  (for-each (lambda (fn-xml)
-              (let ([sexpr (fn-generator fn-xml)])
-                (when sexpr
-                  (push! sexpr-list sexpr)
-                  (push! export-list (cadr sexpr)))))
-            api-functions)
+(regenerate "./src/rlgl_api.sexpr" "./src/rlgl.sls"
+            '(rlgl rlgl (0 3))
+            '(defines structs aliases enums callbacks functions)
+            '() rlgl-load-code)
 
-  (for-each (lambda (def-xml)
-              (when (string=?
-                     "COLOR"
-                     (xml-get-attr def-xml "type"))
-                (let ([color-sexpr (color-generator def-xml)])
-                  (push! sexpr-list color-sexpr)
-                  (push! export-list (cadr color-sexpr)))))
-            api-defines)
-
-  (pretty-print
-   '(let load-loop ([libs (library-directories)])
-      (when (null? libs)
-        (error #f
-               "Raylib not found"))
-      (let ([libpath (string-append
-                      (caar libs)
-                      "/raylib/raylib.dll")])
-        (if (file-exists? libpath)
-            (load-shared-object libpath)
-            (load-loop (cdr libs)))))
-   write-fp)
-  (pretty-print
-   `(library (raylib raylib (0 2))
-      (export ,@export-list)
-      (import (chezscheme))
-      ,@(reverse sexpr-list))
-   write-fp)
-  
-  (close-port write-fp)
-  
-  (let ([lib-dir
-         (let lib-loop ([libs (library-directories)])
-           (when (null? libs)
-             (error #f
-                    "Raylib not found"))
-           (let ([libpath (caar libs)])
-             (if (file-exists? (string-append libpath "/raylib/"))
-                 libpath
-                 (lib-loop (cdr libs)))))])
-    
-    (compile-file output-file-path
-                  (string-append lib-dir "/raylib/raylib.so"))
-    (compile-file "./src/raymath.sls"
-                  (string-append lib-dir "/raylib/raymath.so"))
-    (compile-file "./src/rlgl.sls"
-                  (string-append lib-dir "/raylib/rlgl.so"))))
-
+(printf "done\n")
