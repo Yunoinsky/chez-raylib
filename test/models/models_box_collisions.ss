@@ -58,7 +58,7 @@
                                                    enemy-sphere-size))])
     (drawing-begin
      (clear-background RAYWHITE)
-     (begin-mode-3d
+     (mode-3d-begin
       camera
       (draw-cube-v (apply make-vector-3 enemy-box-pos)
                    (apply make-vector-3 enemy-box-size) GRAY)

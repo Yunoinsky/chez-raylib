@@ -17,7 +17,7 @@
   (drawing-begin
    (clear-background RAYWHITE)
 
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (draw-cube cube-pos 2.0 2.0 2.0 RED)
     (draw-cube-wires cube-pos 2.0 2.0 2.0 MAROON)

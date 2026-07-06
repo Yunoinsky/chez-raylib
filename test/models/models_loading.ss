@@ -57,7 +57,7 @@
         (set! selected #f)))
   (drawing-begin
    (clear-background RAYWHITE)
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (draw-model model position 1.0 WHITE)
     (draw-grid 20 10.0)

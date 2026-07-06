@@ -27,7 +27,7 @@
   (update-camera camera)
   (drawing-begin
    (clear-background RAYWHITE)
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (draw-model model map-pos 1.0 RED)
     (draw-grid 20 1.0))

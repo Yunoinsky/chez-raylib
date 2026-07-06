@@ -29,7 +29,7 @@
           (camera-3d-set! camera projection CAMERA_PERSPECTIVE))))
   (drawing-begin
    (clear-background RAYWHITE)
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (draw-cube (make-vector-3 tmp-v3 -4.0 0.0 2.0)
                2.0 5.0 2.0 RED)

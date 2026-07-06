@@ -24,7 +24,7 @@
   (update-camera camera)
   (drawing-begin
    (clear-background SKYBLUE)
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (draw-model model pos 1.0 WHITE)
     (draw-grid 10 1.0))))

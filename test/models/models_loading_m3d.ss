@@ -55,7 +55,7 @@
   (drawing-begin
    (clear-background RAYWHITE)
 
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (when draw-mesh
       (draw-model model pos 1.0 WHITE))

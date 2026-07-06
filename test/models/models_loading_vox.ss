@@ -50,7 +50,7 @@
   (drawing-begin
    (clear-background RAYWHITE)
 
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (draw-model (list-ref models current-model) (make-vector-3 0.0 0.0 0.0) 1.0 WHITE)
     (draw-grid 10 1.0))

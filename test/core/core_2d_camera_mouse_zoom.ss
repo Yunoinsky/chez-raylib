@@ -37,7 +37,7 @@
     (drawing-begin
      (clear-background BLACK)
      
-     (begin-mode-2d
+     (mode-2d-begin
       camera
 
       (rl-load-identity)
