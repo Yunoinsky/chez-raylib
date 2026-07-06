@@ -305,6 +305,8 @@
                            unsigned long void void* string boolean ...))
 (define (struct-symbol? t) (and (symbol? t) (not (memq t scalar-ffi-types))))
 (define (wrap-ffi t) (if (struct-symbol? t) (list '& t) t))
+;; Return types for structs use pointer (*) since Chez doesn't accept (& Type) as result type
+(define (wrap-ffi-ret t) (if (struct-symbol? t) (list '* t) t))
 
 (define (fn-form alist)
   (let* ([name-str (attr alist "name")]
@@ -327,7 +329,7 @@
                  (unless f
                    (set! f (foreign-procedure ,name-str
                                               ,(map wrap-ffi param-ftypes)
-                                              ,(wrap-ffi ret-ftype))))
+                                              ,(wrap-ffi-ret ret-ftype))))
                  ,(if ret-bool?
                       `(not (= (f ,@param-names) 0))
                       `(f ,@param-names)))))))))

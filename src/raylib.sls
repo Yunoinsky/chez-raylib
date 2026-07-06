@@ -2972,7 +2972,7 @@
             (set! f
               (foreign-procedure "GetMonitorPosition"
                 (int)
-                (& Vector-2))))
+                (* Vector-2))))
           (f monitor))))
     (define get-monitor-width
       (let ([f #f])
@@ -3012,14 +3012,14 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetWindowPosition" () (& Vector-2))))
+              (foreign-procedure "GetWindowPosition" () (* Vector-2))))
           (f))))
     (define get-window-scale-dpi
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetWindowScaleDPI" () (& Vector-2))))
+              (foreign-procedure "GetWindowScaleDPI" () (* Vector-2))))
           (f))))
     (define get-monitor-name
       (let ([f #f])
@@ -3045,7 +3045,7 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetClipboardImage" () (& Image))))
+              (foreign-procedure "GetClipboardImage" () (* Image))))
           (f))))
     (define enable-event-waiting
       (let ([f #f])
@@ -3213,7 +3213,7 @@
             (set! f
               (foreign-procedure "LoadVrStereoConfig"
                 ((& Vr-Device-Info))
-                (& Vr-Stereo-Config))))
+                (* Vr-Stereo-Config))))
           (f device))))
     (define unload-vr-stereo-config
       (let ([f #f])
@@ -3231,7 +3231,7 @@
             (set! f
               (foreign-procedure "LoadShader"
                 (string string)
-                (& Shader))))
+                (* Shader))))
           (f vs-file-name fs-file-name))))
     (define load-shader-from-memory
       (let ([f #f])
@@ -3240,7 +3240,7 @@
             (set! f
               (foreign-procedure "LoadShaderFromMemory"
                 (string string)
-                (& Shader))))
+                (* Shader))))
           (f vs-code fs-code))))
     (define is-shader-valid
       (let ([f #f])
@@ -3319,7 +3319,7 @@
             (set! f
               (foreign-procedure "GetScreenToWorldRay"
                 ((& Vector-2) (& Camera-3D))
-                (& Ray))))
+                (* Ray))))
           (f position camera))))
     (define get-screen-to-world-ray-ex
       (let ([f #f])
@@ -3328,7 +3328,7 @@
             (set! f
               (foreign-procedure "GetScreenToWorldRayEx"
                 ((& Vector-2) (& Camera-3D) int int)
-                (& Ray))))
+                (* Ray))))
           (f position camera width height))))
     (define get-world-to-screen
       (let ([f #f])
@@ -3337,7 +3337,7 @@
             (set! f
               (foreign-procedure "GetWorldToScreen"
                 ((& Vector-3) (& Camera-3D))
-                (& Vector-2))))
+                (* Vector-2))))
           (f position camera))))
     (define get-world-to-screen-ex
       (let ([f #f])
@@ -3346,7 +3346,7 @@
             (set! f
               (foreign-procedure "GetWorldToScreenEx"
                 ((& Vector-3) (& Camera-3D) int int)
-                (& Vector-2))))
+                (* Vector-2))))
           (f position camera width height))))
     (define get-world-to-screen-2d
       (let ([f #f])
@@ -3355,7 +3355,7 @@
             (set! f
               (foreign-procedure "GetWorldToScreen2D"
                 ((& Vector-2) (& Camera-2D))
-                (& Vector-2))))
+                (* Vector-2))))
           (f position camera))))
     (define get-screen-to-world-2d
       (let ([f #f])
@@ -3364,7 +3364,7 @@
             (set! f
               (foreign-procedure "GetScreenToWorld2D"
                 ((& Vector-2) (& Camera-2D))
-                (& Vector-2))))
+                (* Vector-2))))
           (f position camera))))
     (define get-camera-matrix
       (let ([f #f])
@@ -3373,7 +3373,7 @@
             (set! f
               (foreign-procedure "GetCameraMatrix"
                 ((& Camera-3D))
-                (& Matrix))))
+                (* Matrix))))
           (f camera))))
     (define get-camera-matrix-2d
       (let ([f #f])
@@ -3382,7 +3382,7 @@
             (set! f
               (foreign-procedure "GetCameraMatrix2D"
                 ((& Camera-2D))
-                (& Matrix))))
+                (* Matrix))))
           (f camera))))
     (define set-target-fps
       (let ([f #f])
@@ -3755,7 +3755,7 @@
             (set! f
               (foreign-procedure "LoadDirectoryFiles"
                 (string)
-                (& File-Path-List))))
+                (* File-Path-List))))
           (f dir-path))))
     (define load-directory-files-ex
       (let ([f #f])
@@ -3764,7 +3764,7 @@
             (set! f
               (foreign-procedure "LoadDirectoryFilesEx"
                 (string string unsigned-8)
-                (& File-Path-List))))
+                (* File-Path-List))))
           (f base-path filter scan-subdirs))))
     (define unload-directory-files
       (let ([f #f])
@@ -3788,7 +3788,7 @@
             (set! f
               (foreign-procedure "LoadDroppedFiles"
                 ()
-                (& File-Path-List))))
+                (* File-Path-List))))
           (f))))
     (define unload-dropped-files
       (let ([f #f])
@@ -3896,7 +3896,7 @@
             (set! f
               (foreign-procedure "LoadAutomationEventList"
                 (string)
-                (& Automation-Event-List))))
+                (* Automation-Event-List))))
           (f file-name))))
     (define unload-automation-event-list
       (let ([f #f])
@@ -4151,14 +4151,14 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetMousePosition" () (& Vector-2))))
+              (foreign-procedure "GetMousePosition" () (* Vector-2))))
           (f))))
     (define get-mouse-delta
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetMouseDelta" () (& Vector-2))))
+              (foreign-procedure "GetMouseDelta" () (* Vector-2))))
           (f))))
     (define set-mouse-position
       (let ([f #f])
@@ -4192,7 +4192,7 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetMouseWheelMoveV" () (& Vector-2))))
+              (foreign-procedure "GetMouseWheelMoveV" () (* Vector-2))))
           (f))))
     (define set-mouse-cursor
       (let ([f #f])
@@ -4215,7 +4215,7 @@
         (lambda (index)
           (unless f
             (set! f
-              (foreign-procedure "GetTouchPosition" (int) (& Vector-2))))
+              (foreign-procedure "GetTouchPosition" (int) (* Vector-2))))
           (f index))))
     (define get-touch-point-id
       (let ([f #f])
@@ -4263,7 +4263,7 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetGestureDragVector" () (& Vector-2))))
+              (foreign-procedure "GetGestureDragVector" () (* Vector-2))))
           (f))))
     (define get-gesture-drag-angle
       (let ([f #f])
@@ -4278,7 +4278,7 @@
             (set! f
               (foreign-procedure "GetGesturePinchVector"
                 ()
-                (& Vector-2))))
+                (* Vector-2))))
           (f))))
     (define get-gesture-pinch-angle
       (let ([f #f])
@@ -4319,7 +4319,7 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetShapesTexture" () (& Texture))))
+              (foreign-procedure "GetShapesTexture" () (* Texture))))
           (f))))
     (define get-shapes-texture-rectangle
       (let ([f #f])
@@ -4328,7 +4328,7 @@
             (set! f
               (foreign-procedure "GetShapesTextureRectangle"
                 ()
-                (& Rectangle))))
+                (* Rectangle))))
           (f))))
     (define draw-pixel
       (let ([f #f])
@@ -4827,7 +4827,7 @@
             (set! f
               (foreign-procedure "GetSplinePointLinear"
                 ((& Vector-2) (& Vector-2) float)
-                (& Vector-2))))
+                (* Vector-2))))
           (f start-pos end-pos t))))
     (define get-spline-point-basis
       (let ([f #f])
@@ -4836,7 +4836,7 @@
             (set! f
               (foreign-procedure "GetSplinePointBasis"
                 ((& Vector-2) (& Vector-2) (& Vector-2) (& Vector-2) float)
-                (& Vector-2))))
+                (* Vector-2))))
           (f p-1 p-2 p-3 p-4 t))))
     (define get-spline-point-catmull-rom
       (let ([f #f])
@@ -4845,7 +4845,7 @@
             (set! f
               (foreign-procedure "GetSplinePointCatmullRom"
                 ((& Vector-2) (& Vector-2) (& Vector-2) (& Vector-2) float)
-                (& Vector-2))))
+                (* Vector-2))))
           (f p-1 p-2 p-3 p-4 t))))
     (define get-spline-point-bezier-quadratic
       (let ([f #f])
@@ -4854,7 +4854,7 @@
             (set! f
               (foreign-procedure "GetSplinePointBezierQuadratic"
                 ((& Vector-2) (& Vector-2) (& Vector-2) float)
-                (& Vector-2))))
+                (* Vector-2))))
           (f p-1 c-2 p-3 t))))
     (define get-spline-point-bezier-cubic
       (let ([f #f])
@@ -4863,7 +4863,7 @@
             (set! f
               (foreign-procedure "GetSplinePointBezierCubic"
                 ((& Vector-2) (& Vector-2) (& Vector-2) (& Vector-2) float)
-                (& Vector-2))))
+                (* Vector-2))))
           (f p-1 c-2 c-3 p-4 t))))
     (define check-collision-recs
       (let ([f #f])
@@ -4969,13 +4969,13 @@
             (set! f
               (foreign-procedure "GetCollisionRec"
                 ((& Rectangle) (& Rectangle))
-                (& Rectangle))))
+                (* Rectangle))))
           (f rec-1 rec-2))))
     (define load-image
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadImage" (string) (& Image))))
+            (set! f (foreign-procedure "LoadImage" (string) (* Image))))
           (f file-name))))
     (define load-image-raw
       (let ([f #f])
@@ -4984,7 +4984,7 @@
             (set! f
               (foreign-procedure "LoadImageRaw"
                 (string int int int int)
-                (& Image))))
+                (* Image))))
           (f file-name width height format header-size))))
     (define load-image-anim
       (let ([f #f])
@@ -4993,7 +4993,7 @@
             (set! f
               (foreign-procedure "LoadImageAnim"
                 (string (* int))
-                (& Image))))
+                (* Image))))
           (f file-name frames))))
     (define load-image-anim-from-memory
       (let ([f #f])
@@ -5002,7 +5002,7 @@
             (set! f
               (foreign-procedure "LoadImageAnimFromMemory"
                 (string (* unsigned-8) int (* int))
-                (& Image))))
+                (* Image))))
           (f file-type file-data data-size frames))))
     (define load-image-from-memory
       (let ([f #f])
@@ -5011,7 +5011,7 @@
             (set! f
               (foreign-procedure "LoadImageFromMemory"
                 (string (* unsigned-8) int)
-                (& Image))))
+                (* Image))))
           (f file-type file-data data-size))))
     (define load-image-from-texture
       (let ([f #f])
@@ -5020,14 +5020,14 @@
             (set! f
               (foreign-procedure "LoadImageFromTexture"
                 ((& Texture))
-                (& Image))))
+                (* Image))))
           (f texture))))
     (define load-image-from-screen
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "LoadImageFromScreen" () (& Image))))
+              (foreign-procedure "LoadImageFromScreen" () (* Image))))
           (f))))
     (define is-image-valid
       (let ([f #f])
@@ -5076,7 +5076,7 @@
             (set! f
               (foreign-procedure "GenImageColor"
                 (int int (& Color))
-                (& Image))))
+                (* Image))))
           (f width height color))))
     (define gen-image-gradient-linear
       (let ([f #f])
@@ -5085,7 +5085,7 @@
             (set! f
               (foreign-procedure "GenImageGradientLinear"
                 (int int int (& Color) (& Color))
-                (& Image))))
+                (* Image))))
           (f width height direction start end))))
     (define gen-image-gradient-radial
       (let ([f #f])
@@ -5094,7 +5094,7 @@
             (set! f
               (foreign-procedure "GenImageGradientRadial"
                 (int int float (& Color) (& Color))
-                (& Image))))
+                (* Image))))
           (f width height density inner outer))))
     (define gen-image-gradient-square
       (let ([f #f])
@@ -5103,7 +5103,7 @@
             (set! f
               (foreign-procedure "GenImageGradientSquare"
                 (int int float (& Color) (& Color))
-                (& Image))))
+                (* Image))))
           (f width height density inner outer))))
     (define gen-image-checked
       (let ([f #f])
@@ -5112,7 +5112,7 @@
             (set! f
               (foreign-procedure "GenImageChecked"
                 (int int int int (& Color) (& Color))
-                (& Image))))
+                (* Image))))
           (f width height checks-x checks-y col-1 col-2))))
     (define gen-image-white-noise
       (let ([f #f])
@@ -5121,7 +5121,7 @@
             (set! f
               (foreign-procedure "GenImageWhiteNoise"
                 (int int float)
-                (& Image))))
+                (* Image))))
           (f width height factor))))
     (define gen-image-perlin-noise
       (let ([f #f])
@@ -5130,7 +5130,7 @@
             (set! f
               (foreign-procedure "GenImagePerlinNoise"
                 (int int int int float)
-                (& Image))))
+                (* Image))))
           (f width height offset-x offset-y scale))))
     (define gen-image-cellular
       (let ([f #f])
@@ -5139,7 +5139,7 @@
             (set! f
               (foreign-procedure "GenImageCellular"
                 (int int int)
-                (& Image))))
+                (* Image))))
           (f width height tile-size))))
     (define gen-image-text
       (let ([f #f])
@@ -5148,14 +5148,14 @@
             (set! f
               (foreign-procedure "GenImageText"
                 (int int string)
-                (& Image))))
+                (* Image))))
           (f width height text))))
     (define image-copy
       (let ([f #f])
         (lambda (image)
           (unless f
             (set! f
-              (foreign-procedure "ImageCopy" ((& Image)) (& Image))))
+              (foreign-procedure "ImageCopy" ((& Image)) (* Image))))
           (f image))))
     (define image-from-image
       (let ([f #f])
@@ -5164,7 +5164,7 @@
             (set! f
               (foreign-procedure "ImageFromImage"
                 ((& Image) (& Rectangle))
-                (& Image))))
+                (* Image))))
           (f image rec))))
     (define image-from-channel
       (let ([f #f])
@@ -5173,7 +5173,7 @@
             (set! f
               (foreign-procedure "ImageFromChannel"
                 ((& Image) int)
-                (& Image))))
+                (* Image))))
           (f image selected-channel))))
     (define image-text
       (let ([f #f])
@@ -5182,7 +5182,7 @@
             (set! f
               (foreign-procedure "ImageText"
                 (string int (& Color))
-                (& Image))))
+                (* Image))))
           (f text font-size color))))
     (define image-text-ex
       (let ([f #f])
@@ -5191,7 +5191,7 @@
             (set! f
               (foreign-procedure "ImageTextEx"
                 ((& Font) string float float (& Color))
-                (& Image))))
+                (* Image))))
           (f font text font-size spacing tint))))
     (define image-format
       (let ([f #f])
@@ -5437,7 +5437,7 @@
             (set! f
               (foreign-procedure "GetImageAlphaBorder"
                 ((& Image) float)
-                (& Rectangle))))
+                (* Rectangle))))
           (f image threshold))))
     (define get-image-color
       (let ([f #f])
@@ -5446,7 +5446,7 @@
             (set! f
               (foreign-procedure "GetImageColor"
                 ((& Image) int int)
-                (& Color))))
+                (* Color))))
           (f image x y))))
     (define image-clear-background
       (let ([f #f])
@@ -5774,7 +5774,7 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "LoadTexture" (string) (& Texture))))
+              (foreign-procedure "LoadTexture" (string) (* Texture))))
           (f file-name))))
     (define load-texture-from-image
       (let ([f #f])
@@ -5783,7 +5783,7 @@
             (set! f
               (foreign-procedure "LoadTextureFromImage"
                 ((& Image))
-                (& Texture))))
+                (* Texture))))
           (f image))))
     (define load-texture-cubemap
       (let ([f #f])
@@ -5792,7 +5792,7 @@
             (set! f
               (foreign-procedure "LoadTextureCubemap"
                 ((& Image) int)
-                (& Texture))))
+                (* Texture))))
           (f image layout))))
     (define load-render-texture
       (let ([f #f])
@@ -5801,7 +5801,7 @@
             (set! f
               (foreign-procedure "LoadRenderTexture"
                 (int int)
-                (& Render-Texture))))
+                (* Render-Texture))))
           (f width height))))
     (define is-texture-valid
       (let ([f #f])
@@ -5958,7 +5958,7 @@
         (lambda (color alpha)
           (unless f
             (set! f
-              (foreign-procedure "Fade" ((& Color) float) (& Color))))
+              (foreign-procedure "Fade" ((& Color) float) (* Color))))
           (f color alpha))))
     (define color-to-int
       (let ([f #f])
@@ -5973,7 +5973,7 @@
             (set! f
               (foreign-procedure "ColorNormalize"
                 ((& Color))
-                (& Vector-4))))
+                (* Vector-4))))
           (f color))))
     (define color-from-normalized
       (let ([f #f])
@@ -5982,14 +5982,14 @@
             (set! f
               (foreign-procedure "ColorFromNormalized"
                 ((& Vector-4))
-                (& Color))))
+                (* Color))))
           (f normalized))))
     (define color-to-hsv
       (let ([f #f])
         (lambda (color)
           (unless f
             (set! f
-              (foreign-procedure "ColorToHSV" ((& Color)) (& Vector-3))))
+              (foreign-procedure "ColorToHSV" ((& Color)) (* Vector-3))))
           (f color))))
     (define color-from-hsv
       (let ([f #f])
@@ -5998,7 +5998,7 @@
             (set! f
               (foreign-procedure "ColorFromHSV"
                 (float float float)
-                (& Color))))
+                (* Color))))
           (f hue saturation value))))
     (define color-tint
       (let ([f #f])
@@ -6007,7 +6007,7 @@
             (set! f
               (foreign-procedure "ColorTint"
                 ((& Color) (& Color))
-                (& Color))))
+                (* Color))))
           (f color tint))))
     (define color-brightness
       (let ([f #f])
@@ -6016,7 +6016,7 @@
             (set! f
               (foreign-procedure "ColorBrightness"
                 ((& Color) float)
-                (& Color))))
+                (* Color))))
           (f color factor))))
     (define color-contrast
       (let ([f #f])
@@ -6025,7 +6025,7 @@
             (set! f
               (foreign-procedure "ColorContrast"
                 ((& Color) float)
-                (& Color))))
+                (* Color))))
           (f color contrast))))
     (define color-alpha
       (let ([f #f])
@@ -6034,7 +6034,7 @@
             (set! f
               (foreign-procedure "ColorAlpha"
                 ((& Color) float)
-                (& Color))))
+                (* Color))))
           (f color alpha))))
     (define color-alpha-blend
       (let ([f #f])
@@ -6043,7 +6043,7 @@
             (set! f
               (foreign-procedure "ColorAlphaBlend"
                 ((& Color) (& Color) (& Color))
-                (& Color))))
+                (* Color))))
           (f dst src tint))))
     (define color-lerp
       (let ([f #f])
@@ -6052,21 +6052,21 @@
             (set! f
               (foreign-procedure "ColorLerp"
                 ((& Color) (& Color) float)
-                (& Color))))
+                (* Color))))
           (f color-1 color-2 factor))))
     (define get-color
       (let ([f #f])
         (lambda (hex-value)
           (unless f
             (set! f
-              (foreign-procedure "GetColor" (unsigned) (& Color))))
+              (foreign-procedure "GetColor" (unsigned) (* Color))))
           (f hex-value))))
     (define get-pixel-color
       (let ([f #f])
         (lambda (src-ptr format)
           (unless f
             (set! f
-              (foreign-procedure "GetPixelColor" (void* int) (& Color))))
+              (foreign-procedure "GetPixelColor" (void* int) (* Color))))
           (f src-ptr format))))
     (define set-pixel-color
       (let ([f #f])
@@ -6088,13 +6088,13 @@
       (let ([f #f])
         (lambda ()
           (unless f
-            (set! f (foreign-procedure "GetFontDefault" () (& Font))))
+            (set! f (foreign-procedure "GetFontDefault" () (* Font))))
           (f))))
     (define load-font
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadFont" (string) (& Font))))
+            (set! f (foreign-procedure "LoadFont" (string) (* Font))))
           (f file-name))))
     (define load-font-ex
       (let ([f #f])
@@ -6103,7 +6103,7 @@
             (set! f
               (foreign-procedure "LoadFontEx"
                 (string int (* int) int)
-                (& Font))))
+                (* Font))))
           (f file-name font-size codepoints codepoint-count))))
     (define load-font-from-image
       (let ([f #f])
@@ -6112,7 +6112,7 @@
             (set! f
               (foreign-procedure "LoadFontFromImage"
                 ((& Image) (& Color) int)
-                (& Font))))
+                (* Font))))
           (f image key first-char))))
     (define load-font-from-memory
       (let ([f #f])
@@ -6122,7 +6122,7 @@
             (set! f
               (foreign-procedure "LoadFontFromMemory"
                 (string (* unsigned-8) int int (* int) int)
-                (& Font))))
+                (* Font))))
           (f file-type file-data data-size font-size codepoints
              codepoint-count))))
     (define is-font-valid
@@ -6151,7 +6151,7 @@
             (set! f
               (foreign-procedure "GenImageFontAtlas"
                 ((* Glyph-Info) void* int int int int)
-                (& Image))))
+                (* Image))))
           (f glyphs glyph-recs glyph-count font-size padding
              pack-method))))
     (define unload-font-data
@@ -6260,7 +6260,7 @@
             (set! f
               (foreign-procedure "MeasureTextEx"
                 ((& Font) string float float)
-                (& Vector-2))))
+                (* Vector-2))))
           (f font text font-size spacing))))
     (define measure-text-codepoints
       (let ([f #f])
@@ -6269,7 +6269,7 @@
             (set! f
               (foreign-procedure "MeasureTextCodepoints"
                 ((& Font) (* int) int float float)
-                (& Vector-2))))
+                (* Vector-2))))
           (f font codepoints length font-size spacing))))
     (define get-glyph-index
       (let ([f #f])
@@ -6285,7 +6285,7 @@
             (set! f
               (foreign-procedure "GetGlyphInfo"
                 ((& Font) int)
-                (& Glyph-Info))))
+                (* Glyph-Info))))
           (f font codepoint))))
     (define get-glyph-atlas-rec
       (let ([f #f])
@@ -6294,7 +6294,7 @@
             (set! f
               (foreign-procedure "GetGlyphAtlasRec"
                 ((& Font) int)
-                (& Rectangle))))
+                (* Rectangle))))
           (f font codepoint))))
     (define load-utf-8
       (let ([f #f])
@@ -6742,7 +6742,7 @@
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadModel" (string) (& Model))))
+            (set! f (foreign-procedure "LoadModel" (string) (* Model))))
           (f file-name))))
     (define load-model-from-mesh
       (let ([f #f])
@@ -6751,7 +6751,7 @@
             (set! f
               (foreign-procedure "LoadModelFromMesh"
                 ((& Mesh))
-                (& Model))))
+                (* Model))))
           (f mesh))))
     (define is-model-valid
       (let ([f #f])
@@ -6773,7 +6773,7 @@
             (set! f
               (foreign-procedure "GetModelBoundingBox"
                 ((& Model))
-                (& Bounding-Box))))
+                (* Bounding-Box))))
           (f model))))
     (define draw-model
       (let ([f #f])
@@ -6925,7 +6925,7 @@
             (set! f
               (foreign-procedure "GetMeshBoundingBox"
                 ((& Mesh))
-                (& Bounding-Box))))
+                (* Bounding-Box))))
           (f mesh))))
     (define gen-mesh-tangents
       (let ([f #f])
@@ -6957,7 +6957,7 @@
         (lambda (sides radius)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshPoly" (int float) (& Mesh))))
+              (foreign-procedure "GenMeshPoly" (int float) (* Mesh))))
           (f sides radius))))
     (define gen-mesh-plane
       (let ([f #f])
@@ -6966,7 +6966,7 @@
             (set! f
               (foreign-procedure "GenMeshPlane"
                 (float float int int)
-                (& Mesh))))
+                (* Mesh))))
           (f width length res-x res-z))))
     (define gen-mesh-cube
       (let ([f #f])
@@ -6975,7 +6975,7 @@
             (set! f
               (foreign-procedure "GenMeshCube"
                 (float float float)
-                (& Mesh))))
+                (* Mesh))))
           (f width height length))))
     (define gen-mesh-sphere
       (let ([f #f])
@@ -6984,7 +6984,7 @@
             (set! f
               (foreign-procedure "GenMeshSphere"
                 (float int int)
-                (& Mesh))))
+                (* Mesh))))
           (f radius rings slices))))
     (define gen-mesh-hemi-sphere
       (let ([f #f])
@@ -6993,7 +6993,7 @@
             (set! f
               (foreign-procedure "GenMeshHemiSphere"
                 (float int int)
-                (& Mesh))))
+                (* Mesh))))
           (f radius rings slices))))
     (define gen-mesh-cylinder
       (let ([f #f])
@@ -7002,7 +7002,7 @@
             (set! f
               (foreign-procedure "GenMeshCylinder"
                 (float float int)
-                (& Mesh))))
+                (* Mesh))))
           (f radius height slices))))
     (define gen-mesh-cone
       (let ([f #f])
@@ -7011,7 +7011,7 @@
             (set! f
               (foreign-procedure "GenMeshCone"
                 (float float int)
-                (& Mesh))))
+                (* Mesh))))
           (f radius height slices))))
     (define gen-mesh-torus
       (let ([f #f])
@@ -7020,7 +7020,7 @@
             (set! f
               (foreign-procedure "GenMeshTorus"
                 (float float int int)
-                (& Mesh))))
+                (* Mesh))))
           (f radius size rad-seg sides))))
     (define gen-mesh-knot
       (let ([f #f])
@@ -7029,7 +7029,7 @@
             (set! f
               (foreign-procedure "GenMeshKnot"
                 (float float int int)
-                (& Mesh))))
+                (* Mesh))))
           (f radius size rad-seg sides))))
     (define gen-mesh-heightmap
       (let ([f #f])
@@ -7038,7 +7038,7 @@
             (set! f
               (foreign-procedure "GenMeshHeightmap"
                 ((& Image) (& Vector-3))
-                (& Mesh))))
+                (* Mesh))))
           (f heightmap size))))
     (define gen-mesh-cubicmap
       (let ([f #f])
@@ -7047,7 +7047,7 @@
             (set! f
               (foreign-procedure "GenMeshCubicmap"
                 ((& Image) (& Vector-3))
-                (& Mesh))))
+                (* Mesh))))
           (f cubicmap cube-size))))
     (define load-materials
       (let ([f #f])
@@ -7063,7 +7063,7 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "LoadMaterialDefault" () (& Material))))
+              (foreign-procedure "LoadMaterialDefault" () (* Material))))
           (f))))
     (define is-material-valid
       (let ([f #f])
@@ -7183,7 +7183,7 @@
             (set! f
               (foreign-procedure "GetRayCollisionSphere"
                 ((& Ray) (& Vector-3) float)
-                (& Ray-Collision))))
+                (* Ray-Collision))))
           (f ray center radius))))
     (define get-ray-collision-box
       (let ([f #f])
@@ -7192,7 +7192,7 @@
             (set! f
               (foreign-procedure "GetRayCollisionBox"
                 ((& Ray) (& Bounding-Box))
-                (& Ray-Collision))))
+                (* Ray-Collision))))
           (f ray box))))
     (define get-ray-collision-mesh
       (let ([f #f])
@@ -7201,7 +7201,7 @@
             (set! f
               (foreign-procedure "GetRayCollisionMesh"
                 ((& Ray) (& Mesh) (& Matrix))
-                (& Ray-Collision))))
+                (* Ray-Collision))))
           (f ray mesh transform))))
     (define get-ray-collision-triangle
       (let ([f #f])
@@ -7210,7 +7210,7 @@
             (set! f
               (foreign-procedure "GetRayCollisionTriangle"
                 ((& Ray) (& Vector-3) (& Vector-3) (& Vector-3))
-                (& Ray-Collision))))
+                (* Ray-Collision))))
           (f ray p-1 p-2 p-3))))
     (define get-ray-collision-quad
       (let ([f #f])
@@ -7223,7 +7223,7 @@
                  (& Vector-3)
                  (& Vector-3)
                  (& Vector-3))
-                (& Ray-Collision))))
+                (* Ray-Collision))))
           (f ray p-1 p-2 p-3 p-4))))
     (define init-audio-device
       (let ([f #f])
@@ -7260,7 +7260,7 @@
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadWave" (string) (& Wave))))
+            (set! f (foreign-procedure "LoadWave" (string) (* Wave))))
           (f file-name))))
     (define load-wave-from-memory
       (let ([f #f])
@@ -7269,7 +7269,7 @@
             (set! f
               (foreign-procedure "LoadWaveFromMemory"
                 (string (* unsigned-8) int)
-                (& Wave))))
+                (* Wave))))
           (f file-type file-data data-size))))
     (define is-wave-valid
       (let ([f #f])
@@ -7282,7 +7282,7 @@
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadSound" (string) (& Sound))))
+            (set! f (foreign-procedure "LoadSound" (string) (* Sound))))
           (f file-name))))
     (define load-sound-from-wave
       (let ([f #f])
@@ -7291,14 +7291,14 @@
             (set! f
               (foreign-procedure "LoadSoundFromWave"
                 ((& Wave))
-                (& Sound))))
+                (* Sound))))
           (f wave))))
     (define load-sound-alias
       (let ([f #f])
         (lambda (source)
           (unless f
             (set! f
-              (foreign-procedure "LoadSoundAlias" ((& Sound)) (& Sound))))
+              (foreign-procedure "LoadSoundAlias" ((& Sound)) (* Sound))))
           (f source))))
     (define is-sound-valid
       (let ([f #f])
@@ -7413,7 +7413,7 @@
       (let ([f #f])
         (lambda (wave)
           (unless f
-            (set! f (foreign-procedure "WaveCopy" ((& Wave)) (& Wave))))
+            (set! f (foreign-procedure "WaveCopy" ((& Wave)) (* Wave))))
           (f wave))))
     (define wave-crop
       (let ([f #f])
@@ -7450,7 +7450,7 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "LoadMusicStream" (string) (& Music))))
+              (foreign-procedure "LoadMusicStream" (string) (* Music))))
           (f file-name))))
     (define load-music-stream-from-memory
       (let ([f #f])
@@ -7459,7 +7459,7 @@
             (set! f
               (foreign-procedure "LoadMusicStreamFromMemory"
                 (string (* unsigned-8) int)
-                (& Music))))
+                (* Music))))
           (f file-type data data-size))))
     (define is-music-valid
       (let ([f #f])
@@ -7572,7 +7572,7 @@
             (set! f
               (foreign-procedure "LoadAudioStream"
                 (unsigned unsigned unsigned)
-                (& Audio-Stream))))
+                (* Audio-Stream))))
           (f sample-rate sample-size channels))))
     (define is-audio-stream-valid
       (let ([f #f])
