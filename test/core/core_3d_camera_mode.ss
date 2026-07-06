@@ -8,7 +8,7 @@
 (set-target-fps 60)
 
 (do ([cube-pos (make-vector-3 0.0 0.0 0.0)]
-     [camera (make-camera3d '(0.0 10.0 10.0)
+     [camera (make-camera-3d '(0.0 10.0 10.0)
                             '(0.0 0.0 0.0)
                             '(0.0 1.0 0.0)
                             45.0 CAMERA_PERSPECTIVE)])
@@ -17,7 +17,7 @@
   (drawing-begin
    (clear-background RAYWHITE)
 
-   (mode-3d-begin
+   (begin-mode-3d
     camera
     (draw-cube cube-pos 2.0 2.0 2.0 RED)
     (draw-cube-wires cube-pos 2.0 2.0 2.0 MAROON)

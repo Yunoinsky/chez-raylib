@@ -15,40 +15,60 @@
   (string->symbol (apply string-append (map symbol->string parts))))
 
 (define (kebab-ize name-str)
-  (let loop ([i 0] [out '()] [last-upper #t])
+  ;; "Camera2D" -> camera-2d, "SetTargetFPS" -> set-target-fps
+  (define (finish-acronym acro out)
+    (if (null? acro) out
+        (cons (string-append "-" (list->string (reverse acro))) out)))
+  (let loop ([i 0] [out '()] [acro '()] [prev-alpha? #f] [prev-digit? #f])
     (if (>= i (string-length name-str))
-        (string->symbol (apply string-append (reverse out)))
+        (string->symbol (apply string-append
+                               (reverse (if (null? acro) out
+                                            (cons (list->string (reverse acro)) out)))))
         (let ([ch (string-ref name-str i)])
           (cond
            [(char-upper-case? ch)
-            (cond [(not last-upper)
-                   (loop (+ i 1) (cons (string (char-downcase ch)) (cons "-" out)) #t)]
-                  [else
-                   (loop (+ i 1) (cons (string (char-downcase ch)) out) #t)])]
+            (if (or (>= (+ i 1) (string-length name-str))
+                    (not (char-upper-case? (string-ref name-str (+ i 1)))))
+                ;; Last char of acronym (or single upper): flush acro + this char as token
+                (let* ([acro-str (if (null? acro) ""
+                                     (list->string (reverse acro)))]
+                       [token (string-append acro-str (string (char-downcase ch)))])
+                  (loop (+ i 1)
+                        (cons token (if prev-alpha? (cons "-" out) out))
+                        '() #t #f))
+                ;; More uppercase follows: accumulate
+                (loop (+ i 1) out (cons (char-downcase ch) acro) prev-alpha? prev-digit?))]
            [(char-numeric? ch)
-            (if last-upper
-                (loop (+ i 1) (cons (string ch) (cons "-" out)) last-upper)
-                (loop (+ i 1) (cons (string ch) out) last-upper))]
+            (let* ([acro-str (if (null? acro) "" (list->string (reverse acro)))]
+                   [out2 (if (null? acro) out
+                             (cons acro-str (if prev-alpha? (cons "-" out) out)))]
+                   [c (string ch)])
+              (loop (+ i 1) (cons c (if (or prev-alpha? (not (null? acro)))
+                                        (cons "-" out2) out2))
+                    '() #f #t))]
            [else
-            (loop (+ i 1) (cons (string ch) out) #f)])))))
+            (let* ([acro-str (if (null? acro) "" (list->string (reverse acro)))]
+                   [out2 (if (null? acro) out
+                             (cons acro-str (if prev-alpha? (cons "-" out) out)))])
+              (loop (+ i 1) (cons (string ch) out2) '() #t #f))])))))
 
 (define (ftype-name-of name-str)
-  (let loop ([i 0] [out '()] [last-upper #t])
+  ;; "Camera2D" -> Camera-2D (hyphen before digit, none after)
+  (let loop ([i 0] [out '()] [prev-alpha? #f] [prev-digit? #f])
     (if (>= i (string-length name-str))
         (string->symbol (apply string-append (reverse out)))
         (let ([ch (string-ref name-str i)])
           (cond
            [(char-upper-case? ch)
-            (cond [(not last-upper)
-                   (loop (+ i 1) (cons (string ch) (cons "-" out)) #t)]
-                  [else
-                   (loop (+ i 1) (cons (string ch) out) #t)])]
+            (let ([c (string ch)])
+              (if (or prev-alpha? prev-digit? (and (not prev-alpha?) (= i 0)))
+                  (loop (+ i 1) (cons c (if prev-alpha? (cons "-" out) out)) #t #f)
+                  (loop (+ i 1) (cons c out) #t #f)))]
            [(char-numeric? ch)
-            (if (and (not last-upper) (not (null? out)))
-                (loop (+ i 1) (cons (string ch) (cons "-" out)) last-upper)
-                (loop (+ i 1) (cons (string ch) out) last-upper))]
+            (let ([c (string ch)])
+              (loop (+ i 1) (cons c (if prev-alpha? (cons "-" out) out)) #f #t))]
            [else
-            (loop (+ i 1) (cons (string ch) out) #f)])))))
+            (loop (+ i 1) (cons (string ch) out) #t #f)])))))
 
 ;; ===== type conversion =====
 (define (ctype->type str)
@@ -182,6 +202,7 @@
 
 (define (make-X-form alist)
   (let* ([name (ftype-name-of (attr alist "name"))]
+         [kname (kebab-ize (attr alist "name"))]
          [fields (or (attr-list alist "fields") '())]
          ;; Dedup fields
          [unique-fields
@@ -203,13 +224,15 @@
                                         `(ftype-set! ,name (,fn) struct ,fn)
                                         `(void)))
                                   fnames field-ts)])
-    `(define ,(symbol-append 'Make name)
+    (if (eq? (kebab-ize (attr alist "name")) 'color)
+        '(void)
+    `(define ,(symbol-append 'make- (kebab-ize (attr alist "name")))
        (case-lambda
         [,fnames
          (let ([s (make-ftype-pointer ,name (foreign-alloc (ftype-sizeof ,name)))])
            ,@scalar-set! s)]
         [(struct ,@fnames)
-         ,@scalar-set!-struct struct]))))
+         ,@scalar-set!-struct struct])))))
 
 (define (copy-X-form alist)
   (let* ([name (ftype-name-of (attr alist "name"))]
@@ -229,32 +252,37 @@
                                   `(ftype-set! ,name (,fn) dst (ftype-ref ,name (,fn) src))
                                   `(void)))
                             fnames field-ts)])
-    `(define ,(symbol-append 'Copy name)
+    (if (eq? (kebab-ize (attr alist "name")) 'color)
+        '(void)
+    (if (eq? (kebab-ize (attr alist "name")) 'color)
+        '(void)
+    `(define ,(symbol-append 'copy- (kebab-ize (attr alist "name")))
        (lambda (src)
          (let ([dst (make-ftype-pointer ,name (foreign-alloc (ftype-sizeof ,name)))])
-           ,@scalar-copy! dst)))))
+           ,@scalar-copy! dst)))))))
 
 (define (setter-form alist)
   (let ([name (ftype-name-of (attr alist "name"))])
-    `(define-syntax ,(symbol-append name '-set!)
+    `(define-syntax ,(symbol-append (kebab-ize (attr alist "name")) '-set!)
        (syntax-rules () [(_ s (f ...) v) (ftype-set! ,name (f ...) s v)]
                       [(_ s f v) (ftype-set! ,name (f) s v)]))))
 
 (define (getter-form alist)
   (let ([name (ftype-name-of (attr alist "name"))])
-    `(define-syntax ,(symbol-append name '-get)
+    `(define-syntax ,(symbol-append (kebab-ize (attr alist "name")) '-get)
        (syntax-rules () [(_ s (f ...)) (ftype-ref ,name (f ...) s)]
                       [(_ s f) (ftype-ref ,name (f) s)]))))
 
 (define (refref-form alist)
   (let ([name (ftype-name-of (attr alist "name"))])
-    `(define-syntax ,(symbol-append name '-ref&)
+    `(define-syntax ,(symbol-append (kebab-ize (attr alist "name")) '-ref&)
        (syntax-rules () [(_ s (f ...)) (ftype-&ref ,name (f ...) s)]
                       [(_ s f) (ftype-&ref ,name (f) s)]))))
 
 (define (struct-defines alist)
-  `(,(struct-form alist) ,(make-X-form alist) ,(copy-X-form alist)
-    ,(setter-form alist) ,(getter-form alist) ,(refref-form alist)))
+  (filter (lambda (x) (not (equal? x '(void))))
+   `(,(struct-form alist) ,(make-X-form alist) ,(copy-X-form alist)
+     ,(setter-form alist) ,(getter-form alist) ,(refref-form alist))))
 
 ;; ===== callback form =====
 (define (callback-form alist)
@@ -324,27 +352,34 @@
   (let ([sec (assq section-key api-root)])
     (if (not sec) (values '() '())
         (let loop ([items (cdr sec)] [defs '()] [exports '()])
-          (if (null? items) (values (reverse defs) exports)
+          (if (null? items) (values defs exports)
               (let ([item (car items)] [rest (cdr items)])
                 (case section-key
                   [(structs)
                    (let ([forms (struct-defines item)])
-                     (loop rest (append defs forms) exports))]
+                     (loop rest (append defs forms)
+                           (append (map cadr
+                                      (filter (lambda (f)
+                                                (and (pair? f) (>= (length f) 3)
+                                                     (not (eq? (car f) 'define-ftype))))
+                                              forms))
+                                   exports)))]
                   [(callbacks)
                    (let ([f (callback-form item)])
-                     (loop rest (cons f defs) (cons (caadr f) exports)))]
+                     (loop rest (append defs (list f)) (cons (caadr f) exports)))]
                   [(enums)
                    (let ([forms (enum-form item)])
-                     (loop rest (append defs forms) exports))]
+                     (loop rest (append defs forms)
+                           (append (map cadr forms) exports)))]
                   [(functions)
                    (let ([f (fn-form item)])
                      (if (eq? f 'skip)
                          (loop rest defs exports)
-                         (loop rest (cons f defs) (cons (cadr f) exports))))]
+                         (loop rest (append defs (list f)) (cons (cadr f) exports))))]
                   [(defines)
                    (if (string=? (or (attr item "type") "") "COLOR")
                        (let ([f (color-form item)])
-                         (loop rest (cons f defs) (cons (cadr f) exports)))
+                         (loop rest (append defs (list f)) (cons (cadr f) exports)))
                        (loop rest defs exports))]
                   [else (loop rest defs exports)])))))))
 
@@ -355,7 +390,7 @@
           [else 'skip]))
   (let loop ([sections sections] [defs '()] [exports (map init-export init-sexpr)])
     (if (null? sections)
-        (values (reverse defs) (filter (lambda (x) (not (eq? x 'skip))) exports))
+        (values defs (filter (lambda (x) (not (eq? x 'skip))) exports))
         (let-values ([(more-defs more-exports) (process-section (car sections) api-root)])
           (loop (cdr sections) (append defs more-defs) (append exports more-exports))))))
 

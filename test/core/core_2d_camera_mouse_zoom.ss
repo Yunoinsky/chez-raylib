@@ -6,7 +6,7 @@
 (init-window 800 450 "raylib [core] example - 2d camera mouse zoom")
 
 (define camera
-  (make-camera2d
+  (make-camera-2d
    '(0.0 0.0)
    '(0.0 0.0)
    0.0 1.0))
@@ -37,12 +37,12 @@
     (drawing-begin
      (clear-background BLACK)
      
-     (mode-2d-begin
+     (begin-mode-2d
       camera
 
-      (rl-matrix-begin
-       (rl-translate 0 (* 25 50) 0)
-       (rl-rotate 90 1 0 0)
+      (rl-load-identity)
+       (rl-translatef 0.0 (* 25.0 50.0) 0.0)
+       (rl-rotatef 90.0 1.0 0.0 0.0)
        (draw-grid 100 50.0))
       
       (draw-circle 100 100 50.0 YELLOW))

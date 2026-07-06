@@ -30,7 +30,7 @@
 (define buildings (make-array bl Rectangle make-rectangle))
 
 (define camera
-  (make-camera2d
+  (make-camera-2d
    `(,(/ screen-width 2.0) ,(/ screen-height 2.0))
    '(0.0 0.0)
    0.0 1.0))
@@ -73,7 +73,7 @@
 
   (drawing-begin
    (clear-background RAYWHITE)
-   (mode-2d-begin
+   (begin-mode-2d
     camera
     (draw-rectangle -6000 320 13000 8000 DARKGRAY)
     (vector-for-each

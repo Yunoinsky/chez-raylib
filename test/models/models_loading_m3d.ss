@@ -3,7 +3,7 @@
 (init-window 800 450 "raylib [models] example - M3D model loading" )
 
 (define camera
-  (make-camera3d '(1.5 1.5 1.5)
+  (make-camera-3d '(1.5 1.5 1.5)
                   '(0.0 0.4 0.0)
                   '(0.0 1.0 0.0)
                   45.0 CAMERA_PERSPECTIVE))
@@ -55,7 +55,7 @@
   (drawing-begin
    (clear-background RAYWHITE)
 
-   (mode-3d-begin
+   (begin-mode-3d
     camera
     (when draw-mesh
       (draw-model model pos 1.0 WHITE))

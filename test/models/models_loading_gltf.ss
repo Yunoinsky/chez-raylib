@@ -3,7 +3,7 @@
 (init-window 800 450 "raylib [models] example - loading gltf")
 
 (define camera
-  (make-camera3d '(10.0 10.0 10.0)
+  (make-camera-3d '(10.0 10.0 10.0)
                  '( 0.0  0.0  0.0)
                  '( 0.0  1.0  0.0)
                  45.0 CAMERA_PERSPECTIVE))
@@ -24,7 +24,7 @@
   (update-camera camera)
   (drawing-begin
    (clear-background SKYBLUE)
-   (mode-3d-begin
+   (begin-mode-3d
     camera
     (draw-model model pos 1.0 WHITE)
     (draw-grid 10 1.0))))

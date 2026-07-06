@@ -2,7 +2,7 @@
 (init-window 800 450 "raylib [models] example - heightmap loading and drawing")
 
 (define camera
-  (make-camera3d '(18.0 18.0 18.0)
+  (make-camera-3d '(18.0 18.0 18.0)
                  '( 0.0  0.0  0.0)
                  '( 0.0  1.0  0.0)
                  45.0 CAMERA_CUSTOM))
@@ -27,7 +27,7 @@
   (update-camera camera)
   (drawing-begin
    (clear-background RAYWHITE)
-   (mode-3d-begin
+   (begin-mode-3d
     camera
     (draw-model model map-pos 1.0 RED)
     (draw-grid 20 1.0))

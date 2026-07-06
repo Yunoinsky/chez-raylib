@@ -3,7 +3,7 @@
 (init-window 800 450 "raylib [models] example - box collisions")
 
 (define camera
-  (make-camera3d '(0.0 10.0 10.0)
+  (make-camera-3d '(0.0 10.0 10.0)
                  '(0.0  0.0  0.0)
                  '(0.0  1.0  0.0)
                  45.0 CAMERA_CUSTOM))
@@ -58,7 +58,7 @@
                                                    enemy-sphere-size))])
     (drawing-begin
      (clear-background RAYWHITE)
-     (mode-3d-begin
+     (begin-mode-3d
       camera
       (draw-cube-v (apply make-vector-3 enemy-box-pos)
                    (apply make-vector-3 enemy-box-size) GRAY)

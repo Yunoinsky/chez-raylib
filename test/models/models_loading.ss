@@ -6,7 +6,7 @@
 (init-window width height "raylib [models] example - models loading")
 
 (define camera
-  (make-camera3d '(50.0 50.0 50.0)
+  (make-camera-3d '(50.0 50.0 50.0)
                  '(0.0 10.0 0.0)
                  '(0.0 1.0 0.0)
                  45.0 CAMERA_PERSPECTIVE))
@@ -57,7 +57,7 @@
         (set! selected #f)))
   (drawing-begin
    (clear-background RAYWHITE)
-   (mode-3d-begin
+   (begin-mode-3d
     camera
     (draw-model model position 1.0 WHITE)
     (draw-grid 20 10.0)

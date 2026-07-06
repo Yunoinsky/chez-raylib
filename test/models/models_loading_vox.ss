@@ -9,7 +9,7 @@
     "./test/resources/models/vox/monu9.vox"))
 
 (define camera
-  (make-camera3d '(10.0 10.0 10.0)
+  (make-camera-3d '(10.0 10.0 10.0)
                  '( 0.0  0.0  0.0)
                  '( 0.0  1.0  0.0)
                  45.0 CAMERA_PERSPECTIVE))
@@ -50,7 +50,7 @@
   (drawing-begin
    (clear-background RAYWHITE)
 
-   (mode-3d-begin
+   (begin-mode-3d
     camera
     (draw-model (list-ref models current-model) (make-vector-3 0.0 0.0 0.0) 1.0 WHITE)
     (draw-grid 10 1.0))

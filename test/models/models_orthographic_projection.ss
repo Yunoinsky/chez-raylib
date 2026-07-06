@@ -6,7 +6,7 @@
 (define WIDTH_ORTHOGRAPHIC 10.0)
 
 (define camera
-  (make-camera3d
+  (make-camera-3d
    '(0.0 10.0 10.0)
    '(0.0  0.0  0.0)
    '(0.0  1.0  0.0)
@@ -29,7 +29,7 @@
           (camera-3d-set! camera projection CAMERA_PERSPECTIVE))))
   (drawing-begin
    (clear-background RAYWHITE)
-   (mode-3d-begin
+   (begin-mode-3d
     camera
     (draw-cube (make-vector-3 tmp-v3 -4.0 0.0 2.0)
                2.0 5.0 2.0 RED)
