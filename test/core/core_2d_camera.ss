@@ -74,7 +74,7 @@
 
   (drawing-begin
    (clear-background RAYWHITE)
-   (begin-mode-2d
+   (mode-2d-begin
     camera
     (draw-rectangle -6000 320 13000 8000 DARKGRAY)
     (vector-for-each

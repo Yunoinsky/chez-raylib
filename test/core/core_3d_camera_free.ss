@@ -11,7 +11,7 @@
                               '(0.0 1.0 0.0)
                               45.0 CAMERA_PERSPECTIVE))
 
-(set-camera-mode camera CAMERA_FREE)
+(update-camera camera CAMERA_FREE)
 
 (set-target-fps 60)
 
@@ -21,10 +21,10 @@
   (when (is-key-down KEY_Z)
     (make-vector-3 0.0 0.0 0.0
                    (camera-3d-ref& camera target)))
-  (update-camera camera)
+  (update-camera camera CAMERA_FREE)
   (drawing-begin
    (clear-background RAYWHITE)
-   (begin-mode-3d
+   (mode-3d-begin
     camera
     (draw-cube cube-pos 2.0 2.0 2.0 RED)
     (draw-cube-wires cube-pos 2.0 2.0 2.0 MAROON)
