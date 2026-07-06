@@ -439,7 +439,7 @@
             raylib-init-sexpr raylib-load-code)
 
 (regenerate "./src/rlgl_api.sexpr" "./src/rlgl.sls"
-            '(rlgl rlgl (0 3))
+            '(raylib rlgl (0 3))
             '(defines structs aliases enums callbacks functions)
             '() rlgl-load-code)
 

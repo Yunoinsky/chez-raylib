@@ -1,4 +1,4 @@
-(library (rlgl rlgl (0 3))
+(library (raylib rlgl (0 3))
   (export rl-load-draw-quad rl-load-draw-cube
    rl-set-matrix-view-offset-stereo
    rl-set-matrix-projection-stereo rl-set-matrix-modelview
