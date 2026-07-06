@@ -13,7 +13,7 @@
 
 (define pos (make-vector-3 0.0 0.0 0.0))
 
-(set-camera-mode camera CAMERA_FREE)
+(update-camera camera CAMERA_FREE)
 
 (set-target-fps 60)
 
