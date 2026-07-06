@@ -1,4 +1,4 @@
-(import (raylib raylib))
+(import (raylib raylib (0 3)))
 (init-window 800 450 "raylib [models] example - heightmap loading and drawing")
 
 (define camera

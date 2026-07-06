@@ -1,4 +1,4 @@
-(import (raylib raylib))
+(import (raylib raylib (0 3)))
 
 (define MAX_CIRCLES 64)
 

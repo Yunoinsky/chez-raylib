@@ -1,4 +1,4 @@
-(import (raylib raylib))
+(import (raylib raylib (0 3)))
 
 (define MAX_BUILDINGS 100)
 (define screen-width 800)

@@ -1,4 +1,4 @@
-(import (raylib raylib))
+(import (raylib raylib (0 3)))
 (define screen-width 800)
 (define screen-height 450)
 (init-window screen-width screen-height "raylib [textures] example - blend modes")

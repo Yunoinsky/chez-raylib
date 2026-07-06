@@ -1,6 +1,6 @@
-(import (raylib raylib))
+(import (raylib raylib (0 3)))
 (import (raylib raymath))
-(import (raylib rlgl))
+(import (rlgl rlgl (0 3)))
 (import (matrix))
 
 (init-window 800 450 "raylib [core] example - 2d camera mouse zoom")

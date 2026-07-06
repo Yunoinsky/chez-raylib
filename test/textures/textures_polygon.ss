@@ -1,4 +1,4 @@
-(import (raylib raylib))
+(import (raylib raylib (0 3)))
 (import (raylib raymath))
 
 (init-window 800 450 "raylib [textures] example - textured polygon")
