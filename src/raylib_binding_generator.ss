@@ -301,6 +301,20 @@
        (or (attr-list alist "values") '())))
 
 ;; ===== function form =====
+;; Known SCALAR fields for copy-out of struct-returning functions.
+;; Only includes fields of scalar types (int, float, etc.) — struct/array
+;; fields are NOT included because ftype-set! can't copy them by value.
+(define struct-scalar-fields-alist
+  '((Vector-2 x y)
+    (Vector-3 x y z)
+    (Vector-4 x y z w)
+    (Color r g b a)
+    (Matrix m-0 m-4 m-8 m-12 m-1 m-5 m-9 m-13 m-2 m-6 m-10 m-14 m-3 m-7 m-11 m-15)
+    (Rectangle x y width height)
+    ;; Ray: skip (position/direction are Vector-3)
+    ;; BoundingBox: skip (min/max are Vector-3)
+    ))
+
 (define scalar-ffi-types '(int float double char unsigned-8 unsigned-short
                            unsigned long void void* string boolean ...))
 (define (struct-symbol? t) (and (symbol? t) (not (memq t scalar-ffi-types))))
@@ -322,7 +336,11 @@
                [param-names (map (lambda (p) (kebab-ize (attr p "name"))) params)]
                [param-ftypes (map (lambda (p) (param-type (attr p "type"))) params)]
                [ret-ftype (if ret-bool? 'unsigned-8
-                              (or (ctype->type ret-str) (param-type ret-str)))])
+                              (or (ctype->type ret-str) (param-type ret-str)))]
+               [ret-struct? (struct-symbol? ret-ftype)])
+          (define (struct-scalar-fields ft)
+            (let ([entry (assq ft struct-scalar-fields-alist)])
+              (and entry (cdr entry))))
           `(define ,name
              (let ([f #f])
                (lambda ,param-names
@@ -330,9 +348,26 @@
                    (set! f (foreign-procedure ,name-str
                                               ,(map wrap-ffi param-ftypes)
                                               ,(wrap-ffi-ret ret-ftype))))
-                 ,(if ret-bool?
-                      `(not (= (f ,@param-names) 0))
-                      `(f ,@param-names)))))))))
+                 ,(cond
+                   [ret-bool?
+                    `(not (= (f ,@param-names) 0))]
+                   [ret-struct?
+                    (let ([fields (struct-scalar-fields ret-ftype)])
+                      (if fields
+                          ;; Copy field-by-field into fresh memory
+                          `(let ([ret (f ,@param-names)]
+                                 [dst (make-ftype-pointer
+                                       ,ret-ftype
+                                       (foreign-alloc (ftype-sizeof ,ret-ftype)))])
+                             ,@(map (lambda (fname)
+                                      `(ftype-set! ,ret-ftype (,fname) dst
+                                                  (ftype-ref ,ret-ftype (,fname) ret)))
+                                    fields)
+                             dst)
+                          ;; Unknown struct: return borrowed pointer
+                          `(f ,@param-names)))]
+                   [else
+                    `(f ,@param-names)]))))))))
 
 ;; ===== color form =====
 (define (color-form def)

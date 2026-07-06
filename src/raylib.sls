@@ -3054,7 +3054,13 @@
               (foreign-procedure "GetMonitorPosition"
                 (int)
                 (* Vector-2))))
-          (f monitor))))
+          (let ([ret (f monitor)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-monitor-width
       (let ([f #f])
         (lambda (monitor)
@@ -3094,14 +3100,26 @@
           (unless f
             (set! f
               (foreign-procedure "GetWindowPosition" () (* Vector-2))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-window-scale-dpi
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
               (foreign-procedure "GetWindowScaleDPI" () (* Vector-2))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-monitor-name
       (let ([f #f])
         (lambda (monitor)
@@ -3419,7 +3437,13 @@
               (foreign-procedure "GetWorldToScreen"
                 ((& Vector-3) (& Camera-3D))
                 (* Vector-2))))
-          (f position camera))))
+          (let ([ret (f position camera)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-world-to-screen-ex
       (let ([f #f])
         (lambda (position camera width height)
@@ -3428,7 +3452,13 @@
               (foreign-procedure "GetWorldToScreenEx"
                 ((& Vector-3) (& Camera-3D) int int)
                 (* Vector-2))))
-          (f position camera width height))))
+          (let ([ret (f position camera width height)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-world-to-screen-2d
       (let ([f #f])
         (lambda (position camera)
@@ -3437,7 +3467,13 @@
               (foreign-procedure "GetWorldToScreen2D"
                 ((& Vector-2) (& Camera-2D))
                 (* Vector-2))))
-          (f position camera))))
+          (let ([ret (f position camera)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-screen-to-world-2d
       (let ([f #f])
         (lambda (position camera)
@@ -3446,7 +3482,13 @@
               (foreign-procedure "GetScreenToWorld2D"
                 ((& Vector-2) (& Camera-2D))
                 (* Vector-2))))
-          (f position camera))))
+          (let ([ret (f position camera)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-camera-matrix
       (let ([f #f])
         (lambda (camera)
@@ -3455,7 +3497,27 @@
               (foreign-procedure "GetCameraMatrix"
                 ((& Camera-3D))
                 (* Matrix))))
-          (f camera))))
+          (let ([ret (f camera)]
+                [dst (make-ftype-pointer
+                       Matrix
+                       (foreign-alloc (ftype-sizeof Matrix)))])
+            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
+            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
+            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
+            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
+            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
+            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
+            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
+            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
+            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
+            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
+            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
+            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
+            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
+            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
+            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
+            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            dst))))
     (define get-camera-matrix-2d
       (let ([f #f])
         (lambda (camera)
@@ -3464,7 +3526,27 @@
               (foreign-procedure "GetCameraMatrix2D"
                 ((& Camera-2D))
                 (* Matrix))))
-          (f camera))))
+          (let ([ret (f camera)]
+                [dst (make-ftype-pointer
+                       Matrix
+                       (foreign-alloc (ftype-sizeof Matrix)))])
+            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
+            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
+            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
+            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
+            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
+            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
+            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
+            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
+            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
+            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
+            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
+            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
+            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
+            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
+            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
+            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            dst))))
     (define set-target-fps
       (let ([f #f])
         (lambda (fps)
@@ -4233,14 +4315,26 @@
           (unless f
             (set! f
               (foreign-procedure "GetMousePosition" () (* Vector-2))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-mouse-delta
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
               (foreign-procedure "GetMouseDelta" () (* Vector-2))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define set-mouse-position
       (let ([f #f])
         (lambda (x y)
@@ -4274,7 +4368,13 @@
           (unless f
             (set! f
               (foreign-procedure "GetMouseWheelMoveV" () (* Vector-2))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define set-mouse-cursor
       (let ([f #f])
         (lambda (cursor)
@@ -4297,7 +4397,13 @@
           (unless f
             (set! f
               (foreign-procedure "GetTouchPosition" (int) (* Vector-2))))
-          (f index))))
+          (let ([ret (f index)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-touch-point-id
       (let ([f #f])
         (lambda (index)
@@ -4345,7 +4451,13 @@
           (unless f
             (set! f
               (foreign-procedure "GetGestureDragVector" () (* Vector-2))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-gesture-drag-angle
       (let ([f #f])
         (lambda ()
@@ -4360,7 +4472,13 @@
               (foreign-procedure "GetGesturePinchVector"
                 ()
                 (* Vector-2))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-gesture-pinch-angle
       (let ([f #f])
         (lambda ()
@@ -4410,7 +4528,23 @@
               (foreign-procedure "GetShapesTextureRectangle"
                 ()
                 (* Rectangle))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Rectangle
+                       (foreign-alloc (ftype-sizeof Rectangle)))])
+            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
+            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
+            (ftype-set!
+              Rectangle
+              (width)
+              dst
+              (ftype-ref Rectangle (width) ret))
+            (ftype-set!
+              Rectangle
+              (height)
+              dst
+              (ftype-ref Rectangle (height) ret))
+            dst))))
     (define draw-pixel
       (let ([f #f])
         (lambda (pos-x pos-y color)
@@ -4909,7 +5043,13 @@
               (foreign-procedure "GetSplinePointLinear"
                 ((& Vector-2) (& Vector-2) float)
                 (* Vector-2))))
-          (f start-pos end-pos t))))
+          (let ([ret (f start-pos end-pos t)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-spline-point-basis
       (let ([f #f])
         (lambda (p-1 p-2 p-3 p-4 t)
@@ -4918,7 +5058,13 @@
               (foreign-procedure "GetSplinePointBasis"
                 ((& Vector-2) (& Vector-2) (& Vector-2) (& Vector-2) float)
                 (* Vector-2))))
-          (f p-1 p-2 p-3 p-4 t))))
+          (let ([ret (f p-1 p-2 p-3 p-4 t)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-spline-point-catmull-rom
       (let ([f #f])
         (lambda (p-1 p-2 p-3 p-4 t)
@@ -4927,7 +5073,13 @@
               (foreign-procedure "GetSplinePointCatmullRom"
                 ((& Vector-2) (& Vector-2) (& Vector-2) (& Vector-2) float)
                 (* Vector-2))))
-          (f p-1 p-2 p-3 p-4 t))))
+          (let ([ret (f p-1 p-2 p-3 p-4 t)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-spline-point-bezier-quadratic
       (let ([f #f])
         (lambda (p-1 c-2 p-3 t)
@@ -4936,7 +5088,13 @@
               (foreign-procedure "GetSplinePointBezierQuadratic"
                 ((& Vector-2) (& Vector-2) (& Vector-2) float)
                 (* Vector-2))))
-          (f p-1 c-2 p-3 t))))
+          (let ([ret (f p-1 c-2 p-3 t)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-spline-point-bezier-cubic
       (let ([f #f])
         (lambda (p-1 c-2 c-3 p-4 t)
@@ -4945,7 +5103,13 @@
               (foreign-procedure "GetSplinePointBezierCubic"
                 ((& Vector-2) (& Vector-2) (& Vector-2) (& Vector-2) float)
                 (* Vector-2))))
-          (f p-1 c-2 c-3 p-4 t))))
+          (let ([ret (f p-1 c-2 c-3 p-4 t)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define check-collision-recs
       (let ([f #f])
         (lambda (rec-1 rec-2)
@@ -5051,7 +5215,23 @@
               (foreign-procedure "GetCollisionRec"
                 ((& Rectangle) (& Rectangle))
                 (* Rectangle))))
-          (f rec-1 rec-2))))
+          (let ([ret (f rec-1 rec-2)]
+                [dst (make-ftype-pointer
+                       Rectangle
+                       (foreign-alloc (ftype-sizeof Rectangle)))])
+            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
+            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
+            (ftype-set!
+              Rectangle
+              (width)
+              dst
+              (ftype-ref Rectangle (width) ret))
+            (ftype-set!
+              Rectangle
+              (height)
+              dst
+              (ftype-ref Rectangle (height) ret))
+            dst))))
     (define load-image
       (let ([f #f])
         (lambda (file-name)
@@ -5519,7 +5699,23 @@
               (foreign-procedure "GetImageAlphaBorder"
                 ((& Image) float)
                 (* Rectangle))))
-          (f image threshold))))
+          (let ([ret (f image threshold)]
+                [dst (make-ftype-pointer
+                       Rectangle
+                       (foreign-alloc (ftype-sizeof Rectangle)))])
+            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
+            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
+            (ftype-set!
+              Rectangle
+              (width)
+              dst
+              (ftype-ref Rectangle (width) ret))
+            (ftype-set!
+              Rectangle
+              (height)
+              dst
+              (ftype-ref Rectangle (height) ret))
+            dst))))
     (define get-image-color
       (let ([f #f])
         (lambda (image x y)
@@ -5528,7 +5724,15 @@
               (foreign-procedure "GetImageColor"
                 ((& Image) int int)
                 (* Color))))
-          (f image x y))))
+          (let ([ret (f image x y)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define image-clear-background
       (let ([f #f])
         (lambda (dst color)
@@ -6040,7 +6244,15 @@
           (unless f
             (set! f
               (foreign-procedure "Fade" ((& Color) float) (* Color))))
-          (f color alpha))))
+          (let ([ret (f color alpha)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-to-int
       (let ([f #f])
         (lambda (color)
@@ -6055,7 +6267,15 @@
               (foreign-procedure "ColorNormalize"
                 ((& Color))
                 (* Vector-4))))
-          (f color))))
+          (let ([ret (f color)]
+                [dst (make-ftype-pointer
+                       Vector-4
+                       (foreign-alloc (ftype-sizeof Vector-4)))])
+            (ftype-set! Vector-4 (x) dst (ftype-ref Vector-4 (x) ret))
+            (ftype-set! Vector-4 (y) dst (ftype-ref Vector-4 (y) ret))
+            (ftype-set! Vector-4 (z) dst (ftype-ref Vector-4 (z) ret))
+            (ftype-set! Vector-4 (w) dst (ftype-ref Vector-4 (w) ret))
+            dst))))
     (define color-from-normalized
       (let ([f #f])
         (lambda (normalized)
@@ -6064,14 +6284,29 @@
               (foreign-procedure "ColorFromNormalized"
                 ((& Vector-4))
                 (* Color))))
-          (f normalized))))
+          (let ([ret (f normalized)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-to-hsv
       (let ([f #f])
         (lambda (color)
           (unless f
             (set! f
               (foreign-procedure "ColorToHSV" ((& Color)) (* Vector-3))))
-          (f color))))
+          (let ([ret (f color)]
+                [dst (make-ftype-pointer
+                       Vector-3
+                       (foreign-alloc (ftype-sizeof Vector-3)))])
+            (ftype-set! Vector-3 (x) dst (ftype-ref Vector-3 (x) ret))
+            (ftype-set! Vector-3 (y) dst (ftype-ref Vector-3 (y) ret))
+            (ftype-set! Vector-3 (z) dst (ftype-ref Vector-3 (z) ret))
+            dst))))
     (define color-from-hsv
       (let ([f #f])
         (lambda (hue saturation value)
@@ -6080,7 +6315,15 @@
               (foreign-procedure "ColorFromHSV"
                 (float float float)
                 (* Color))))
-          (f hue saturation value))))
+          (let ([ret (f hue saturation value)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-tint
       (let ([f #f])
         (lambda (color tint)
@@ -6089,7 +6332,15 @@
               (foreign-procedure "ColorTint"
                 ((& Color) (& Color))
                 (* Color))))
-          (f color tint))))
+          (let ([ret (f color tint)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-brightness
       (let ([f #f])
         (lambda (color factor)
@@ -6098,7 +6349,15 @@
               (foreign-procedure "ColorBrightness"
                 ((& Color) float)
                 (* Color))))
-          (f color factor))))
+          (let ([ret (f color factor)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-contrast
       (let ([f #f])
         (lambda (color contrast)
@@ -6107,7 +6366,15 @@
               (foreign-procedure "ColorContrast"
                 ((& Color) float)
                 (* Color))))
-          (f color contrast))))
+          (let ([ret (f color contrast)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-alpha
       (let ([f #f])
         (lambda (color alpha)
@@ -6116,7 +6383,15 @@
               (foreign-procedure "ColorAlpha"
                 ((& Color) float)
                 (* Color))))
-          (f color alpha))))
+          (let ([ret (f color alpha)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-alpha-blend
       (let ([f #f])
         (lambda (dst src tint)
@@ -6125,7 +6400,15 @@
               (foreign-procedure "ColorAlphaBlend"
                 ((& Color) (& Color) (& Color))
                 (* Color))))
-          (f dst src tint))))
+          (let ([ret (f dst src tint)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define color-lerp
       (let ([f #f])
         (lambda (color-1 color-2 factor)
@@ -6134,21 +6417,45 @@
               (foreign-procedure "ColorLerp"
                 ((& Color) (& Color) float)
                 (* Color))))
-          (f color-1 color-2 factor))))
+          (let ([ret (f color-1 color-2 factor)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define get-color
       (let ([f #f])
         (lambda (hex-value)
           (unless f
             (set! f
               (foreign-procedure "GetColor" (unsigned) (* Color))))
-          (f hex-value))))
+          (let ([ret (f hex-value)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define get-pixel-color
       (let ([f #f])
         (lambda (src-ptr format)
           (unless f
             (set! f
               (foreign-procedure "GetPixelColor" (void* int) (* Color))))
-          (f src-ptr format))))
+          (let ([ret (f src-ptr format)]
+                [dst (make-ftype-pointer
+                       Color
+                       (foreign-alloc (ftype-sizeof Color)))])
+            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
+            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
+            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
+            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            dst))))
     (define set-pixel-color
       (let ([f #f])
         (lambda (dst-ptr color format)
@@ -6342,7 +6649,13 @@
               (foreign-procedure "MeasureTextEx"
                 ((& Font) string float float)
                 (* Vector-2))))
-          (f font text font-size spacing))))
+          (let ([ret (f font text font-size spacing)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define measure-text-codepoints
       (let ([f #f])
         (lambda (font codepoints length font-size spacing)
@@ -6351,7 +6664,13 @@
               (foreign-procedure "MeasureTextCodepoints"
                 ((& Font) (* int) int float float)
                 (* Vector-2))))
-          (f font codepoints length font-size spacing))))
+          (let ([ret (f font codepoints length font-size spacing)]
+                [dst (make-ftype-pointer
+                       Vector-2
+                       (foreign-alloc (ftype-sizeof Vector-2)))])
+            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
+            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            dst))))
     (define get-glyph-index
       (let ([f #f])
         (lambda (font codepoint)
@@ -6376,7 +6695,23 @@
               (foreign-procedure "GetGlyphAtlasRec"
                 ((& Font) int)
                 (* Rectangle))))
-          (f font codepoint))))
+          (let ([ret (f font codepoint)]
+                [dst (make-ftype-pointer
+                       Rectangle
+                       (foreign-alloc (ftype-sizeof Rectangle)))])
+            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
+            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
+            (ftype-set!
+              Rectangle
+              (width)
+              dst
+              (ftype-ref Rectangle (width) ret))
+            (ftype-set!
+              Rectangle
+              (height)
+              dst
+              (ftype-ref Rectangle (height) ret))
+            dst))))
     (define load-utf-8
       (let ([f #f])
         (lambda (codepoints length)
