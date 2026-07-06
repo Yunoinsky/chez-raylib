@@ -1,3 +1,4 @@
+(import (chezscheme))
 (import (raylib raylib (0 3)))
 
 (define width 900)

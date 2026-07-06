@@ -1,12 +1,15 @@
 (library (raylib raylib (0 3))
   (export rad->deg deg->rad PI make-color drawing-begin
-   RAYWHITE MAGENTA BLANK BLACK WHITE DARKBROWN BROWN BEIGE
-   DARKPURPLE VIOLET PURPLE DARKBLUE BLUE SKYBLUE DARKGREEN
-   LIME GREEN MAROON RED PINK ORANGE GOLD YELLOW DARKGRAY GRAY
-   LIGHTGRAY Automation-Event-List make-automation-event-list
-   copy-automation-event-list automation-event-list-set!
-   automation-event-list-get automation-event-list-ref&
-   Automation-Event make-automation-event copy-automation-event
+   mode-2d-begin mode-3d-begin blend-mode-begin
+   scissor-mode-begin float int bool arr* arr& arr-ind
+   make-array RAYWHITE MAGENTA BLANK BLACK WHITE DARKBROWN
+   BROWN BEIGE DARKPURPLE VIOLET PURPLE DARKBLUE BLUE SKYBLUE
+   DARKGREEN LIME GREEN MAROON RED PINK ORANGE GOLD YELLOW
+   DARKGRAY GRAY LIGHTGRAY Automation-Event-List
+   make-automation-event-list copy-automation-event-list
+   automation-event-list-set! automation-event-list-get
+   automation-event-list-ref& Automation-Event
+   make-automation-event copy-automation-event
    automation-event-set! automation-event-get
    automation-event-ref& File-Path-List make-file-path-list
    copy-file-path-list file-path-list-set! file-path-list-get
@@ -428,6 +431,84 @@
       (syntax-rules ()
         [(_ e0 e1 ...)
          (begin (begin-drawing) e0 e1 ... (end-drawing))]))
+    (define-syntax mode-2d-begin
+      (syntax-rules ()
+        [(_ camera e0 e1 ...)
+         (begin (begin-mode-2d camera) e0 e1 ... (end-mode-2d))]))
+    (define-syntax mode-3d-begin
+      (syntax-rules ()
+        [(_ camera e0 e1 ...)
+         (begin (begin-mode-3d camera) e0 e1 ... (end-mode-3d))]))
+    (define-syntax blend-mode-begin
+      (syntax-rules ()
+        [(_ bm e0 e1 ...)
+         (begin (begin-blend-mode bm) e0 e1 ... (end-blend-mode))]))
+    (define-syntax scissor-mode-begin
+      (syntax-rules ()
+        [(_ rect-l e0 e1 ...)
+         (begin
+           (apply begin-scissor-mode rect-l)
+           e0
+           e1
+           ...
+           (end-scissor-mode))]))
+    (define-syntax float
+      (syntax-rules ()
+        [(_ f) (if (fixnum? f) (fixnum->flonum f) f)]))
+    (define-syntax int
+      (syntax-rules ()
+        [(_ f) (if (flonum? f) (flonum->fixnum (round f)) f)]))
+    (define-syntax bool (syntax-rules () [(_ f) (not (= f 0))]))
+    (define-syntax arr*
+      (syntax-rules () [(_ arr) (vector-ref arr 0)]))
+    (define-syntax arr&
+      (syntax-rules ()
+        [(_ num ftype-name arr-0)
+         (let ([arr (make-vector num)]
+               [size (ftype-sizeof ftype-name)])
+           (do ([i 0 (fx+ i 1)]
+                [addr (ftype-pointer-address arr-0) (+ addr size)])
+               ((= i num) arr)
+             (vector-set!
+               arr
+               i
+               (make-ftype-pointer ftype-name addr))))]))
+    (define-syntax arr-ind
+      (syntax-rules (*)
+        [(_ arr (* ftype-name) ind)
+         (make-ftype-pointer
+           ftype-name
+           (ftype-ref void* () (arr-ind arr void* ind)))]
+        [(_ arr ftype-name ind)
+         (make-ftype-pointer
+           ftype-name
+           (+ (ftype-pointer-address arr)
+              (* ind (ftype-sizeof ftype-name))))]))
+    (define-syntax make-array
+      (syntax-rules ()
+        [(_ num ftype-name)
+         (let ([size (ftype-sizeof ftype-name)]
+               [arr (make-vector num)])
+           (do ([i 0 (fx+ i 1)]
+                [addr (foreign-alloc (* num size)) (+ addr size)])
+               ((= i num) arr)
+             (vector-set! arr i (make-ftype-pointer ftype-name addr))))]
+        [(_ data-list ftype-name maker-fn)
+         (let* ([size (ftype-sizeof ftype-name)]
+                [num (length data-list)]
+                [arr (make-vector num)])
+           (do ([i 0 (fx+ i 1)]
+                [addr (foreign-alloc (* num size)) (+ addr size)]
+                [dl data-list (cdr dl)])
+               ((= i num) arr)
+             (vector-set!
+               arr
+               i
+               (apply
+                 maker-fn
+                 (cons
+                   (make-ftype-pointer ftype-name addr)
+                   (car dl))))))]))
     (define LIGHTGRAY (make-color 200 200 200 255))
     (define GRAY (make-color 130 130 130 255))
     (define DARKGRAY (make-color 80 80 80 255))

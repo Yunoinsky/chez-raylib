@@ -1,13 +1,14 @@
 (library (raylib rlgl (0 3))
-  (export make-rl-render-batch copy-rl-render-batch
-   rl-render-batch-set! rl-render-batch-get
-   rl-render-batch-ref& make-rl-draw-call copy-rl-draw-call
-   rl-draw-call-set! rl-draw-call-get rl-draw-call-ref&
+  (export rl-Render-Batch make-rl-render-batch
+   copy-rl-render-batch rl-render-batch-set!
+   rl-render-batch-get rl-render-batch-ref& rl-Draw-Call
+   make-rl-draw-call copy-rl-draw-call rl-draw-call-set!
+   rl-draw-call-get rl-draw-call-ref& rl-Vertex-Buffer
    make-rl-vertex-buffer copy-rl-vertex-buffer
    rl-vertex-buffer-set! rl-vertex-buffer-get
-   rl-vertex-buffer-ref& make-matrix copy-matrix matrix-set!
-   matrix-get matrix-ref& RL_CULL_FACE_FRONT RL_CULL_FACE_BACK
-   RL_ATTACHMENT_CUBEMAP_POSITIVE_X
+   rl-vertex-buffer-ref& Matrix make-matrix copy-matrix
+   matrix-set! matrix-get matrix-ref& RL_CULL_FACE_FRONT
+   RL_CULL_FACE_BACK RL_ATTACHMENT_CUBEMAP_POSITIVE_X
    RL_ATTACHMENT_CUBEMAP_NEGATIVE_X
    RL_ATTACHMENT_CUBEMAP_POSITIVE_Y
    RL_ATTACHMENT_CUBEMAP_NEGATIVE_Y
@@ -1265,7 +1266,7 @@
             (set! f
               (foreign-procedure "rlLoadRenderBatch"
                 (int int)
-                (& rl-Render-Batch))))
+                (* rl-Render-Batch))))
           (f num-buffers buffer-elements))))
     (define rl-unload-render-batch
       (let ([f #f])
@@ -1765,21 +1766,21 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "rlGetMatrixModelview" () (& Matrix))))
+              (foreign-procedure "rlGetMatrixModelview" () (* Matrix))))
           (f))))
     (define rl-get-matrix-projection
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "rlGetMatrixProjection" () (& Matrix))))
+              (foreign-procedure "rlGetMatrixProjection" () (* Matrix))))
           (f))))
     (define rl-get-matrix-transform
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "rlGetMatrixTransform" () (& Matrix))))
+              (foreign-procedure "rlGetMatrixTransform" () (* Matrix))))
           (f))))
     (define rl-get-matrix-projection-stereo
       (let ([f #f])
@@ -1788,7 +1789,7 @@
             (set! f
               (foreign-procedure "rlGetMatrixProjectionStereo"
                 (int)
-                (& Matrix))))
+                (* Matrix))))
           (f eye))))
     (define rl-get-matrix-view-offset-stereo
       (let ([f #f])
@@ -1797,7 +1798,7 @@
             (set! f
               (foreign-procedure "rlGetMatrixViewOffsetStereo"
                 (int)
-                (& Matrix))))
+                (* Matrix))))
           (f eye))))
     (define rl-set-matrix-projection
       (let ([f #f])

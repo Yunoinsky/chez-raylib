@@ -1,3 +1,4 @@
+(import (chezscheme))
 (import (raylib raylib (0 3)))
 
 (define MAX_BUILDINGS 100)
@@ -13,8 +14,8 @@
     (lambda (i sp-bl-cl)
       (let-values 
           ([(sp bl cl) (apply values sp-bl-cl)])
-        (let ([b-w (float (get-random-value 50 200))]
-              [b-h (float (get-random-value 100 800))])
+        (let ([b-w (inexact (get-random-value 50 200))]
+              [b-h (inexact (get-random-value 100 800))])
           (list (+ sp b-w)
                 (cons
                  (list (- sp 6000.0)

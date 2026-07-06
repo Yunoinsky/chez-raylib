@@ -434,7 +434,55 @@
         (ftype-set! Color (a) c a)
         c]))
     (define-syntax drawing-begin
-      (syntax-rules () [(_ e0 e1 ...) (begin (begin-drawing) e0 e1 ... (end-drawing))]))))
+      (syntax-rules () [(_ e0 e1 ...) (begin (begin-drawing) e0 e1 ... (end-drawing))]))
+    (define-syntax mode-2d-begin
+      (syntax-rules () [(_ camera e0 e1 ...) (begin (begin-mode-2d camera) e0 e1 ... (end-mode-2d))]))
+    (define-syntax mode-3d-begin
+      (syntax-rules () [(_ camera e0 e1 ...) (begin (begin-mode-3d camera) e0 e1 ... (end-mode-3d))]))
+    (define-syntax blend-mode-begin
+      (syntax-rules () [(_ bm e0 e1 ...) (begin (begin-blend-mode bm) e0 e1 ... (end-blend-mode))]))
+    (define-syntax scissor-mode-begin
+      (syntax-rules () [(_ rect-l e0 e1 ...) (begin (apply begin-scissor-mode rect-l) e0 e1 ... (end-scissor-mode))]))
+    (define-syntax float
+      (syntax-rules () [(_ f) (if (fixnum? f) (fixnum->flonum f) f)]))
+    (define-syntax int
+      (syntax-rules () [(_ f) (if (flonum? f) (flonum->fixnum (round f)) f)]))
+    (define-syntax bool
+      (syntax-rules () [(_ f) (not (= f 0))]))
+    (define-syntax arr*
+      (syntax-rules () [(_ arr) (vector-ref arr 0)]))
+    (define-syntax arr&
+      (syntax-rules () [(_ num ftype-name arr-0)
+                        (let ([arr (make-vector num)]
+                              [size (ftype-sizeof ftype-name)])
+                          (do ([i 0 (fx+ i 1)]
+                               [addr (ftype-pointer-address arr-0) (+ addr size)])
+                              ((= i num) arr)
+                            (vector-set! arr i (make-ftype-pointer ftype-name addr))))]))
+    (define-syntax arr-ind
+      (syntax-rules (*)
+        [(_ arr (* ftype-name) ind)
+         (make-ftype-pointer ftype-name (ftype-ref void* () (arr-ind arr void* ind)))]
+        [(_ arr ftype-name ind)
+         (make-ftype-pointer ftype-name (+ (ftype-pointer-address arr) (* ind (ftype-sizeof ftype-name))))]))
+    (define-syntax make-array
+      (syntax-rules ()
+        [(_ num ftype-name)
+         (let ([size (ftype-sizeof ftype-name)]
+               [arr (make-vector num)])
+           (do ([i 0 (fx+ i 1)]
+                [addr (foreign-alloc (* num size)) (+ addr size)])
+               ((= i num) arr)
+             (vector-set! arr i (make-ftype-pointer ftype-name addr))))]
+        [(_ data-list ftype-name maker-fn)
+         (let* ([size (ftype-sizeof ftype-name)]
+                [num (length data-list)]
+                [arr (make-vector num)])
+           (do ([i 0 (fx+ i 1)]
+                [addr (foreign-alloc (* num size)) (+ addr size)]
+                [dl data-list (cdr dl)])
+               ((= i num) arr)
+             (vector-set! arr i (apply maker-fn (cons (make-ftype-pointer ftype-name addr) (car dl))))))]))))
 
 ;; ===== regenerate =====
 (define (regenerate input-file output-file lib-name sections init-sexpr load-code)
