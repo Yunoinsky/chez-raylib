@@ -360,8 +360,7 @@
                      (loop rest (append defs forms)
                            (append (map cadr
                                       (filter (lambda (f)
-                                                (and (pair? f) (>= (length f) 3)
-                                                     (not (eq? (car f) 'define-ftype))))
+                                                (and (pair? f) (>= (length f) 3)))
                                               forms))
                                    exports)))]
                   [(callbacks)

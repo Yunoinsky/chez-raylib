@@ -3,56 +3,60 @@
    RAYWHITE MAGENTA BLANK BLACK WHITE DARKBROWN BROWN BEIGE
    DARKPURPLE VIOLET PURPLE DARKBLUE BLUE SKYBLUE DARKGREEN
    LIME GREEN MAROON RED PINK ORANGE GOLD YELLOW DARKGRAY GRAY
-   LIGHTGRAY make-automation-event-list
+   LIGHTGRAY Automation-Event-List make-automation-event-list
    copy-automation-event-list automation-event-list-set!
    automation-event-list-get automation-event-list-ref&
-   make-automation-event copy-automation-event
+   Automation-Event make-automation-event copy-automation-event
    automation-event-set! automation-event-get
-   automation-event-ref& make-file-path-list
+   automation-event-ref& File-Path-List make-file-path-list
    copy-file-path-list file-path-list-set! file-path-list-get
-   file-path-list-ref& make-vr-stereo-config
+   file-path-list-ref& Vr-Stereo-Config make-vr-stereo-config
    copy-vr-stereo-config vr-stereo-config-set!
-   vr-stereo-config-get vr-stereo-config-ref&
+   vr-stereo-config-get vr-stereo-config-ref& Vr-Device-Info
    make-vr-device-info copy-vr-device-info vr-device-info-set!
-   vr-device-info-get vr-device-info-ref& make-music copy-music
-   music-set! music-get music-ref& make-sound copy-sound
-   sound-set! sound-get sound-ref& make-audio-stream
-   copy-audio-stream audio-stream-set! audio-stream-get
-   audio-stream-ref& make-wave copy-wave wave-set! wave-get
-   wave-ref& make-bounding-box copy-bounding-box
-   bounding-box-set! bounding-box-get bounding-box-ref&
-   make-ray-collision copy-ray-collision ray-collision-set!
-   ray-collision-get ray-collision-ref& make-ray copy-ray
-   ray-set! ray-get ray-ref& make-model-animation
+   vr-device-info-get vr-device-info-ref& Music make-music
+   copy-music music-set! music-get music-ref& Sound make-sound
+   copy-sound sound-set! sound-get sound-ref& Audio-Stream
+   make-audio-stream copy-audio-stream audio-stream-set!
+   audio-stream-get audio-stream-ref& Wave make-wave copy-wave
+   wave-set! wave-get wave-ref& Bounding-Box make-bounding-box
+   copy-bounding-box bounding-box-set! bounding-box-get
+   bounding-box-ref& Ray-Collision make-ray-collision
+   copy-ray-collision ray-collision-set! ray-collision-get
+   ray-collision-ref& Ray make-ray copy-ray ray-set! ray-get
+   ray-ref& Model-Animation make-model-animation
    copy-model-animation model-animation-set!
-   model-animation-get model-animation-ref& make-model
-   copy-model model-set! model-get model-ref&
+   model-animation-get model-animation-ref& Model make-model
+   copy-model model-set! model-get model-ref& Model-Skeleton
    make-model-skeleton copy-model-skeleton model-skeleton-set!
-   model-skeleton-get model-skeleton-ref& make-bone-info
-   copy-bone-info bone-info-set! bone-info-get bone-info-ref&
-   make-transform copy-transform transform-set! transform-get
-   transform-ref& make-material copy-material material-set!
-   material-get material-ref& make-material-map
+   model-skeleton-get model-skeleton-ref& Bone-Info
+   make-bone-info copy-bone-info bone-info-set! bone-info-get
+   bone-info-ref& Transform make-transform copy-transform
+   transform-set! transform-get transform-ref& Material
+   make-material copy-material material-set! material-get
+   material-ref& Material-Map make-material-map
    copy-material-map material-map-set! material-map-get
-   material-map-ref& make-shader copy-shader shader-set!
-   shader-get shader-ref& make-mesh copy-mesh mesh-set!
-   mesh-get mesh-ref& make-camera-2d copy-camera-2d
-   camera-2d-set! camera-2d-get camera-2d-ref& make-camera-3d
-   copy-camera-3d camera-3d-set! camera-3d-get camera-3d-ref&
-   make-font copy-font font-set! font-get font-ref&
-   make-glyph-info copy-glyph-info glyph-info-set!
-   glyph-info-get glyph-info-ref& make-npatch-info
-   copy-npatch-info npatch-info-set! npatch-info-get
-   npatch-info-ref& make-render-texture copy-render-texture
-   render-texture-set! render-texture-get render-texture-ref&
-   make-texture copy-texture texture-set! texture-get
-   texture-ref& make-image copy-image image-set! image-get
-   image-ref& make-rectangle copy-rectangle rectangle-set!
-   rectangle-get rectangle-ref& color-set! color-get color-ref&
-   make-matrix copy-matrix matrix-set! matrix-get matrix-ref&
-   make-vector-4 copy-vector-4 vector-4-set! vector-4-get
-   vector-4-ref& make-vector-3 copy-vector-3 vector-3-set!
-   vector-3-get vector-3-ref& make-vector-2 copy-vector-2
+   material-map-ref& Shader make-shader copy-shader shader-set!
+   shader-get shader-ref& Mesh make-mesh copy-mesh mesh-set!
+   mesh-get mesh-ref& Camera-2D make-camera-2d copy-camera-2d
+   camera-2d-set! camera-2d-get camera-2d-ref& Camera-3D
+   make-camera-3d copy-camera-3d camera-3d-set! camera-3d-get
+   camera-3d-ref& Font make-font copy-font font-set! font-get
+   font-ref& Glyph-Info make-glyph-info copy-glyph-info
+   glyph-info-set! glyph-info-get glyph-info-ref& N-Patch-Info
+   make-npatch-info copy-npatch-info npatch-info-set!
+   npatch-info-get npatch-info-ref& Render-Texture
+   make-render-texture copy-render-texture render-texture-set!
+   render-texture-get render-texture-ref& Texture make-texture
+   copy-texture texture-set! texture-get texture-ref& Image
+   make-image copy-image image-set! image-get image-ref&
+   Rectangle make-rectangle copy-rectangle rectangle-set!
+   rectangle-get rectangle-ref& Color color-set! color-get
+   color-ref& Matrix make-matrix copy-matrix matrix-set!
+   matrix-get matrix-ref& Vector-4 make-vector-4 copy-vector-4
+   vector-4-set! vector-4-get vector-4-ref& Vector-3
+   make-vector-3 copy-vector-3 vector-3-set! vector-3-get
+   vector-3-ref& Vector-2 make-vector-2 copy-vector-2
    vector-2-set! vector-2-get vector-2-ref& NPATCH_NINE_PATCH
    NPATCH_THREE_PATCH_VERTICAL NPATCH_THREE_PATCH_HORIZONTAL
    CAMERA_PERSPECTIVE CAMERA_ORTHOGRAPHIC CAMERA_CUSTOM
