@@ -5,11 +5,12 @@
    make-array RAYWHITE MAGENTA BLANK BLACK WHITE DARKBROWN
    BROWN BEIGE DARKPURPLE VIOLET PURPLE DARKBLUE BLUE SKYBLUE
    DARKGREEN LIME GREEN MAROON RED PINK ORANGE GOLD YELLOW
-   DARKGRAY GRAY LIGHTGRAY Automation-Event-List
-   make-automation-event-list copy-automation-event-list
-   automation-event-list-set! automation-event-list-get
-   automation-event-list-ref& Automation-Event
-   make-automation-event copy-automation-event
+   DARKGRAY GRAY LIGHTGRAY RAYLIB_VERSION_PATCH
+   RAYLIB_VERSION_MINOR RAYLIB_VERSION_MAJOR
+   Automation-Event-List make-automation-event-list
+   copy-automation-event-list automation-event-list-set!
+   automation-event-list-get automation-event-list-ref&
+   Automation-Event make-automation-event copy-automation-event
    automation-event-set! automation-event-get
    automation-event-ref& File-Path-List make-file-path-list
    copy-file-path-list file-path-list-set! file-path-list-get
@@ -509,6 +510,9 @@
                  (cons
                    (make-ftype-pointer ftype-name addr)
                    (car dl))))))]))
+    (define RAYLIB_VERSION_MAJOR 6)
+    (define RAYLIB_VERSION_MINOR 1)
+    (define RAYLIB_VERSION_PATCH 0)
     (define LIGHTGRAY (make-color 200 200 200 255))
     (define GRAY (make-color 130 130 130 255))
     (define DARKGRAY (make-color 80 80 80 255))
