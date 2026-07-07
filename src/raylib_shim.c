@@ -97,3 +97,12 @@ void shim_GenMeshHeightmap(Mesh *out, Image heightmap, Vector3 size) { *out = Ge
 void shim_GenMeshCubicmap(Mesh *out, Image cubicmap, Vector3 cubeSize) { *out = GenMeshCubicmap(cubicmap, cubeSize); }
 /* Font (used by load-font) */
 void shim_LoadFont(Font *out, const char *fileName) { *out = LoadFont(fileName); }
+/* MeasureTextEx returns Vector-2 by value (8 bytes, fits in registers). 
+   The issue is the Font param: (& Font) passes a 48-byte struct by value.
+   Shim takes Font* instead of Font. */
+void shim_MeasureTextEx(Vector2 *out, Font *font, const char *text, float fontSize, float spacing) { 
+    *out = MeasureTextEx(*font, text, fontSize, spacing); 
+}
+void shim_LoadFontEx(Font *out, const char *fileName, int fontSize, int *codepoints, int codepointCount) { 
+    *out = LoadFontEx(fileName, fontSize, codepoints, codepointCount); 
+}

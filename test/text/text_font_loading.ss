@@ -9,7 +9,7 @@
 
 (define font-bm (load-font "./test/resources/fonts/pixantiqua.fnt"))
 
-(define font-ttf (load-font-ex "./test/resources/fonts/pixantiqua.ttf" 32 #f 250))
+(define font-ttf (load-font-ex "./test/resources/fonts/pixantiqua.ttf" 32 (make-ftype-pointer int 0) 250))
 
 (set-target-fps 60)
 
@@ -25,11 +25,11 @@
               20 20 20 LIGHTGRAY)
    (if use-ttf
        (begin
-         (draw-text-ex font-ttf msg pos (float (font-get font-ttf base-size))
+         (draw-text-ex font-ttf msg pos (float (font-get font-ttf base-Size))
                        2.0 LIME)
          (draw-text "Using TTF font generated" 20 (- screen-height 30) 20 GRAY))
        (begin
-         (draw-text-ex font-bm msg pos (float (font-get font-bm base-size))
+         (draw-text-ex font-bm msg pos (float (font-get font-bm base-Size))
                        2.0 MAROON)
          (draw-text "Using BMFont (Angelcode) imported" 20 (- screen-height 30) 20 GRAY)))))
   

@@ -189,6 +189,8 @@
 (define shim-functions-alist
   '((LoadTexture . shim_LoadTexture)
     (LoadFont . shim_LoadFont)
+    (MeasureTextEx . shim_MeasureTextEx)
+    (LoadFontEx . shim_LoadFontEx)
     (LoadTextureFromImage . shim_LoadTextureFromImage)
     (LoadImage . shim_LoadImage)
     (LoadImageFromTexture . shim_LoadImageFromTexture)
@@ -390,6 +392,8 @@
 (define (wrap-ffi t) (if (struct-symbol? t) (list '& t) t))
 ;; Return types for structs use pointer (*) since Chez doesn't accept (& Type) as result type
 (define (wrap-ffi-ret t) (if (struct-symbol? t) (list '* t) t))
+;; Shim params use (* Type) — shim C functions take pointers, not by-value structs
+(define (wrap-shim-param t) (if (struct-symbol? t) (list '* t) t))
 
 (define (fn-form alist)
   (let* ([name-str (attr alist "name")]
@@ -418,7 +422,7 @@
                    ,(if (and ret-struct? shim-name)
                         ;; Shim takes (Type* first_arg, ...rest_args)
                         `(set! f (foreign-procedure ,(symbol->string shim-name)
-                                                   ((* ,ret-ftype) ,@(map wrap-ffi param-ftypes))
+                                                   ((* ,ret-ftype) ,@(map wrap-shim-param param-ftypes))
                                                    void))
                         `(set! f (foreign-procedure ,name-str
                                                    ,(map wrap-ffi param-ftypes)
