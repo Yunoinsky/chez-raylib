@@ -25,7 +25,7 @@ then feeds them to a Chez Scheme generator that emits =raylib.sls= and
 | ~(raylib raymath)~  | hand-written   | Matrix interop wrapper around ~(matrix)~ |
 | ~(chez-raylib matrix)~ | hand-written | Chez-idiomatic flat-vector matrix lib    |
 
-|───| Auto-generated files are safe to delete and regenerate; the hand-written
+Auto-generated files are safe to delete and regenerate; the hand-written
 libraries keep matrix math Scheme-idiomatic.
 
 ** Quick start
