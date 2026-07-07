@@ -1,0 +1,37 @@
+#+TITLE: Binding Generator
+
+=raylib_binding_generator.ss= reads sexpr files from raylib's =rlparser= tool:
+
+- ~raylib_api.sexpr~ — structs, enums, defines, functions from raylib.h
+- ~rlgl_api.sexpr~ — rlgl immediate-mode layer
+- ~raymath_api.sexpr~ — raymath.h (for verification)
+
+Each sexpr file is a single s-expression with sections: ~(defines ...)~,
+~(structs ...)~, ~(enums ...)~, ~(functions ...)~.
+
+** What the generator handles
+
+- ~define-ftype~ for C structs (PascalCase-with-hyphens, e.g. ~Camera-3D~)
+- ~Make*~ / ~Copy*~ / ~set!~ / ~get~ / ~ref&~ macros per struct
+- Lazy ~foreign-procedure~ resolution (~load-shared-object~ at library bottom)
+- Type aliases (~Texture2D~ → ~Texture~)
+- Opaque pointers (void*)
+- Array fields (~char[32]~ → ~(array 32 char)~)
+- Preprocessor dedup (rlparser ~#if~ / ~#endif~)
+- Integer defines (~RL_TRIANGLES~, ~RL_LINES~, etc.)
+- Color defines (~RAYWHITE~, ~RED~, etc.)
+- Kebab-case naming for functions (~init-window~, ~load-texture~)
+- ~(& Type)~ return type for struct-returning functions
+- Variadic function skipping (Chez 10.5 does not support ~...~)
+
+** Regenerating after a raylib upgrade
+
+#+begin_example
+cd $RAYLIB/tools/rlparser
+FORMAT=SEXPR EXTENSION=sexpr make raylib_api.sexpr rlgl_api.sexpr raymath_api.sexpr
+cp {raylib,rlgl,raymath}_api.sexpr "$CHEZRAYLIB/src/"
+cd "$CHEZRAYLIB"
+scheme --script src/raylib_binding_generator.ss
+#+end_example
+
+Then recompile and reinstall the four libraries.
