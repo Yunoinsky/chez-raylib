@@ -13,9 +13,13 @@
      (close-window))
   (cond
    [(is-mouse-button-down MOUSE_BUTTON_LEFT)
-    (get-mouse-position start)]
+    (let ([p (get-mouse-position)])
+      (vector-2-set! start x (vector-2-get p x))
+      (vector-2-set! start y (vector-2-get p y)))]
    [(is-mouse-button-down MOUSE_BUTTON_RIGHT)
-    (get-mouse-position end)])
+    (let ([p (get-mouse-position)])
+      (vector-2-set! end x (vector-2-get p x))
+      (vector-2-set! end y (vector-2-get p y)))])
   (drawing-begin
    (clear-background RAYWHITE)
    (draw-text "USE MOUSE LEFT-RIGHT CLICK to DEFINE LINE START and END POINTS"
