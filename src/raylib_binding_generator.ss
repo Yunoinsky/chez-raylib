@@ -348,6 +348,23 @@
                    [else
                     `(f ,@param-names)]))))))))
 
+;; ===== int-def form (for 0x-style hex values from rlparser) =====
+(define (int-form def)
+  (define (parse-sexpr-int val)
+    (cond
+     [(number? val) val]
+     [(symbol? val)
+      (let ([s (symbol->string val)])
+          (if (and (>= (string-length s) 2)
+                   (char=? (string-ref s 0) #\0)
+                   (char=? (string-ref s 1) #\x))
+              (string->number (substring s 2 (string-length s)) 16)
+              (string->number s)))]
+     [else 0]))
+  (let ([name (string->symbol (attr def "name"))]
+        [value (parse-sexpr-int (attr def "value"))])
+    `(define ,name ,value)))
+
 ;; ===== color form =====
 (define (color-form def)
   (let* ([name (string->symbol (attr def "name"))]
@@ -392,10 +409,15 @@
                          (loop rest defs exports)
                          (loop rest (append defs (list f)) (cons (cadr f) exports))))]
                   [(defines)
-                   (if (string=? (or (attr item "type") "") "COLOR")
+                   (let* ([def-type (or (attr item "type") "")])
+                     (cond
+                      [(string=? def-type "COLOR")
                        (let ([f (color-form item)])
-                         (loop rest (append defs (list f)) (cons (cadr f) exports)))
-                       (loop rest defs exports))]
+                         (loop rest (append defs (list f)) (cons (cadr f) exports)))]
+                      [(string=? def-type "INT")
+                       (let ([f (int-form item)])
+                         (loop rest (append defs (list f)) (cons (cadr f) exports)))]
+                      [else (loop rest defs exports)]))]
                   [else (loop rest defs exports)])))))))
 
 (define (process-lib sections api-root init-sexpr)
