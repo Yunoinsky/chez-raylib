@@ -7,13 +7,24 @@
 
 (set-target-fps 60)
 
+(define camera
+  (let ([c (make-camera-3d 0.0 0.0 0.0 45.0 CAMERA_PERSPECTIVE)])
+    (vector-3-set! (camera-3d-ref& c position) x 0.0)
+    (vector-3-set! (camera-3d-ref& c position) y 10.0)
+    (vector-3-set! (camera-3d-ref& c position) z 10.0)
+    (vector-3-set! (camera-3d-ref& c target) x 0.0)
+    (vector-3-set! (camera-3d-ref& c target) y 0.0)
+    (vector-3-set! (camera-3d-ref& c target) z 0.0)
+    (vector-3-set! (camera-3d-ref& c up) x 0.0)
+    (vector-3-set! (camera-3d-ref& c up) y 1.0)
+    (vector-3-set! (camera-3d-ref& c up) z 0.0)
+    c))
+
 (do ([cube-pos (make-vector-3 0.0 0.0 0.0)]
-     [camera (make-camera-3d '(0.0 10.0 10.0)
-                            '(0.0 0.0 0.0)
-                            '(0.0 1.0 0.0)
-                            45.0 CAMERA_PERSPECTIVE)])
+     [camera camera])
     ((window-should-close)
      (close-window))
+  (update-camera camera CAMERA_ORBITAL)
   (drawing-begin
    (clear-background RAYWHITE)
 
