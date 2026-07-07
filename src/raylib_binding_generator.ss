@@ -417,7 +417,7 @@
                    ,(if (and ret-struct? shim-name)
                         ;; Shim takes (Type* first_arg, ...rest_args)
                         `(set! f (foreign-procedure ,(symbol->string shim-name)
-                                                   (* ,ret-ftype) ,@(map wrap-ffi param-ftypes)
+                                                   ((* ,ret-ftype) ,@(map wrap-ffi param-ftypes))
                                                    void))
                         `(set! f (foreign-procedure ,name-str
                                                    ,(map wrap-ffi param-ftypes)

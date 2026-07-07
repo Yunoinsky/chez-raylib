@@ -3059,8 +3059,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GetMonitorPosition"
-                (* Vector-2)
-                int
+                ((* Vector-2) int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
@@ -3106,7 +3105,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GetWindowPosition"
-                (* Vector-2)
+                ((* Vector-2))
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
@@ -3119,7 +3118,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GetWindowScaleDPI"
-                (* Vector-2)
+                ((* Vector-2))
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
@@ -3454,9 +3453,8 @@
         (lambda (position camera)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetScreenToWorldRay" (* Ray)
-                (& Vector-2)
-                (& Camera-3D)
+              (foreign-procedure "shim_GetScreenToWorldRay"
+                ((* Ray) (& Vector-2) (& Camera-3D))
                 void)))
           (let ([dst (make-ftype-pointer
                        Ray
@@ -3519,9 +3517,8 @@
         (lambda (position camera)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetWorldToScreen2D" (* Vector-2)
-                (& Vector-2)
-                (& Camera-2D)
+              (foreign-procedure "shim_GetWorldToScreen2D"
+                ((* Vector-2) (& Vector-2) (& Camera-2D))
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
@@ -3533,9 +3530,8 @@
         (lambda (position camera)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetScreenToWorld2D" (* Vector-2)
-                (& Vector-2)
-                (& Camera-2D)
+              (foreign-procedure "shim_GetScreenToWorld2D"
+                ((* Vector-2) (& Vector-2) (& Camera-2D))
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
@@ -3547,8 +3543,8 @@
         (lambda (camera)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetCameraMatrix" (* Matrix)
-                (& Camera-3D)
+              (foreign-procedure "shim_GetCameraMatrix"
+                ((* Matrix) (& Camera-3D))
                 void)))
           (let ([dst (make-ftype-pointer
                        Matrix
@@ -3560,8 +3556,8 @@
         (lambda (camera)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetCameraMatrix2D" (* Matrix)
-                (& Camera-2D)
+              (foreign-procedure "shim_GetCameraMatrix2D"
+                ((* Matrix) (& Camera-2D))
                 void)))
           (let ([dst (make-ftype-pointer
                        Matrix
@@ -4369,7 +4365,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GetMousePosition"
-                (* Vector-2)
+                ((* Vector-2))
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
@@ -4381,7 +4377,9 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "shim_GetMouseDelta" (* Vector-2) void)))
+              (foreign-procedure "shim_GetMouseDelta"
+                ((* Vector-2))
+                void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
@@ -4451,8 +4449,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GetTouchPosition"
-                (* Vector-2)
-                int
+                ((* Vector-2) int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-2
@@ -5281,9 +5278,8 @@
         (lambda (rec-1 rec-2)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetCollisionRec" (* Rectangle)
-                (& Rectangle)
-                (& Rectangle)
+              (foreign-procedure "shim_GetCollisionRec"
+                ((* Rectangle) (& Rectangle) (& Rectangle))
                 void)))
           (let ([dst (make-ftype-pointer
                        Rectangle
@@ -5295,7 +5291,9 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadImage" (* Image) string void)))
+              (foreign-procedure "shim_LoadImage"
+                ((* Image) string)
+                void)))
           (let ([dst (make-ftype-pointer
                        Image
                        (foreign-alloc (ftype-sizeof Image)))])
@@ -5324,9 +5322,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadImageAnim"
-                (* Image)
-                string
-                (* int)
+                ((* Image) string (* int))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5356,10 +5352,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadImageFromMemory"
-                (* Image)
-                string
-                (* unsigned-8)
-                int
+                ((* Image) string (* unsigned-8) int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5371,8 +5364,8 @@
         (lambda (texture)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadImageFromTexture" (* Image)
-                (& Texture)
+              (foreign-procedure "shim_LoadImageFromTexture"
+                ((* Image) (& Texture))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5385,7 +5378,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadImageFromScreen"
-                (* Image)
+                ((* Image))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5438,10 +5431,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageColor"
-                (* Image)
-                int
-                int
-                (& Color)
+                ((* Image) int int (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5454,12 +5444,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageGradientLinear"
-                (* Image)
-                int
-                int
-                int
-                (& Color)
-                (& Color)
+                ((* Image) int int int (& Color) (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5472,12 +5457,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageGradientRadial"
-                (* Image)
-                int
-                int
-                float
-                (& Color)
-                (& Color)
+                ((* Image) int int float (& Color) (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5490,12 +5470,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageGradientSquare"
-                (* Image)
-                int
-                int
-                float
-                (& Color)
-                (& Color)
+                ((* Image) int int float (& Color) (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5508,13 +5483,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageChecked"
-                (* Image)
-                int
-                int
-                int
-                int
-                (& Color)
-                (& Color)
+                ((* Image) int int int int (& Color) (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5527,10 +5496,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageWhiteNoise"
-                (* Image)
-                int
-                int
-                float
+                ((* Image) int int float)
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5543,12 +5509,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImagePerlinNoise"
-                (* Image)
-                int
-                int
-                int
-                int
-                float
+                ((* Image) int int int int float)
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5561,10 +5522,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageCellular"
-                (* Image)
-                int
-                int
-                int
+                ((* Image) int int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5577,10 +5535,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenImageText"
-                (* Image)
-                int
-                int
-                string
+                ((* Image) int int string)
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5592,8 +5547,8 @@
         (lambda (image)
           (unless f
             (set! f
-              (foreign-procedure "shim_ImageCopy" (* Image)
-                (& Image)
+              (foreign-procedure "shim_ImageCopy"
+                ((* Image) (& Image))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5605,9 +5560,8 @@
         (lambda (image rec)
           (unless f
             (set! f
-              (foreign-procedure "shim_ImageFromImage" (* Image)
-                (& Image)
-                (& Rectangle)
+              (foreign-procedure "shim_ImageFromImage"
+                ((* Image) (& Image) (& Rectangle))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5637,10 +5591,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_ImageText"
-                (* Image)
-                string
-                int
-                (& Color)
+                ((* Image) string int (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5652,12 +5603,8 @@
         (lambda (font text font-size spacing tint)
           (unless f
             (set! f
-              (foreign-procedure "shim_ImageTextEx" (* Image)
-                (& Font)
-                string
-                float
-                float
-                (& Color)
+              (foreign-procedure "shim_ImageTextEx"
+                ((* Image) (& Font) string float float (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Image
@@ -5923,10 +5870,8 @@
         (lambda (image x y)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetImageColor" (* Color)
-                (& Image)
-                int
-                int
+              (foreign-procedure "shim_GetImageColor"
+                ((* Color) (& Image) int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Color
@@ -6260,8 +6205,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadTexture"
-                (* Texture)
-                string
+                ((* Texture) string)
                 void)))
           (let ([dst (make-ftype-pointer
                        Texture
@@ -6273,8 +6217,8 @@
         (lambda (image)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadTextureFromImage" (* Texture)
-                (& Image)
+              (foreign-procedure "shim_LoadTextureFromImage"
+                ((* Texture) (& Image))
                 void)))
           (let ([dst (make-ftype-pointer
                        Texture
@@ -6286,9 +6230,8 @@
         (lambda (image layout)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadTextureCubemap" (* Texture)
-                (& Image)
-                int
+              (foreign-procedure "shim_LoadTextureCubemap"
+                ((* Texture) (& Image) int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Texture
@@ -6301,9 +6244,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadRenderTexture"
-                (* Render-Texture)
-                int
-                int
+                ((* Render-Texture) int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Render-Texture
@@ -6465,9 +6406,8 @@
         (lambda (color alpha)
           (unless f
             (set! f
-              (foreign-procedure "shim_Fade" (* Color)
-                (& Color)
-                float
+              (foreign-procedure "shim_Fade"
+                ((* Color) (& Color) float)
                 void)))
           (let ([dst (make-ftype-pointer
                        Color
@@ -6502,8 +6442,8 @@
         (lambda (normalized)
           (unless f
             (set! f
-              (foreign-procedure "shim_ColorFromNormalized" (* Color)
-                (& Vector-4)
+              (foreign-procedure "shim_ColorFromNormalized"
+                ((* Color) (& Vector-4))
                 void)))
           (let ([dst (make-ftype-pointer
                        Color
@@ -6515,8 +6455,8 @@
         (lambda (color)
           (unless f
             (set! f
-              (foreign-procedure "shim_ColorToHSV" (* Vector-3)
-                (& Color)
+              (foreign-procedure "shim_ColorToHSV"
+                ((* Vector-3) (& Color))
                 void)))
           (let ([dst (make-ftype-pointer
                        Vector-3
@@ -6529,10 +6469,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_ColorFromHSV"
-                (* Color)
-                float
-                float
-                float
+                ((* Color) float float float)
                 void)))
           (let ([dst (make-ftype-pointer
                        Color
@@ -6595,9 +6532,8 @@
         (lambda (color alpha)
           (unless f
             (set! f
-              (foreign-procedure "shim_ColorAlpha" (* Color)
-                (& Color)
-                float
+              (foreign-procedure "shim_ColorAlpha"
+                ((* Color) (& Color) float)
                 void)))
           (let ([dst (make-ftype-pointer
                        Color
@@ -6644,8 +6580,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GetColor"
-                (* Color)
-                unsigned
+                ((* Color) unsigned)
                 void)))
           (let ([dst (make-ftype-pointer
                        Color
@@ -7425,7 +7360,9 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadModel" (* Model) string void)))
+              (foreign-procedure "shim_LoadModel"
+                ((* Model) string)
+                void)))
           (let ([dst (make-ftype-pointer
                        Model
                        (foreign-alloc (ftype-sizeof Model)))])
@@ -7436,8 +7373,8 @@
         (lambda (mesh)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadModelFromMesh" (* Model)
-                (& Mesh)
+              (foreign-procedure "shim_LoadModelFromMesh"
+                ((* Model) (& Mesh))
                 void)))
           (let ([dst (make-ftype-pointer
                        Model
@@ -7622,8 +7559,8 @@
         (lambda (mesh)
           (unless f
             (set! f
-              (foreign-procedure "shim_GetMeshBoundingBox" (* Bounding-Box)
-                (& Mesh)
+              (foreign-procedure "shim_GetMeshBoundingBox"
+                ((* Bounding-Box) (& Mesh))
                 void)))
           (let ([dst (make-ftype-pointer
                        Bounding-Box
@@ -7676,11 +7613,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenMeshPlane"
-                (* Mesh)
-                float
-                float
-                int
-                int
+                ((* Mesh) float float int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7693,10 +7626,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenMeshCube"
-                (* Mesh)
-                float
-                float
-                float
+                ((* Mesh) float float float)
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7709,10 +7639,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenMeshSphere"
-                (* Mesh)
-                float
-                int
-                int
+                ((* Mesh) float int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7725,10 +7652,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenMeshHemiSphere"
-                (* Mesh)
-                float
-                int
-                int
+                ((* Mesh) float int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7741,10 +7665,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenMeshCylinder"
-                (* Mesh)
-                float
-                float
-                int
+                ((* Mesh) float float int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7774,11 +7695,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenMeshTorus"
-                (* Mesh)
-                float
-                float
-                int
-                int
+                ((* Mesh) float float int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7791,11 +7708,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_GenMeshKnot"
-                (* Mesh)
-                float
-                float
-                int
-                int
+                ((* Mesh) float float int int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7807,9 +7720,8 @@
         (lambda (heightmap size)
           (unless f
             (set! f
-              (foreign-procedure "shim_GenMeshHeightmap" (* Mesh)
-                (& Image)
-                (& Vector-3)
+              (foreign-procedure "shim_GenMeshHeightmap"
+                ((* Mesh) (& Image) (& Vector-3))
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -7821,9 +7733,8 @@
         (lambda (cubicmap cube-size)
           (unless f
             (set! f
-              (foreign-procedure "shim_GenMeshCubicmap" (* Mesh)
-                (& Image)
-                (& Vector-3)
+              (foreign-procedure "shim_GenMeshCubicmap"
+                ((* Mesh) (& Image) (& Vector-3))
                 void)))
           (let ([dst (make-ftype-pointer
                        Mesh
@@ -8090,7 +8001,7 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadWave" (* Wave) string void)))
+              (foreign-procedure "shim_LoadWave" ((* Wave) string) void)))
           (let ([dst (make-ftype-pointer
                        Wave
                        (foreign-alloc (ftype-sizeof Wave)))])
@@ -8102,10 +8013,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadWaveFromMemory"
-                (* Wave)
-                string
-                (* unsigned-8)
-                int
+                ((* Wave) string (* unsigned-8) int)
                 void)))
           (let ([dst (make-ftype-pointer
                        Wave
@@ -8124,7 +8032,9 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadSound" (* Sound) string void)))
+              (foreign-procedure "shim_LoadSound"
+                ((* Sound) string)
+                void)))
           (let ([dst (make-ftype-pointer
                        Sound
                        (foreign-alloc (ftype-sizeof Sound)))])
@@ -8135,8 +8045,8 @@
         (lambda (wave)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadSoundFromWave" (* Sound)
-                (& Wave)
+              (foreign-procedure "shim_LoadSoundFromWave"
+                ((* Sound) (& Wave))
                 void)))
           (let ([dst (make-ftype-pointer
                        Sound
@@ -8148,8 +8058,8 @@
         (lambda (source)
           (unless f
             (set! f
-              (foreign-procedure "shim_LoadSoundAlias" (* Sound)
-                (& Sound)
+              (foreign-procedure "shim_LoadSoundAlias"
+                ((* Sound) (& Sound))
                 void)))
           (let ([dst (make-ftype-pointer
                        Sound
@@ -8270,7 +8180,9 @@
         (lambda (wave)
           (unless f
             (set! f
-              (foreign-procedure "shim_WaveCopy" (* Wave) (& Wave) void)))
+              (foreign-procedure "shim_WaveCopy"
+                ((* Wave) (& Wave))
+                void)))
           (let ([dst (make-ftype-pointer
                        Wave
                        (foreign-alloc (ftype-sizeof Wave)))])
@@ -8312,8 +8224,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadMusicStream"
-                (* Music)
-                string
+                ((* Music) string)
                 void)))
           (let ([dst (make-ftype-pointer
                        Music
@@ -8447,10 +8358,7 @@
           (unless f
             (set! f
               (foreign-procedure "shim_LoadAudioStream"
-                (* Audio-Stream)
-                unsigned
-                unsigned
-                unsigned
+                ((* Audio-Stream) unsigned unsigned unsigned)
                 void)))
           (let ([dst (make-ftype-pointer
                        Audio-Stream
