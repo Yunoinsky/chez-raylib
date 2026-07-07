@@ -6636,15 +6636,12 @@
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadFont" (string) (* Font))))
-          (let ([ret (f file-name)]
-                [dst (make-ftype-pointer
+            (set! f
+              (foreign-procedure "shim_LoadFont" ((* Font) string) void)))
+          (let ([dst (make-ftype-pointer
                        Font
                        (foreign-alloc (ftype-sizeof Font)))])
-            (memcpy-to
-              (ftype-pointer-address dst)
-              (ftype-pointer-address ret)
-              (ftype-sizeof Font))
+            (f dst file-name)
             dst))))
     (define load-font-ex
       (let ([f #f])

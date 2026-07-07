@@ -24,7 +24,7 @@
      (unload-texture texture)
      (unload-model model)
      (close-window))
-  (update-camera camera)
+  (update-camera camera CAMERA_ORBITAL)
   (drawing-begin
    (clear-background RAYWHITE)
    (mode-3d-begin

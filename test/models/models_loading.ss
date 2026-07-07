@@ -16,7 +16,7 @@
 (define texture (load-texture
                  "./test/resources/models/obj/castle_diffuse.png"))
 
-(begin)
+(void)
 
 (define position (make-vector-3 0.0 0.0 0.0))
 
@@ -30,7 +30,7 @@
     ((window-should-close)
      (unload-texture texture)
      (unload-model model))
-  (update-camera camera)
+  (update-camera camera CAMERA_FREE)
 
   (when (is-file-dropped)
     (let ([dropped-files (load-dropped-files)])
@@ -40,12 +40,12 @@
            [(".obj" ".gltf" ".glb" ".vox" ".iqm" ".m3d")
             (unload-model model)
             (load-model model path-0)
-            (begin))
+            (void)
             (get-mesh-bounding-box bounds (model-ref& model (meshes 0)))]
            [".png"
             (unload-texture texture)
             (load-texture texture path-0)
-            (begin))])))
+            (void)])))
       (unload-dropped-files dropped-files)))
   (when (is-mouse-button-pressed MOUSE_BUTTON_LEFT)
     (if (ray-collision-get

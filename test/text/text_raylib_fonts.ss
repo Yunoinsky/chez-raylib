@@ -31,7 +31,7 @@
 
 (define positions
   (map (lambda (fnt msg spc i)
-         (let ([bs (font-get fnt base-size)])
+         (let ([bs (font-get fnt base-Size)])
            (make-vector-2 (/ (-
                               screen-width
                               (vector-2-get
@@ -71,7 +71,7 @@
    (for-each
     (lambda (fnt msg pos spc clr)
       (draw-text-ex fnt msg pos
-                    (* (font-get fnt base-size) 2.0)
+                    (* (font-get fnt base-Size) 2.0)
                     (float spc)
                     clr))
     fonts messages positions spacings colors)))

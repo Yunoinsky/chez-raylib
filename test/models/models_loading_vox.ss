@@ -1,5 +1,5 @@
 (import (raylib raylib (0 3)))
-(import (raylib raymath))
+
 
 (init-window 800 450 "raylib [models] example - magicavoxel loading")
 
@@ -9,27 +9,20 @@
     "./test/resources/models/vox/monu9.vox"))
 
 (define camera
-  (make-camera-3d '(10.0 10.0 10.0)
-                 '( 0.0  0.0  0.0)
-                 '( 0.0  1.0  0.0)
-                 45.0 CAMERA_PERSPECTIVE))
+  (let ([c (make-camera-3d 0.0 0.0 0.0 45.0 CAMERA_PERSPECTIVE)])
+    (vector-3-set! (camera-3d-ref& c position) x 10.0)
+    (vector-3-set! (camera-3d-ref& c position) y 10.0)
+    (vector-3-set! (camera-3d-ref& c position) z 10.0)
+    (vector-3-set! (camera-3d-ref& c target) x 0.0)
+    (vector-3-set! (camera-3d-ref& c target) y 0.0)
+    (vector-3-set! (camera-3d-ref& c target) z 0.0)
+    (vector-3-set! (camera-3d-ref& c up) x 0.0)
+    (vector-3-set! (camera-3d-ref& c up) y 1.0)
+    (vector-3-set! (camera-3d-ref& c up) z 0.0)
+    c))
 (define models
   (map
-   (lambda (fn)
-     (let* ([t0 (current-time)]
-            [model (load-model fn)]
-            [dt (/ (time-nanosecond (time-difference (current-time) t0)) 1e6)]
-            [bb (get-model-bounding-box model)])
-       (trace-log LOG_WARNING "[~s] File loaded in ~,3f ms" fn dt)
-       (let ([min-x (bounding-box-get bb (min x))]
-             [min-z (bounding-box-get bb (min z))]
-             [max-x (bounding-box-get bb (max y))]
-             [max-z (bounding-box-get bb (max z))])
-         (matrix-translate (model-ref& model transform)
-                           (/ (+ max-x min-x) -2.0)
-                           0.0
-                           (/ (+ max-z min-z) -2.0)))
-       model))
+   (lambda (fn) (load-model fn))
    vox-fns))
 
 (update-camera camera CAMERA_ORBITAL)
@@ -45,7 +38,7 @@
     ((window-should-close)
      (for-each unload-model models)
      (close-window))
-  (update-camera camera)
+  (update-camera camera CAMERA_ORBITAL)
 
   (drawing-begin
    (clear-background RAYWHITE)

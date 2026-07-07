@@ -188,6 +188,7 @@
 ;; The shim takes the output buffer as the FIRST parameter.
 (define shim-functions-alist
   '((LoadTexture . shim_LoadTexture)
+    (LoadFont . shim_LoadFont)
     (LoadTextureFromImage . shim_LoadTextureFromImage)
     (LoadImage . shim_LoadImage)
     (LoadImageFromTexture . shim_LoadImageFromTexture)
