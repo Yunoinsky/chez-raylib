@@ -1267,7 +1267,15 @@
               (foreign-procedure "rlLoadRenderBatch"
                 (int int)
                 (* rl-Render-Batch))))
-          (f num-buffers buffer-elements))))
+          (let ([ret (f num-buffers buffer-elements)]
+                [dst (make-ftype-pointer
+                       rl-Render-Batch
+                       (foreign-alloc (ftype-sizeof rl-Render-Batch)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof rl-Render-Batch))
+            dst))))
     (define rl-unload-render-batch
       (let ([f #f])
         (lambda (batch)
@@ -1771,22 +1779,10 @@
                 [dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
-            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
-            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
-            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
-            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
-            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
-            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
-            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
-            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
-            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
-            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
-            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
-            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
-            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
-            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
-            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Matrix))
             dst))))
     (define rl-get-matrix-projection
       (let ([f #f])
@@ -1798,22 +1794,10 @@
                 [dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
-            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
-            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
-            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
-            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
-            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
-            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
-            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
-            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
-            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
-            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
-            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
-            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
-            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
-            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
-            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Matrix))
             dst))))
     (define rl-get-matrix-transform
       (let ([f #f])
@@ -1825,22 +1809,10 @@
                 [dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
-            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
-            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
-            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
-            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
-            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
-            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
-            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
-            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
-            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
-            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
-            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
-            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
-            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
-            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
-            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Matrix))
             dst))))
     (define rl-get-matrix-projection-stereo
       (let ([f #f])
@@ -1854,22 +1826,10 @@
                 [dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
-            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
-            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
-            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
-            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
-            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
-            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
-            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
-            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
-            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
-            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
-            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
-            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
-            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
-            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
-            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Matrix))
             dst))))
     (define rl-get-matrix-view-offset-stereo
       (let ([f #f])
@@ -1883,22 +1843,10 @@
                 [dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
-            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
-            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
-            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
-            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
-            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
-            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
-            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
-            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
-            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
-            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
-            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
-            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
-            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
-            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
-            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Matrix))
             dst))))
     (define rl-set-matrix-projection
       (let ([f #f])

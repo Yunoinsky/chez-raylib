@@ -1,15 +1,15 @@
 (library (raylib raylib (0 3))
   (export rad->deg deg->rad PI make-color drawing-begin
    mode-2d-begin mode-3d-begin blend-mode-begin
-   scissor-mode-begin float int bool arr* arr& arr-ind
-   make-array RAYWHITE MAGENTA BLANK BLACK WHITE DARKBROWN
-   BROWN BEIGE DARKPURPLE VIOLET PURPLE DARKBLUE BLUE SKYBLUE
-   DARKGREEN LIME GREEN MAROON RED PINK ORANGE GOLD YELLOW
-   DARKGRAY GRAY LIGHTGRAY Automation-Event-List
-   make-automation-event-list copy-automation-event-list
-   automation-event-list-set! automation-event-list-get
-   automation-event-list-ref& Automation-Event
-   make-automation-event copy-automation-event
+   scissor-mode-begin memcpy_t memcpy memcpy-to float int bool
+   arr* arr& arr-ind make-array RAYWHITE MAGENTA BLANK BLACK
+   WHITE DARKBROWN BROWN BEIGE DARKPURPLE VIOLET PURPLE
+   DARKBLUE BLUE SKYBLUE DARKGREEN LIME GREEN MAROON RED PINK
+   ORANGE GOLD YELLOW DARKGRAY GRAY LIGHTGRAY
+   Automation-Event-List make-automation-event-list
+   copy-automation-event-list automation-event-list-set!
+   automation-event-list-get automation-event-list-ref&
+   Automation-Event make-automation-event copy-automation-event
    automation-event-set! automation-event-get
    automation-event-ref& File-Path-List make-file-path-list
    copy-file-path-list file-path-list-set! file-path-list-get
@@ -452,6 +452,13 @@
            e1
            ...
            (end-scissor-mode))]))
+    (define-ftype memcpy_t (function (void* void* size_t) void))
+    (define memcpy
+      (begin
+        (load-shared-object "/usr/lib/libSystem.B.dylib")
+        (make-ftype-pointer memcpy_t "memcpy")))
+    (define (memcpy-to dst-ptr src-ptr size)
+      ((ftype-ref memcpy_t () memcpy) dst-ptr src-ptr size))
     (define-syntax float
       (syntax-rules ()
         [(_ f) (if (fixnum? f) (fixnum->flonum f) f)]))
@@ -3051,15 +3058,14 @@
         (lambda (monitor)
           (unless f
             (set! f
-              (foreign-procedure "GetMonitorPosition"
-                (int)
-                (* Vector-2))))
-          (let ([ret (f monitor)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetMonitorPosition"
+                (* Vector-2)
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst monitor)
             dst))))
     (define get-monitor-width
       (let ([f #f])
@@ -3099,26 +3105,26 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetWindowPosition" () (* Vector-2))))
-          (let ([ret (f)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetWindowPosition"
+                (* Vector-2)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst)
             dst))))
     (define get-window-scale-dpi
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetWindowScaleDPI" () (* Vector-2))))
-          (let ([ret (f)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetWindowScaleDPI"
+                (* Vector-2)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst)
             dst))))
     (define get-monitor-name
       (let ([f #f])
@@ -3145,7 +3151,15 @@
           (unless f
             (set! f
               (foreign-procedure "GetClipboardImage" () (* Image))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Image))
+            dst))))
     (define enable-event-waiting
       (let ([f #f])
         (lambda ()
@@ -3313,7 +3327,15 @@
               (foreign-procedure "LoadVrStereoConfig"
                 ((& Vr-Device-Info))
                 (* Vr-Stereo-Config))))
-          (f device))))
+          (let ([ret (f device)]
+                [dst (make-ftype-pointer
+                       Vr-Stereo-Config
+                       (foreign-alloc (ftype-sizeof Vr-Stereo-Config)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vr-Stereo-Config))
+            dst))))
     (define unload-vr-stereo-config
       (let ([f #f])
         (lambda (config)
@@ -3331,7 +3353,15 @@
               (foreign-procedure "LoadShader"
                 (string string)
                 (* Shader))))
-          (f vs-file-name fs-file-name))))
+          (let ([ret (f vs-file-name fs-file-name)]
+                [dst (make-ftype-pointer
+                       Shader
+                       (foreign-alloc (ftype-sizeof Shader)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Shader))
+            dst))))
     (define load-shader-from-memory
       (let ([f #f])
         (lambda (vs-code fs-code)
@@ -3340,7 +3370,15 @@
               (foreign-procedure "LoadShaderFromMemory"
                 (string string)
                 (* Shader))))
-          (f vs-code fs-code))))
+          (let ([ret (f vs-code fs-code)]
+                [dst (make-ftype-pointer
+                       Shader
+                       (foreign-alloc (ftype-sizeof Shader)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Shader))
+            dst))))
     (define is-shader-valid
       (let ([f #f])
         (lambda (shader)
@@ -3416,10 +3454,15 @@
         (lambda (position camera)
           (unless f
             (set! f
-              (foreign-procedure "GetScreenToWorldRay"
-                ((& Vector-2) (& Camera-3D))
-                (* Ray))))
-          (f position camera))))
+              (foreign-procedure "shim_GetScreenToWorldRay" (* Ray)
+                (& Vector-2)
+                (& Camera-3D)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Ray
+                       (foreign-alloc (ftype-sizeof Ray)))])
+            (f dst position camera)
+            dst))))
     (define get-screen-to-world-ray-ex
       (let ([f #f])
         (lambda (position camera width height)
@@ -3428,7 +3471,15 @@
               (foreign-procedure "GetScreenToWorldRayEx"
                 ((& Vector-2) (& Camera-3D) int int)
                 (* Ray))))
-          (f position camera width height))))
+          (let ([ret (f position camera width height)]
+                [dst (make-ftype-pointer
+                       Ray
+                       (foreign-alloc (ftype-sizeof Ray)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Ray))
+            dst))))
     (define get-world-to-screen
       (let ([f #f])
         (lambda (position camera)
@@ -3441,8 +3492,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-world-to-screen-ex
       (let ([f #f])
@@ -3456,96 +3509,64 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-world-to-screen-2d
       (let ([f #f])
         (lambda (position camera)
           (unless f
             (set! f
-              (foreign-procedure "GetWorldToScreen2D"
-                ((& Vector-2) (& Camera-2D))
-                (* Vector-2))))
-          (let ([ret (f position camera)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetWorldToScreen2D" (* Vector-2)
+                (& Vector-2)
+                (& Camera-2D)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst position camera)
             dst))))
     (define get-screen-to-world-2d
       (let ([f #f])
         (lambda (position camera)
           (unless f
             (set! f
-              (foreign-procedure "GetScreenToWorld2D"
-                ((& Vector-2) (& Camera-2D))
-                (* Vector-2))))
-          (let ([ret (f position camera)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetScreenToWorld2D" (* Vector-2)
+                (& Vector-2)
+                (& Camera-2D)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst position camera)
             dst))))
     (define get-camera-matrix
       (let ([f #f])
         (lambda (camera)
           (unless f
             (set! f
-              (foreign-procedure "GetCameraMatrix"
-                ((& Camera-3D))
-                (* Matrix))))
-          (let ([ret (f camera)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetCameraMatrix" (* Matrix)
+                (& Camera-3D)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
-            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
-            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
-            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
-            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
-            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
-            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
-            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
-            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
-            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
-            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
-            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
-            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
-            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
-            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
-            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            (f dst camera)
             dst))))
     (define get-camera-matrix-2d
       (let ([f #f])
         (lambda (camera)
           (unless f
             (set! f
-              (foreign-procedure "GetCameraMatrix2D"
-                ((& Camera-2D))
-                (* Matrix))))
-          (let ([ret (f camera)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetCameraMatrix2D" (* Matrix)
+                (& Camera-2D)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (ftype-set! Matrix (m-0) dst (ftype-ref Matrix (m-0) ret))
-            (ftype-set! Matrix (m-4) dst (ftype-ref Matrix (m-4) ret))
-            (ftype-set! Matrix (m-8) dst (ftype-ref Matrix (m-8) ret))
-            (ftype-set! Matrix (m-12) dst (ftype-ref Matrix (m-12) ret))
-            (ftype-set! Matrix (m-1) dst (ftype-ref Matrix (m-1) ret))
-            (ftype-set! Matrix (m-5) dst (ftype-ref Matrix (m-5) ret))
-            (ftype-set! Matrix (m-9) dst (ftype-ref Matrix (m-9) ret))
-            (ftype-set! Matrix (m-13) dst (ftype-ref Matrix (m-13) ret))
-            (ftype-set! Matrix (m-2) dst (ftype-ref Matrix (m-2) ret))
-            (ftype-set! Matrix (m-6) dst (ftype-ref Matrix (m-6) ret))
-            (ftype-set! Matrix (m-10) dst (ftype-ref Matrix (m-10) ret))
-            (ftype-set! Matrix (m-14) dst (ftype-ref Matrix (m-14) ret))
-            (ftype-set! Matrix (m-3) dst (ftype-ref Matrix (m-3) ret))
-            (ftype-set! Matrix (m-7) dst (ftype-ref Matrix (m-7) ret))
-            (ftype-set! Matrix (m-11) dst (ftype-ref Matrix (m-11) ret))
-            (ftype-set! Matrix (m-15) dst (ftype-ref Matrix (m-15) ret))
+            (f dst camera)
             dst))))
     (define set-target-fps
       (let ([f #f])
@@ -3919,7 +3940,15 @@
               (foreign-procedure "LoadDirectoryFiles"
                 (string)
                 (* File-Path-List))))
-          (f dir-path))))
+          (let ([ret (f dir-path)]
+                [dst (make-ftype-pointer
+                       File-Path-List
+                       (foreign-alloc (ftype-sizeof File-Path-List)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof File-Path-List))
+            dst))))
     (define load-directory-files-ex
       (let ([f #f])
         (lambda (base-path filter scan-subdirs)
@@ -3928,7 +3957,15 @@
               (foreign-procedure "LoadDirectoryFilesEx"
                 (string string unsigned-8)
                 (* File-Path-List))))
-          (f base-path filter scan-subdirs))))
+          (let ([ret (f base-path filter scan-subdirs)]
+                [dst (make-ftype-pointer
+                       File-Path-List
+                       (foreign-alloc (ftype-sizeof File-Path-List)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof File-Path-List))
+            dst))))
     (define unload-directory-files
       (let ([f #f])
         (lambda (files)
@@ -3952,7 +3989,15 @@
               (foreign-procedure "LoadDroppedFiles"
                 ()
                 (* File-Path-List))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       File-Path-List
+                       (foreign-alloc (ftype-sizeof File-Path-List)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof File-Path-List))
+            dst))))
     (define unload-dropped-files
       (let ([f #f])
         (lambda (files)
@@ -4060,7 +4105,16 @@
               (foreign-procedure "LoadAutomationEventList"
                 (string)
                 (* Automation-Event-List))))
-          (f file-name))))
+          (let ([ret (f file-name)]
+                [dst (make-ftype-pointer
+                       Automation-Event-List
+                       (foreign-alloc
+                         (ftype-sizeof Automation-Event-List)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Automation-Event-List))
+            dst))))
     (define unload-automation-event-list
       (let ([f #f])
         (lambda (list)
@@ -4314,26 +4368,24 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetMousePosition" () (* Vector-2))))
-          (let ([ret (f)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetMousePosition"
+                (* Vector-2)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst)
             dst))))
     (define get-mouse-delta
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "GetMouseDelta" () (* Vector-2))))
-          (let ([ret (f)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetMouseDelta" (* Vector-2) void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst)
             dst))))
     (define set-mouse-position
       (let ([f #f])
@@ -4372,8 +4424,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define set-mouse-cursor
       (let ([f #f])
@@ -4396,13 +4450,14 @@
         (lambda (index)
           (unless f
             (set! f
-              (foreign-procedure "GetTouchPosition" (int) (* Vector-2))))
-          (let ([ret (f index)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetTouchPosition"
+                (* Vector-2)
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (f dst index)
             dst))))
     (define get-touch-point-id
       (let ([f #f])
@@ -4455,8 +4510,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-gesture-drag-angle
       (let ([f #f])
@@ -4476,8 +4533,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-gesture-pinch-angle
       (let ([f #f])
@@ -4519,7 +4578,15 @@
           (unless f
             (set! f
               (foreign-procedure "GetShapesTexture" () (* Texture))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Texture
+                       (foreign-alloc (ftype-sizeof Texture)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Texture))
+            dst))))
     (define get-shapes-texture-rectangle
       (let ([f #f])
         (lambda ()
@@ -4532,18 +4599,10 @@
                 [dst (make-ftype-pointer
                        Rectangle
                        (foreign-alloc (ftype-sizeof Rectangle)))])
-            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
-            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
-            (ftype-set!
-              Rectangle
-              (width)
-              dst
-              (ftype-ref Rectangle (width) ret))
-            (ftype-set!
-              Rectangle
-              (height)
-              dst
-              (ftype-ref Rectangle (height) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Rectangle))
             dst))))
     (define draw-pixel
       (let ([f #f])
@@ -5047,8 +5106,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-spline-point-basis
       (let ([f #f])
@@ -5062,8 +5123,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-spline-point-catmull-rom
       (let ([f #f])
@@ -5077,8 +5140,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-spline-point-bezier-quadratic
       (let ([f #f])
@@ -5092,8 +5157,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-spline-point-bezier-cubic
       (let ([f #f])
@@ -5107,8 +5174,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define check-collision-recs
       (let ([f #f])
@@ -5212,32 +5281,26 @@
         (lambda (rec-1 rec-2)
           (unless f
             (set! f
-              (foreign-procedure "GetCollisionRec"
-                ((& Rectangle) (& Rectangle))
-                (* Rectangle))))
-          (let ([ret (f rec-1 rec-2)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetCollisionRec" (* Rectangle)
+                (& Rectangle)
+                (& Rectangle)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Rectangle
                        (foreign-alloc (ftype-sizeof Rectangle)))])
-            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
-            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
-            (ftype-set!
-              Rectangle
-              (width)
-              dst
-              (ftype-ref Rectangle (width) ret))
-            (ftype-set!
-              Rectangle
-              (height)
-              dst
-              (ftype-ref Rectangle (height) ret))
+            (f dst rec-1 rec-2)
             dst))))
     (define load-image
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadImage" (string) (* Image))))
-          (f file-name))))
+            (set! f
+              (foreign-procedure "shim_LoadImage" (* Image) string void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst file-name)
+            dst))))
     (define load-image-raw
       (let ([f #f])
         (lambda (file-name width height format header-size)
@@ -5246,16 +5309,30 @@
               (foreign-procedure "LoadImageRaw"
                 (string int int int int)
                 (* Image))))
-          (f file-name width height format header-size))))
+          (let ([ret (f file-name width height format header-size)]
+                [dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Image))
+            dst))))
     (define load-image-anim
       (let ([f #f])
         (lambda (file-name frames)
           (unless f
             (set! f
-              (foreign-procedure "LoadImageAnim"
-                (string (* int))
-                (* Image))))
-          (f file-name frames))))
+              (foreign-procedure "shim_LoadImageAnim"
+                (* Image)
+                string
+                (* int)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst file-name frames)
+            dst))))
     (define load-image-anim-from-memory
       (let ([f #f])
         (lambda (file-type file-data data-size frames)
@@ -5264,32 +5341,57 @@
               (foreign-procedure "LoadImageAnimFromMemory"
                 (string (* unsigned-8) int (* int))
                 (* Image))))
-          (f file-type file-data data-size frames))))
+          (let ([ret (f file-type file-data data-size frames)]
+                [dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Image))
+            dst))))
     (define load-image-from-memory
       (let ([f #f])
         (lambda (file-type file-data data-size)
           (unless f
             (set! f
-              (foreign-procedure "LoadImageFromMemory"
-                (string (* unsigned-8) int)
-                (* Image))))
-          (f file-type file-data data-size))))
+              (foreign-procedure "shim_LoadImageFromMemory"
+                (* Image)
+                string
+                (* unsigned-8)
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst file-type file-data data-size)
+            dst))))
     (define load-image-from-texture
       (let ([f #f])
         (lambda (texture)
           (unless f
             (set! f
-              (foreign-procedure "LoadImageFromTexture"
-                ((& Texture))
-                (* Image))))
-          (f texture))))
+              (foreign-procedure "shim_LoadImageFromTexture" (* Image)
+                (& Texture)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst texture)
+            dst))))
     (define load-image-from-screen
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "LoadImageFromScreen" () (* Image))))
-          (f))))
+              (foreign-procedure "shim_LoadImageFromScreen"
+                (* Image)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst)
+            dst))))
     (define is-image-valid
       (let ([f #f])
         (lambda (image)
@@ -5335,98 +5437,183 @@
         (lambda (width height color)
           (unless f
             (set! f
-              (foreign-procedure "GenImageColor"
-                (int int (& Color))
-                (* Image))))
-          (f width height color))))
+              (foreign-procedure "shim_GenImageColor"
+                (* Image)
+                int
+                int
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height color)
+            dst))))
     (define gen-image-gradient-linear
       (let ([f #f])
         (lambda (width height direction start end)
           (unless f
             (set! f
-              (foreign-procedure "GenImageGradientLinear"
-                (int int int (& Color) (& Color))
-                (* Image))))
-          (f width height direction start end))))
+              (foreign-procedure "shim_GenImageGradientLinear"
+                (* Image)
+                int
+                int
+                int
+                (& Color)
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height direction start end)
+            dst))))
     (define gen-image-gradient-radial
       (let ([f #f])
         (lambda (width height density inner outer)
           (unless f
             (set! f
-              (foreign-procedure "GenImageGradientRadial"
-                (int int float (& Color) (& Color))
-                (* Image))))
-          (f width height density inner outer))))
+              (foreign-procedure "shim_GenImageGradientRadial"
+                (* Image)
+                int
+                int
+                float
+                (& Color)
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height density inner outer)
+            dst))))
     (define gen-image-gradient-square
       (let ([f #f])
         (lambda (width height density inner outer)
           (unless f
             (set! f
-              (foreign-procedure "GenImageGradientSquare"
-                (int int float (& Color) (& Color))
-                (* Image))))
-          (f width height density inner outer))))
+              (foreign-procedure "shim_GenImageGradientSquare"
+                (* Image)
+                int
+                int
+                float
+                (& Color)
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height density inner outer)
+            dst))))
     (define gen-image-checked
       (let ([f #f])
         (lambda (width height checks-x checks-y col-1 col-2)
           (unless f
             (set! f
-              (foreign-procedure "GenImageChecked"
-                (int int int int (& Color) (& Color))
-                (* Image))))
-          (f width height checks-x checks-y col-1 col-2))))
+              (foreign-procedure "shim_GenImageChecked"
+                (* Image)
+                int
+                int
+                int
+                int
+                (& Color)
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height checks-x checks-y col-1 col-2)
+            dst))))
     (define gen-image-white-noise
       (let ([f #f])
         (lambda (width height factor)
           (unless f
             (set! f
-              (foreign-procedure "GenImageWhiteNoise"
-                (int int float)
-                (* Image))))
-          (f width height factor))))
+              (foreign-procedure "shim_GenImageWhiteNoise"
+                (* Image)
+                int
+                int
+                float
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height factor)
+            dst))))
     (define gen-image-perlin-noise
       (let ([f #f])
         (lambda (width height offset-x offset-y scale)
           (unless f
             (set! f
-              (foreign-procedure "GenImagePerlinNoise"
-                (int int int int float)
-                (* Image))))
-          (f width height offset-x offset-y scale))))
+              (foreign-procedure "shim_GenImagePerlinNoise"
+                (* Image)
+                int
+                int
+                int
+                int
+                float
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height offset-x offset-y scale)
+            dst))))
     (define gen-image-cellular
       (let ([f #f])
         (lambda (width height tile-size)
           (unless f
             (set! f
-              (foreign-procedure "GenImageCellular"
-                (int int int)
-                (* Image))))
-          (f width height tile-size))))
+              (foreign-procedure "shim_GenImageCellular"
+                (* Image)
+                int
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height tile-size)
+            dst))))
     (define gen-image-text
       (let ([f #f])
         (lambda (width height text)
           (unless f
             (set! f
-              (foreign-procedure "GenImageText"
-                (int int string)
-                (* Image))))
-          (f width height text))))
+              (foreign-procedure "shim_GenImageText"
+                (* Image)
+                int
+                int
+                string
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst width height text)
+            dst))))
     (define image-copy
       (let ([f #f])
         (lambda (image)
           (unless f
             (set! f
-              (foreign-procedure "ImageCopy" ((& Image)) (* Image))))
-          (f image))))
+              (foreign-procedure "shim_ImageCopy" (* Image)
+                (& Image)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst image)
+            dst))))
     (define image-from-image
       (let ([f #f])
         (lambda (image rec)
           (unless f
             (set! f
-              (foreign-procedure "ImageFromImage"
-                ((& Image) (& Rectangle))
-                (* Image))))
-          (f image rec))))
+              (foreign-procedure "shim_ImageFromImage" (* Image)
+                (& Image)
+                (& Rectangle)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst image rec)
+            dst))))
     (define image-from-channel
       (let ([f #f])
         (lambda (image selected-channel)
@@ -5435,25 +5622,48 @@
               (foreign-procedure "ImageFromChannel"
                 ((& Image) int)
                 (* Image))))
-          (f image selected-channel))))
+          (let ([ret (f image selected-channel)]
+                [dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Image))
+            dst))))
     (define image-text
       (let ([f #f])
         (lambda (text font-size color)
           (unless f
             (set! f
-              (foreign-procedure "ImageText"
-                (string int (& Color))
-                (* Image))))
-          (f text font-size color))))
+              (foreign-procedure "shim_ImageText"
+                (* Image)
+                string
+                int
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst text font-size color)
+            dst))))
     (define image-text-ex
       (let ([f #f])
         (lambda (font text font-size spacing tint)
           (unless f
             (set! f
-              (foreign-procedure "ImageTextEx"
-                ((& Font) string float float (& Color))
-                (* Image))))
-          (f font text font-size spacing tint))))
+              (foreign-procedure "shim_ImageTextEx" (* Image)
+                (& Font)
+                string
+                float
+                float
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (f dst font text font-size spacing tint)
+            dst))))
     (define image-format
       (let ([f #f])
         (lambda (image new-format)
@@ -5703,35 +5913,25 @@
                 [dst (make-ftype-pointer
                        Rectangle
                        (foreign-alloc (ftype-sizeof Rectangle)))])
-            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
-            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
-            (ftype-set!
-              Rectangle
-              (width)
-              dst
-              (ftype-ref Rectangle (width) ret))
-            (ftype-set!
-              Rectangle
-              (height)
-              dst
-              (ftype-ref Rectangle (height) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Rectangle))
             dst))))
     (define get-image-color
       (let ([f #f])
         (lambda (image x y)
           (unless f
             (set! f
-              (foreign-procedure "GetImageColor"
-                ((& Image) int int)
-                (* Color))))
-          (let ([ret (f image x y)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetImageColor" (* Color)
+                (& Image)
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (f dst image x y)
             dst))))
     (define image-clear-background
       (let ([f #f])
@@ -6059,35 +6259,57 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "LoadTexture" (string) (* Texture))))
-          (f file-name))))
+              (foreign-procedure "shim_LoadTexture"
+                (* Texture)
+                string
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Texture
+                       (foreign-alloc (ftype-sizeof Texture)))])
+            (f dst file-name)
+            dst))))
     (define load-texture-from-image
       (let ([f #f])
         (lambda (image)
           (unless f
             (set! f
-              (foreign-procedure "LoadTextureFromImage"
-                ((& Image))
-                (* Texture))))
-          (f image))))
+              (foreign-procedure "shim_LoadTextureFromImage" (* Texture)
+                (& Image)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Texture
+                       (foreign-alloc (ftype-sizeof Texture)))])
+            (f dst image)
+            dst))))
     (define load-texture-cubemap
       (let ([f #f])
         (lambda (image layout)
           (unless f
             (set! f
-              (foreign-procedure "LoadTextureCubemap"
-                ((& Image) int)
-                (* Texture))))
-          (f image layout))))
+              (foreign-procedure "shim_LoadTextureCubemap" (* Texture)
+                (& Image)
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Texture
+                       (foreign-alloc (ftype-sizeof Texture)))])
+            (f dst image layout)
+            dst))))
     (define load-render-texture
       (let ([f #f])
         (lambda (width height)
           (unless f
             (set! f
-              (foreign-procedure "LoadRenderTexture"
-                (int int)
-                (* Render-Texture))))
-          (f width height))))
+              (foreign-procedure "shim_LoadRenderTexture"
+                (* Render-Texture)
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Render-Texture
+                       (foreign-alloc (ftype-sizeof Render-Texture)))])
+            (f dst width height)
+            dst))))
     (define is-texture-valid
       (let ([f #f])
         (lambda (texture)
@@ -6243,15 +6465,14 @@
         (lambda (color alpha)
           (unless f
             (set! f
-              (foreign-procedure "Fade" ((& Color) float) (* Color))))
-          (let ([ret (f color alpha)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_Fade" (* Color)
+                (& Color)
+                float
+                void)))
+          (let ([dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (f dst color alpha)
             dst))))
     (define color-to-int
       (let ([f #f])
@@ -6271,58 +6492,52 @@
                 [dst (make-ftype-pointer
                        Vector-4
                        (foreign-alloc (ftype-sizeof Vector-4)))])
-            (ftype-set! Vector-4 (x) dst (ftype-ref Vector-4 (x) ret))
-            (ftype-set! Vector-4 (y) dst (ftype-ref Vector-4 (y) ret))
-            (ftype-set! Vector-4 (z) dst (ftype-ref Vector-4 (z) ret))
-            (ftype-set! Vector-4 (w) dst (ftype-ref Vector-4 (w) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-4))
             dst))))
     (define color-from-normalized
       (let ([f #f])
         (lambda (normalized)
           (unless f
             (set! f
-              (foreign-procedure "ColorFromNormalized"
-                ((& Vector-4))
-                (* Color))))
-          (let ([ret (f normalized)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_ColorFromNormalized" (* Color)
+                (& Vector-4)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (f dst normalized)
             dst))))
     (define color-to-hsv
       (let ([f #f])
         (lambda (color)
           (unless f
             (set! f
-              (foreign-procedure "ColorToHSV" ((& Color)) (* Vector-3))))
-          (let ([ret (f color)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_ColorToHSV" (* Vector-3)
+                (& Color)
+                void)))
+          (let ([dst (make-ftype-pointer
                        Vector-3
                        (foreign-alloc (ftype-sizeof Vector-3)))])
-            (ftype-set! Vector-3 (x) dst (ftype-ref Vector-3 (x) ret))
-            (ftype-set! Vector-3 (y) dst (ftype-ref Vector-3 (y) ret))
-            (ftype-set! Vector-3 (z) dst (ftype-ref Vector-3 (z) ret))
+            (f dst color)
             dst))))
     (define color-from-hsv
       (let ([f #f])
         (lambda (hue saturation value)
           (unless f
             (set! f
-              (foreign-procedure "ColorFromHSV"
-                (float float float)
-                (* Color))))
-          (let ([ret (f hue saturation value)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_ColorFromHSV"
+                (* Color)
+                float
+                float
+                float
+                void)))
+          (let ([dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (f dst hue saturation value)
             dst))))
     (define color-tint
       (let ([f #f])
@@ -6336,10 +6551,10 @@
                 [dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Color))
             dst))))
     (define color-brightness
       (let ([f #f])
@@ -6353,10 +6568,10 @@
                 [dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Color))
             dst))))
     (define color-contrast
       (let ([f #f])
@@ -6370,27 +6585,24 @@
                 [dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Color))
             dst))))
     (define color-alpha
       (let ([f #f])
         (lambda (color alpha)
           (unless f
             (set! f
-              (foreign-procedure "ColorAlpha"
-                ((& Color) float)
-                (* Color))))
-          (let ([ret (f color alpha)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_ColorAlpha" (* Color)
+                (& Color)
+                float
+                void)))
+          (let ([dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (f dst color alpha)
             dst))))
     (define color-alpha-blend
       (let ([f #f])
@@ -6404,10 +6616,10 @@
                 [dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Color))
             dst))))
     (define color-lerp
       (let ([f #f])
@@ -6421,25 +6633,24 @@
                 [dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Color))
             dst))))
     (define get-color
       (let ([f #f])
         (lambda (hex-value)
           (unless f
             (set! f
-              (foreign-procedure "GetColor" (unsigned) (* Color))))
-          (let ([ret (f hex-value)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "shim_GetColor"
+                (* Color)
+                unsigned
+                void)))
+          (let ([dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (f dst hex-value)
             dst))))
     (define get-pixel-color
       (let ([f #f])
@@ -6451,10 +6662,10 @@
                 [dst (make-ftype-pointer
                        Color
                        (foreign-alloc (ftype-sizeof Color)))])
-            (ftype-set! Color (r) dst (ftype-ref Color (r) ret))
-            (ftype-set! Color (g) dst (ftype-ref Color (g) ret))
-            (ftype-set! Color (b) dst (ftype-ref Color (b) ret))
-            (ftype-set! Color (a) dst (ftype-ref Color (a) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Color))
             dst))))
     (define set-pixel-color
       (let ([f #f])
@@ -6477,13 +6688,29 @@
         (lambda ()
           (unless f
             (set! f (foreign-procedure "GetFontDefault" () (* Font))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Font
+                       (foreign-alloc (ftype-sizeof Font)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Font))
+            dst))))
     (define load-font
       (let ([f #f])
         (lambda (file-name)
           (unless f
             (set! f (foreign-procedure "LoadFont" (string) (* Font))))
-          (f file-name))))
+          (let ([ret (f file-name)]
+                [dst (make-ftype-pointer
+                       Font
+                       (foreign-alloc (ftype-sizeof Font)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Font))
+            dst))))
     (define load-font-ex
       (let ([f #f])
         (lambda (file-name font-size codepoints codepoint-count)
@@ -6492,7 +6719,18 @@
               (foreign-procedure "LoadFontEx"
                 (string int (* int) int)
                 (* Font))))
-          (f file-name font-size codepoints codepoint-count))))
+          (let ([ret (f file-name
+                        font-size
+                        codepoints
+                        codepoint-count)]
+                [dst (make-ftype-pointer
+                       Font
+                       (foreign-alloc (ftype-sizeof Font)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Font))
+            dst))))
     (define load-font-from-image
       (let ([f #f])
         (lambda (image key first-char)
@@ -6501,7 +6739,15 @@
               (foreign-procedure "LoadFontFromImage"
                 ((& Image) (& Color) int)
                 (* Font))))
-          (f image key first-char))))
+          (let ([ret (f image key first-char)]
+                [dst (make-ftype-pointer
+                       Font
+                       (foreign-alloc (ftype-sizeof Font)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Font))
+            dst))))
     (define load-font-from-memory
       (let ([f #f])
         (lambda (file-type file-data data-size font-size codepoints
@@ -6511,8 +6757,16 @@
               (foreign-procedure "LoadFontFromMemory"
                 (string (* unsigned-8) int int (* int) int)
                 (* Font))))
-          (f file-type file-data data-size font-size codepoints
-             codepoint-count))))
+          (let ([ret (f file-type file-data data-size font-size
+                        codepoints codepoint-count)]
+                [dst (make-ftype-pointer
+                       Font
+                       (foreign-alloc (ftype-sizeof Font)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Font))
+            dst))))
     (define is-font-valid
       (let ([f #f])
         (lambda (font)
@@ -6540,8 +6794,16 @@
               (foreign-procedure "GenImageFontAtlas"
                 ((* Glyph-Info) void* int int int int)
                 (* Image))))
-          (f glyphs glyph-recs glyph-count font-size padding
-             pack-method))))
+          (let ([ret (f glyphs glyph-recs glyph-count font-size
+                        padding pack-method)]
+                [dst (make-ftype-pointer
+                       Image
+                       (foreign-alloc (ftype-sizeof Image)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Image))
+            dst))))
     (define unload-font-data
       (let ([f #f])
         (lambda (glyphs glyph-count)
@@ -6653,8 +6915,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define measure-text-codepoints
       (let ([f #f])
@@ -6668,8 +6932,10 @@
                 [dst (make-ftype-pointer
                        Vector-2
                        (foreign-alloc (ftype-sizeof Vector-2)))])
-            (ftype-set! Vector-2 (x) dst (ftype-ref Vector-2 (x) ret))
-            (ftype-set! Vector-2 (y) dst (ftype-ref Vector-2 (y) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Vector-2))
             dst))))
     (define get-glyph-index
       (let ([f #f])
@@ -6686,7 +6952,15 @@
               (foreign-procedure "GetGlyphInfo"
                 ((& Font) int)
                 (* Glyph-Info))))
-          (f font codepoint))))
+          (let ([ret (f font codepoint)]
+                [dst (make-ftype-pointer
+                       Glyph-Info
+                       (foreign-alloc (ftype-sizeof Glyph-Info)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Glyph-Info))
+            dst))))
     (define get-glyph-atlas-rec
       (let ([f #f])
         (lambda (font codepoint)
@@ -6699,18 +6973,10 @@
                 [dst (make-ftype-pointer
                        Rectangle
                        (foreign-alloc (ftype-sizeof Rectangle)))])
-            (ftype-set! Rectangle (x) dst (ftype-ref Rectangle (x) ret))
-            (ftype-set! Rectangle (y) dst (ftype-ref Rectangle (y) ret))
-            (ftype-set!
-              Rectangle
-              (width)
-              dst
-              (ftype-ref Rectangle (width) ret))
-            (ftype-set!
-              Rectangle
-              (height)
-              dst
-              (ftype-ref Rectangle (height) ret))
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Rectangle))
             dst))))
     (define load-utf-8
       (let ([f #f])
@@ -7158,17 +7424,26 @@
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadModel" (string) (* Model))))
-          (f file-name))))
+            (set! f
+              (foreign-procedure "shim_LoadModel" (* Model) string void)))
+          (let ([dst (make-ftype-pointer
+                       Model
+                       (foreign-alloc (ftype-sizeof Model)))])
+            (f dst file-name)
+            dst))))
     (define load-model-from-mesh
       (let ([f #f])
         (lambda (mesh)
           (unless f
             (set! f
-              (foreign-procedure "LoadModelFromMesh"
-                ((& Mesh))
-                (* Model))))
-          (f mesh))))
+              (foreign-procedure "shim_LoadModelFromMesh" (* Model)
+                (& Mesh)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Model
+                       (foreign-alloc (ftype-sizeof Model)))])
+            (f dst mesh)
+            dst))))
     (define is-model-valid
       (let ([f #f])
         (lambda (model)
@@ -7190,7 +7465,15 @@
               (foreign-procedure "GetModelBoundingBox"
                 ((& Model))
                 (* Bounding-Box))))
-          (f model))))
+          (let ([ret (f model)]
+                [dst (make-ftype-pointer
+                       Bounding-Box
+                       (foreign-alloc (ftype-sizeof Bounding-Box)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Bounding-Box))
+            dst))))
     (define draw-model
       (let ([f #f])
         (lambda (model position scale tint)
@@ -7339,10 +7622,14 @@
         (lambda (mesh)
           (unless f
             (set! f
-              (foreign-procedure "GetMeshBoundingBox"
-                ((& Mesh))
-                (* Bounding-Box))))
-          (f mesh))))
+              (foreign-procedure "shim_GetMeshBoundingBox" (* Bounding-Box)
+                (& Mesh)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Bounding-Box
+                       (foreign-alloc (ftype-sizeof Bounding-Box)))])
+            (f dst mesh)
+            dst))))
     (define gen-mesh-tangents
       (let ([f #f])
         (lambda (mesh)
@@ -7374,52 +7661,96 @@
           (unless f
             (set! f
               (foreign-procedure "GenMeshPoly" (int float) (* Mesh))))
-          (f sides radius))))
+          (let ([ret (f sides radius)]
+                [dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Mesh))
+            dst))))
     (define gen-mesh-plane
       (let ([f #f])
         (lambda (width length res-x res-z)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshPlane"
-                (float float int int)
-                (* Mesh))))
-          (f width length res-x res-z))))
+              (foreign-procedure "shim_GenMeshPlane"
+                (* Mesh)
+                float
+                float
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst width length res-x res-z)
+            dst))))
     (define gen-mesh-cube
       (let ([f #f])
         (lambda (width height length)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshCube"
-                (float float float)
-                (* Mesh))))
-          (f width height length))))
+              (foreign-procedure "shim_GenMeshCube"
+                (* Mesh)
+                float
+                float
+                float
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst width height length)
+            dst))))
     (define gen-mesh-sphere
       (let ([f #f])
         (lambda (radius rings slices)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshSphere"
-                (float int int)
-                (* Mesh))))
-          (f radius rings slices))))
+              (foreign-procedure "shim_GenMeshSphere"
+                (* Mesh)
+                float
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst radius rings slices)
+            dst))))
     (define gen-mesh-hemi-sphere
       (let ([f #f])
         (lambda (radius rings slices)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshHemiSphere"
-                (float int int)
-                (* Mesh))))
-          (f radius rings slices))))
+              (foreign-procedure "shim_GenMeshHemiSphere"
+                (* Mesh)
+                float
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst radius rings slices)
+            dst))))
     (define gen-mesh-cylinder
       (let ([f #f])
         (lambda (radius height slices)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshCylinder"
-                (float float int)
-                (* Mesh))))
-          (f radius height slices))))
+              (foreign-procedure "shim_GenMeshCylinder"
+                (* Mesh)
+                float
+                float
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst radius height slices)
+            dst))))
     (define gen-mesh-cone
       (let ([f #f])
         (lambda (radius height slices)
@@ -7428,43 +7759,77 @@
               (foreign-procedure "GenMeshCone"
                 (float float int)
                 (* Mesh))))
-          (f radius height slices))))
+          (let ([ret (f radius height slices)]
+                [dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Mesh))
+            dst))))
     (define gen-mesh-torus
       (let ([f #f])
         (lambda (radius size rad-seg sides)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshTorus"
-                (float float int int)
-                (* Mesh))))
-          (f radius size rad-seg sides))))
+              (foreign-procedure "shim_GenMeshTorus"
+                (* Mesh)
+                float
+                float
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst radius size rad-seg sides)
+            dst))))
     (define gen-mesh-knot
       (let ([f #f])
         (lambda (radius size rad-seg sides)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshKnot"
-                (float float int int)
-                (* Mesh))))
-          (f radius size rad-seg sides))))
+              (foreign-procedure "shim_GenMeshKnot"
+                (* Mesh)
+                float
+                float
+                int
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst radius size rad-seg sides)
+            dst))))
     (define gen-mesh-heightmap
       (let ([f #f])
         (lambda (heightmap size)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshHeightmap"
-                ((& Image) (& Vector-3))
-                (* Mesh))))
-          (f heightmap size))))
+              (foreign-procedure "shim_GenMeshHeightmap" (* Mesh)
+                (& Image)
+                (& Vector-3)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst heightmap size)
+            dst))))
     (define gen-mesh-cubicmap
       (let ([f #f])
         (lambda (cubicmap cube-size)
           (unless f
             (set! f
-              (foreign-procedure "GenMeshCubicmap"
-                ((& Image) (& Vector-3))
-                (* Mesh))))
-          (f cubicmap cube-size))))
+              (foreign-procedure "shim_GenMeshCubicmap" (* Mesh)
+                (& Image)
+                (& Vector-3)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Mesh
+                       (foreign-alloc (ftype-sizeof Mesh)))])
+            (f dst cubicmap cube-size)
+            dst))))
     (define load-materials
       (let ([f #f])
         (lambda (file-name material-count)
@@ -7480,7 +7845,15 @@
           (unless f
             (set! f
               (foreign-procedure "LoadMaterialDefault" () (* Material))))
-          (f))))
+          (let ([ret (f)]
+                [dst (make-ftype-pointer
+                       Material
+                       (foreign-alloc (ftype-sizeof Material)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Material))
+            dst))))
     (define is-material-valid
       (let ([f #f])
         (lambda (material)
@@ -7600,7 +7973,15 @@
               (foreign-procedure "GetRayCollisionSphere"
                 ((& Ray) (& Vector-3) float)
                 (* Ray-Collision))))
-          (f ray center radius))))
+          (let ([ret (f ray center radius)]
+                [dst (make-ftype-pointer
+                       Ray-Collision
+                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Ray-Collision))
+            dst))))
     (define get-ray-collision-box
       (let ([f #f])
         (lambda (ray box)
@@ -7609,7 +7990,15 @@
               (foreign-procedure "GetRayCollisionBox"
                 ((& Ray) (& Bounding-Box))
                 (* Ray-Collision))))
-          (f ray box))))
+          (let ([ret (f ray box)]
+                [dst (make-ftype-pointer
+                       Ray-Collision
+                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Ray-Collision))
+            dst))))
     (define get-ray-collision-mesh
       (let ([f #f])
         (lambda (ray mesh transform)
@@ -7618,7 +8007,15 @@
               (foreign-procedure "GetRayCollisionMesh"
                 ((& Ray) (& Mesh) (& Matrix))
                 (* Ray-Collision))))
-          (f ray mesh transform))))
+          (let ([ret (f ray mesh transform)]
+                [dst (make-ftype-pointer
+                       Ray-Collision
+                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Ray-Collision))
+            dst))))
     (define get-ray-collision-triangle
       (let ([f #f])
         (lambda (ray p-1 p-2 p-3)
@@ -7627,7 +8024,15 @@
               (foreign-procedure "GetRayCollisionTriangle"
                 ((& Ray) (& Vector-3) (& Vector-3) (& Vector-3))
                 (* Ray-Collision))))
-          (f ray p-1 p-2 p-3))))
+          (let ([ret (f ray p-1 p-2 p-3)]
+                [dst (make-ftype-pointer
+                       Ray-Collision
+                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Ray-Collision))
+            dst))))
     (define get-ray-collision-quad
       (let ([f #f])
         (lambda (ray p-1 p-2 p-3 p-4)
@@ -7640,7 +8045,15 @@
                  (& Vector-3)
                  (& Vector-3))
                 (* Ray-Collision))))
-          (f ray p-1 p-2 p-3 p-4))))
+          (let ([ret (f ray p-1 p-2 p-3 p-4)]
+                [dst (make-ftype-pointer
+                       Ray-Collision
+                       (foreign-alloc (ftype-sizeof Ray-Collision)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Ray-Collision))
+            dst))))
     (define init-audio-device
       (let ([f #f])
         (lambda ()
@@ -7676,17 +8089,29 @@
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadWave" (string) (* Wave))))
-          (f file-name))))
+            (set! f
+              (foreign-procedure "shim_LoadWave" (* Wave) string void)))
+          (let ([dst (make-ftype-pointer
+                       Wave
+                       (foreign-alloc (ftype-sizeof Wave)))])
+            (f dst file-name)
+            dst))))
     (define load-wave-from-memory
       (let ([f #f])
         (lambda (file-type file-data data-size)
           (unless f
             (set! f
-              (foreign-procedure "LoadWaveFromMemory"
-                (string (* unsigned-8) int)
-                (* Wave))))
-          (f file-type file-data data-size))))
+              (foreign-procedure "shim_LoadWaveFromMemory"
+                (* Wave)
+                string
+                (* unsigned-8)
+                int
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Wave
+                       (foreign-alloc (ftype-sizeof Wave)))])
+            (f dst file-type file-data data-size)
+            dst))))
     (define is-wave-valid
       (let ([f #f])
         (lambda (wave)
@@ -7698,24 +8123,39 @@
       (let ([f #f])
         (lambda (file-name)
           (unless f
-            (set! f (foreign-procedure "LoadSound" (string) (* Sound))))
-          (f file-name))))
+            (set! f
+              (foreign-procedure "shim_LoadSound" (* Sound) string void)))
+          (let ([dst (make-ftype-pointer
+                       Sound
+                       (foreign-alloc (ftype-sizeof Sound)))])
+            (f dst file-name)
+            dst))))
     (define load-sound-from-wave
       (let ([f #f])
         (lambda (wave)
           (unless f
             (set! f
-              (foreign-procedure "LoadSoundFromWave"
-                ((& Wave))
-                (* Sound))))
-          (f wave))))
+              (foreign-procedure "shim_LoadSoundFromWave" (* Sound)
+                (& Wave)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Sound
+                       (foreign-alloc (ftype-sizeof Sound)))])
+            (f dst wave)
+            dst))))
     (define load-sound-alias
       (let ([f #f])
         (lambda (source)
           (unless f
             (set! f
-              (foreign-procedure "LoadSoundAlias" ((& Sound)) (* Sound))))
-          (f source))))
+              (foreign-procedure "shim_LoadSoundAlias" (* Sound)
+                (& Sound)
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Sound
+                       (foreign-alloc (ftype-sizeof Sound)))])
+            (f dst source)
+            dst))))
     (define is-sound-valid
       (let ([f #f])
         (lambda (sound)
@@ -7829,8 +8269,13 @@
       (let ([f #f])
         (lambda (wave)
           (unless f
-            (set! f (foreign-procedure "WaveCopy" ((& Wave)) (* Wave))))
-          (f wave))))
+            (set! f
+              (foreign-procedure "shim_WaveCopy" (* Wave) (& Wave) void)))
+          (let ([dst (make-ftype-pointer
+                       Wave
+                       (foreign-alloc (ftype-sizeof Wave)))])
+            (f dst wave)
+            dst))))
     (define wave-crop
       (let ([f #f])
         (lambda (wave init-frame final-frame)
@@ -7866,8 +8311,15 @@
         (lambda (file-name)
           (unless f
             (set! f
-              (foreign-procedure "LoadMusicStream" (string) (* Music))))
-          (f file-name))))
+              (foreign-procedure "shim_LoadMusicStream"
+                (* Music)
+                string
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Music
+                       (foreign-alloc (ftype-sizeof Music)))])
+            (f dst file-name)
+            dst))))
     (define load-music-stream-from-memory
       (let ([f #f])
         (lambda (file-type data data-size)
@@ -7876,7 +8328,15 @@
               (foreign-procedure "LoadMusicStreamFromMemory"
                 (string (* unsigned-8) int)
                 (* Music))))
-          (f file-type data data-size))))
+          (let ([ret (f file-type data data-size)]
+                [dst (make-ftype-pointer
+                       Music
+                       (foreign-alloc (ftype-sizeof Music)))])
+            (memcpy-to
+              (ftype-pointer-address dst)
+              (ftype-pointer-address ret)
+              (ftype-sizeof Music))
+            dst))))
     (define is-music-valid
       (let ([f #f])
         (lambda (music)
@@ -7986,10 +8446,17 @@
         (lambda (sample-rate sample-size channels)
           (unless f
             (set! f
-              (foreign-procedure "LoadAudioStream"
-                (unsigned unsigned unsigned)
-                (* Audio-Stream))))
-          (f sample-rate sample-size channels))))
+              (foreign-procedure "shim_LoadAudioStream"
+                (* Audio-Stream)
+                unsigned
+                unsigned
+                unsigned
+                void)))
+          (let ([dst (make-ftype-pointer
+                       Audio-Stream
+                       (foreign-alloc (ftype-sizeof Audio-Stream)))])
+            (f dst sample-rate sample-size channels)
+            dst))))
     (define is-audio-stream-valid
       (let ([f #f])
         (lambda (stream)
@@ -8152,6 +8619,19 @@
                 (void*)
                 void)))
           (f processor))))
+    (load-shared-object "/usr/lib/libSystem.B.dylib")
+    (load-shared-object
+      (let loop ([libs (library-directories)])
+        (cond
+          [(null? libs) (error 'raylib "Raylib not found")]
+          [(file-exists?
+             (string-append
+               (caar libs)
+               "/raylib/chez_raylib_shim.dylib"))
+           (string-append
+             (caar libs)
+             "/raylib/chez_raylib_shim.dylib")]
+          [else (loop (cdr libs))])))
     (load-shared-object
       (let loop ([libs (library-directories)])
         (cond
