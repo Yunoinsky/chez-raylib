@@ -18,7 +18,7 @@
      (close-window))
   (drawing-begin
    (clear-background RAYWHITE)
-   (draw-text "move the ball with arrow keys"
+   (draw-text "move the ball with WASD"
               10 10 20
               DARKGRAY)
    (draw-circle x y 50.0 MAROON)))

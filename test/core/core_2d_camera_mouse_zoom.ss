@@ -31,10 +31,9 @@
         (vector-2->vector target))
        target))
     (unless (= wheel 0)
-      (vector->vector-2
-       (vector-2->vector (get-screen-to-world-2d (get-mouse-position) camera))
-       target)
-      (vector-2-set! offset y 0.0)
+      (let ([world (get-screen-to-world-2d (get-mouse-position) camera)])
+        (vector-2-set! target x (vector-2-get world x))
+        (vector-2-set! target y (vector-2-get world y)))
       (camera-2d-set!
        camera zoom
        (max (+ zoom (* wheel zoom-increment)) zoom-increment)))
@@ -42,10 +41,12 @@
      (clear-background BLACK)
      (mode-2d-begin
       camera
-      (rl-load-identity)
+      ;; 3D grid rotated to XY plane (matches raylib C example)
+      (rl-push-matrix)
       (rl-translatef 0.0 (* 25.0 50.0) 0.0)
       (rl-rotatef 90.0 1.0 0.0 0.0)
-      (draw-grid 100 50.0))
-     (draw-circle 100 100 50.0 YELLOW))
-    (draw-text "Mouse right button drag to move, mouse wheel to zoom" 10 390 10 LIGHTGRAY))
-)
+      (draw-grid 100 50.0)
+      (rl-pop-matrix)
+      ;; Reference circle at screen center in camera space
+      (draw-circle 400 225 50.0 YELLOW))
+     (draw-text "Mouse right button drag to move, mouse wheel to zoom" 10 390 10 LIGHTGRAY))))

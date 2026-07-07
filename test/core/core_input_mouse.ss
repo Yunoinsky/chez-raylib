@@ -6,7 +6,7 @@
 
 (do ([ball-pos (get-mouse-position)
                (get-mouse-position)]
-     [ball-color DARKBLUE 
+     [ball-color DARKBLUE
                  (cond
                   [(is-mouse-button-pressed
                     MOUSE_BUTTON_LEFT) MAROON]
@@ -19,9 +19,5 @@
      (close-window))
   (drawing-begin
    (clear-background RAYWHITE)
-   (draw-circle-v ball-pos 50.0 ball-color)  
-   (draw-text "move ball with mouse and \
-               click mouse button to change color"
-              10 10 20
-              DARKGRAY)))
-
+   (draw-circle-v ball-pos 50.0 ball-color)
+   (draw-text "move ball with mouse and click (R/L) to change color" 10 10 20 DARKGRAY)))
