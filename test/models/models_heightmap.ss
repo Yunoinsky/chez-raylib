@@ -15,7 +15,7 @@
 (define map-pos (make-vector-3 -8.0 0.0 -8.0))
 (unload-image image)
 
-(set-camera-mode camera CAMERA_ORBITAL)
+(update-camera camera CAMERA_ORBITAL)
 
 (set-target-fps 60)
 

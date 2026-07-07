@@ -22,7 +22,7 @@
 
 (define bounds (get-mesh-bounding-box (model-ref& model (meshes 0))))
 
-(set-camera-mode camera CAMERA_FREE)
+(update-camera camera CAMERA_FREE)
 
 (set-target-fps 60)
 

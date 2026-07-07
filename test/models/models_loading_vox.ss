@@ -32,7 +32,7 @@
        model))
    vox-fns))
 
-(set-camera-mode camera CAMERA_ORBITAL)
+(update-camera camera CAMERA_ORBITAL)
 (set-target-fps 60)
 
 (do ([current-model 0 (cond

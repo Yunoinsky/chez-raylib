@@ -16,7 +16,7 @@
 
 (do ([current-gesture (get-gesture-detected) (get-gesture-detected)]
      [last-gesture GESTURE_NONE current-gesture]
-     [touch-pos (get-touch-position 0) (get-touch-position touch-pos)]
+     [touch-pos (get-touch-position 0) (get-touch-position 0)]
      [touch-area (make-rectangle 220.0 10.0 (- screen-width 230.0) (- screen-height 20.0))]
      [gestures '()])
     ((window-should-close)
