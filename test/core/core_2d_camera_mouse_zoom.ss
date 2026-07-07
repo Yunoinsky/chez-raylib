@@ -33,7 +33,6 @@
     (unless (= wheel 0)
       (let* ([new-zoom (max (+ zoom (* wheel zoom-increment)) zoom-increment)]
              [world (get-screen-to-world-2d (get-mouse-position) camera)])
-        ;; Center camera on world position under mouse, then zoom
         (vector-2-set! target x (vector-2-get world x))
         (vector-2-set! target y (vector-2-get world y))
         (camera-2d-set! camera zoom new-zoom)))
