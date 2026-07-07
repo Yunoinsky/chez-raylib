@@ -31,9 +31,6 @@
         (vector-2->vector target))
        target))
     (unless (= wheel 0)
-      (let ([world (get-screen-to-world-2d (get-mouse-position) camera)])
-        (vector-2-set! target x (vector-2-get world x))
-        (vector-2-set! target y (vector-2-get world y)))
       (camera-2d-set!
        camera zoom
        (max (+ zoom (* wheel zoom-increment)) zoom-increment)))
