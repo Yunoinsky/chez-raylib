@@ -32,9 +32,16 @@
        target))
     (unless (= wheel 0)
       (let* ([new-zoom (max (+ zoom (* wheel zoom-increment)) zoom-increment)]
-             [world (get-screen-to-world-2d (get-mouse-position) camera)])
-        (vector-2-set! target x (vector-2-get world x))
-        (vector-2-set! target y (vector-2-get world y))
+             [world (get-screen-to-world-2d (get-mouse-position) camera)]
+             [wx (vector-2-get world x)]
+             [wy (vector-2-get world y)]
+             [ox (vector-2-get offset x)]
+             [oy (vector-2-get offset y)]
+             [mx (vector-2-get (get-mouse-position) x)]
+             [my (vector-2-get (get-mouse-position) y)])
+        ;; Keep the point under mouse fixed at screen after zoom change
+        (vector-2-set! target x (- wx (/ (- mx ox) new-zoom 1.0)))
+        (vector-2-set! target y (- wy (/ (- my oy) new-zoom 1.0)))
         (camera-2d-set! camera zoom new-zoom)))
     (drawing-begin
      (clear-background BLACK)
