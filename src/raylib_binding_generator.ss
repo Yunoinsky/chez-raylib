@@ -183,8 +183,7 @@
 (define scalar-ftype-names
   '(int float double char unsigned-8 unsigned-short unsigned long void void*))
 
-;; Maps raylib C function name -> shim function name
-;; The shim takes the output buffer as the FIRST parameter.
+
 ;; ===== struct forms =====
 (define (struct-form alist)
   (let* ([name (ftype-name-of (attr alist "name"))]
