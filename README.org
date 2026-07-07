@@ -10,7 +10,7 @@ Inspired by Petelliott's [[https://github.com/petelliott/raylib-guile][raylib-gu
 
 Thanks to Raysan's outstanding work on [[https://github.com/raysan5/raylib][Raylib]].
 
-λ-0.3 was developed with LLM assistance (Claude); λ-0.2 was not.
+λ-0.3 was developed with LLM assistance (DeepSeek V4 + Pi-agent); λ-0.2 was not.
 
 The project uses raylib's own =rlparser= tool to produce sexpr source files,
 then feeds them to a Chez Scheme generator that emits =raylib.sls= and
