@@ -1,72 +1,174 @@
-#+TITLE: Chez-Raylib λ-0.3
+#+TITLE: Chez-Raylib
 #+AUTHOR: Yunoinsky Chen
 
 ** Introduction
 
-   Raylib in ChezScheme, with an automatic binding generator.
+Raylib bindings for Chez Scheme, built by an s-expression driven binding
+generator.
 
-   Inspired by Petelliott's fantastic [[https://github.com/petelliott/raylib-guile][raylib-guile]].
+Inspired by Petelliott's [[https://github.com/petelliott/raylib-guile][raylib-guile]].
 
-   Thanks for Raysan's outstanding work - [[https://github.com/raysan5/raylib][Raylib]].
+Thanks to Raysan's outstanding work on [[https://github.com/raysan5/raylib][Raylib]].
 
-   *λ-0.3 changes:*
-   - Generator reads s-expression sources from ~raylib/tools/rlparser/~ (no XML,
-     no ~chez-xml~ dependency).
-   - Generator produces three libraries: ~(raylib raylib)~, ~(raylib rlgl)~,
-     ~(raylib raymath)~, all at version ~(0 3)~.
-   - ~raymath.sls~ is preserved hand-written to keep ~(matrix)~ library
-     interop; only ~raylib.sls~ and ~rlgl.sls~ are auto-generated.
-   - Lazy foreign-procedure resolution: each raylib function call resolves
-     its C address on first use, so ~load-shared-object~ can live at the
-     bottom of the library body.
-   - C preprocessor artifacts (~#if~ / ~#endif~) in rlgl are filtered out.
+The project uses raylib's own =rlparser= tool to produce sexpr source files,
+then feeds them to a Chez Scheme generator that emits =raylib.sls= and
+=rlgl.sls= with lazy ~foreign-procedure~ resolution.
 
-** Source format
+** What's included
 
-   The generator consumes one s-expression file per raylib header, produced by
-   =rlparser=:
-   - ~raylib_api.sexpr~ — high-level raylib.h (Defines, Structs, Enums,
-     Callbacks, Functions)
-   - ~rlgl_api.sexpr~ — rlgl.h (immediatemode OpenGL layer, statically
-     compiled into libraylib.dylib on Apple Silicon)
-   - ~raymath_api.sexpr~ — raymath.h (used to verify the generator; the
-     shipped ~raymath.sls~ is hand-written and imports ~(matrix)~).
+| Library             | Status         | Description                              |
+|---------------------+----------------+------------------------------------------|
+| ~(raylib raylib)~    | auto-generated | High-level raylib.h API                  |
+| ~(raylib rlgl)~     | auto-generated | rlgl immediate-mode layer                |
+| ~(raylib raymath)~  | hand-written   | Matrix interop wrapper around ~(matrix)~ |
+| ~(chez-raylib matrix)~ | hand-written | Chez-idiomatic flat-vector matrix lib    |
 
-   Regenerate after upgrading raylib:
+|───| Auto-generated files are safe to delete and regenerate; the hand-written
+libraries keep matrix math Scheme-idiomatic.
+
+** Quick start
+
+1. Install libraylib (e.g. ~brew install raylib~ or build from source).
+2. Drop =libraylib.dylib= (or =so= / =.dll=) into ~/Library/chezscheme/raylib/.
+3. Build the Scheme libraries:
+
    #+begin_example
-   cd $RAYLIB/tools/rlparser
-   FORMAT=SEXPR EXTENSION=sexpr make raylib_api.sexpr raymath_api.sexpr rlgl_api.sexpr
-   cp {raylib,rlgl,raymath}_api.sexpr "$CHEZRAYLIB/src/"
-   cd "$CHEZRAYLIB"
-   scheme --script ./src/raylib_binding_generator.ss
+   cd chez-raylib
+   scheme --script src/raylib_binding_generator.ss
+   echo '(import (chezscheme)) (compile-library "src/raylib.sls")'   | scheme
+   echo '(import (chezscheme)) (compile-library "src/rlgl.sls")'     | scheme
+   echo '(import (chezscheme)) (compile-library "src/raymath.sls")'  | scheme
+   echo '(import (chezscheme)) (compile-library "src/matrix.sls")'   | scheme
    #+end_example
 
-** Installation
+4. Install:
 
-   *Chez Scheme (≥9.5.8)* is required. Tested with Chez 10.5.0-pre-release.
+   #+begin_example
+   cp src/{raylib,rlgl,raymath,matrix}.{sls,so} ~/Library/chezscheme/raylib/
+   #+end_example
 
-   - Build or download a libraylib dynamic library (~libraylib.dylib~ on macOS,
-     ~libraylib.so~ on Linux, ~raylib.dll~ on Windows). The ~rlgl~ symbols are
-     statically compiled into the same ~libraylib.dylib~ by every ~r*.c~
-     translation unit, so no separate ~librlgl~ is needed.
-   - Drop the dynamic library into ~~/Library/chezscheme/raylib/~ (or any
-     directory on ~CHEZSCHEMELIBDIRS~).
-   - Place the generated ~raylib.so~, ~rlgl.so~ (and ~raymath.so~ if you build
-     it) into the same directory.
-   - Set ~CHEZSCHEMELIBDIRS~ to include that directory.
-   - From the project root run =scheme --script ./src/raylib_binding_generator.ss=.
-   - Run any test: =scheme --script ./test/core/core_basic_window.ss=.
+5. Run a test (should show a window):
 
-** Notes on Chez idiom
+   #+begin_example
+   CHEZSCHEMELIBDIRS=~/Library/chezscheme:/usr/local/lib/chezscheme \
+     scheme --script test/core/core_basic_window.ss
+   #+end_example
 
-   The generated ~(raylib raylib)~ library uses features idiomatic to Chez
-   Scheme:
-   - ~define-ftype~ + ~define-syntax~ for ~<struct>-set!~ / ~<struct>-get~ /
-     ~<struct>-ref&~ accessors.
-   - ~case-lambda~ for functions with both a buffer and a struct-mode
-     arity (e.g. ~GetCameraMatrix2D~).
-   - Lazy ~foreign-procedure~ resolution so ~load-shared-object~ is only
-     called once per library and does not need to precede definitions.
-   - ~printf~ + ~cond~ for ~trace-log~ instead of three side effects.
-   - ~define~ (with formals) rather than ~define-name+(lambda …)~ for the
-     helper procedures.
+** Regenerating bindings after a raylib upgrade
+
+#+begin_example
+cd $RAYLIB/tools/rlparser
+FORMAT=SEXPR EXTENSION=sexpr make raylib_api.sexpr rlgl_api.sexpr raymath_api.sexpr
+cp {raylib,rlgl,raymath}_api.sexpr "$CHEZRAYLIB/src/"
+cd "$CHEZRAYLIB"
+scheme --script src/raylib_binding_generator.ss
+#+end_example
+
+Then recompile and reinstall the four libraries as above.
+
+** Tests (41 total)
+
+#+begin_example
+core/        — 14 tests (basic window, camera, input, scissor, etc.)
+textures/    —  7 tests (logo, polygon, background scrolling, etc.)
+shapes/      —  4 tests (basic shapes, bouncing ball, bezier lines, logo)
+text/        --  4 tests (font loading, spritefont, format text, fonts)
+models/      —  8 tests (loading, collisions, geometric shapes, etc.)
+audio/       —  4 tests (sound, music, multi-channel, module)
+#+end_example
+
+Run any test:
+
+#+begin_example
+scheme --script test/core/core_basic_window.ss
+#+end_example
+
+~timeout 4 scheme --script ...~ if you want automatic 4-second cutoff (tests
+loop until window is closed).
+
+** Generator source format
+
+The generator (=raylib_binding_generator.ss=) reads sexpr files from
+=rlparser=:
+
+- =raylib_api.sexpr= — structs, enums, defines, functions from raylib.h
+- =rlgl_api.sexpr= — rlgl immediate-mode layer
+- =raymath_api.sexpr= — raymath.h (for verification)
+
+Each sexpr file is a single s-expression with sections: ~(defines ...)~,
+~(structs ...)~, ~(enums ...)~, ~(functions ...)~.
+
+The generator handles:
+- ~define-ftype~ for C structs (PascalCase-with-hyphens, e.g. ~Camera-3D~)
+- ~Make*~ / ~Copy*~ / ~set!~ / ~get~ / ~ref&~ macros per struct
+- Lazy ~foreign-procedure~ resolution (load-shared-object at library bottom)
+- Type aliases (~Texture2D~ → ~Texture~)
+- Opaque pointers (void*)
+- Array fields (~char[32]~ → ~(array 32 char)~)
+- Preprocessor dedup (rlparser ~#if~ / ~#endif~)
+- Integer defines (~RL_TRIANGLES~, ~RL_LINES~, etc.)
+- Color defines (~RAYWHITE~, ~RED~, etc.)
+- Kebab-case naming for functions (~init-window~, ~load-texture~)
+- ~(& Type)~ return type for struct-returning functions
+- Variadic function skipping (Chez 10.5 does not support ~...~)
+
+** Chez Scheme idioms used
+
+- ~define-ftype~ for C struct layout; accessor macros generated by the
+  generator.
+- ~case-lambda~ for multi-arity helpers (e.g. ~make-vector-2~ accepts
+  both ~(struct x y z)~ and ~(x y z)~).
+- Lazy ~foreign-procedure~ so ~load-shared-object~ lives at the bottom
+  of the library and runs once regardless of import order.
+- ~(matrix)~ sub-library uses flat vector storage for 2D matrices
+  (~index = row * cols + col~). Minimal — only the exports actually
+  consumed by ~raymath.sls~ and tests.
+
+** Struct return convention (~(& Type)~)
+
+Functions returning structs (e.g. ~GetMousePosition~ returning ~Vector2~)
+use ~(& Vector-2)~ as the foreign-procedure return type. Chez passes a
+hidden pointer as the first argument; the binding allocates the buffer,
+calls the function, and returns the ftype-pointer. No C shim needed.
+
+** Naming conventions
+
+| C name        | Function                           | ftype             |
+|---------------+------------------------------------+-------------------|
+| ~InitWindow~  | ~init-window~                      | —                 |
+| ~Vector2~     | ~.vector-2~                        | ~Vector-2~        |
+| ~Camera2D~    | ~camera-2d~                        | ~Camera-2D~       |
+| ~FPS~         | ~fps~                              | —                 |
+| ~GetFPS~      | ~get-fps~                          | —                 |
+
+- Functions: kebab-case (hyphen before digit, ~camera-2d~ not ~camera2d~).
+- ftype names: PascalCase with hyphens (~Camera-2D~).
+- Consecutive uppercase acronyms lowercased (~FPS~ → ~fps~, ~URL~ → ~url~).
+- Type aliases resolved: ~Texture2D~ → ~Texture~, ~ModelAnimPose~ → ~Transform~.
+
+** Requirements
+
+- Chez Scheme ≥ 9.5.8 (tested with Chez 10.5.0-pre-release).
+- raylib ≥ 6.1 (dynamic library, statically includes rlgl).
+
+** File structure
+
+#+begin_example
+src/
+  raylib_binding_generator.ss   — the binding generator
+  raylib.sls raylib.so           — auto-generated raylib bindings
+  rlgl.sls rlgl.so               — auto-generated rlgl bindings
+  raymath.sls raymath.so         — hand-written matrix wrapper
+  matrix.sls matrix.so           — minimal flat-vector matrix library
+  libraylib_api.sexpr            — sexpr source for raylib.h
+  librlgl_api.sexpr              — sexpr source for rlgl.h
+  libraymath_api.sexpr           — sexpr source for raymath.h
+test/
+  core/                          — 14 core tests
+  textures/                      —  7 texture tests
+  shapes/                        —  4 shape tests
+  text/                          —  4 text tests
+  models/                        —  8 model tests
+  audio/                         —  4 audio tests
+  resources/                     — shared test assets
+#+end_example
