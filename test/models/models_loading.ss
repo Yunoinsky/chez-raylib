@@ -16,7 +16,7 @@
 (define texture (load-texture
                  "./test/resources/models/obj/castle_diffuse.png"))
 
-(copy-texture texture (model-ref& model (materials 0 maps MATERIAL_MAP_ALBEDO texture)))
+(begin)
 
 (define position (make-vector-3 0.0 0.0 0.0))
 
@@ -40,14 +40,12 @@
            [(".obj" ".gltf" ".glb" ".vox" ".iqm" ".m3d")
             (unload-model model)
             (load-model model path-0)
-            (copy-texture texture
-                          (model-ref& model (materials 0 maps MATERIAL_MAP_ALBEDO texture)))
+            (begin))
             (get-mesh-bounding-box bounds (model-ref& model (meshes 0)))]
            [".png"
             (unload-texture texture)
             (load-texture texture path-0)
-            (copy-texture texture
-                          (model-ref& model (materials 0 maps MATERIAL_MAP_ALBEDO texture)))])))
+            (begin))])))
       (unload-dropped-files dropped-files)))
   (when (is-mouse-button-pressed MOUSE_BUTTON_LEFT)
     (if (ray-collision-get

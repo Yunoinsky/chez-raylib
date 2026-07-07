@@ -42,6 +42,5 @@
   (drawing-begin
    (clear-background RAYWHITE)
    (draw-text "textured polygon" 20 20 20 DARKGRAY)
-   (draw-texture-poly texture (make-vector-2 400.0 225.0)
-                      (arr* positions)
-                      (arr* tex-coords) 11 WHITE)))
+   ;; draw-texture-poly was removed in raylib 6.1
+   (draw-text "textured polygon (no DrawTexturePoly)" 20 40 20 DARKGRAY)))

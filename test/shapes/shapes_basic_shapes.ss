@@ -18,7 +18,7 @@
    (draw-text "some basic shapes available on raylib"
               40 40 40 DARKGRAY)
    (draw-circle circle-x 240 70.0 DARKBLUE)
-   (draw-circle-gradient circle-x 440 120.0 GREEN SKYBLUE)
+   (draw-circle-gradient (make-vector-2 (float circle-x) (float 440)) 120.0 GREEN SKYBLUE)
    (draw-circle-lines circle-x 680 160.0 DARKBLUE)
 
    (draw-rectangle (- rect-x-base 120) 200 240 120 RED)

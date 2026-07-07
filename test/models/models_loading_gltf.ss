@@ -21,7 +21,7 @@
     ((window-should-close)
      (unload-model model)
      (close-window))
-  (update-camera camera)
+  (update-camera camera CAMERA_FREE)
   (drawing-begin
    (clear-background SKYBLUE)
    (mode-3d-begin

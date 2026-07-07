@@ -11,7 +11,7 @@
 
 (define mesh (gen-mesh-heightmap image (make-vector-3 16.0 8.0 16.0)))
 (define model (load-model-from-mesh mesh))
-(define texture (load-texture-from-image (model-ref& model (materials 0 maps MATERIAL_MAP_ALBEDO texture)) image))
+(define texture (load-texture-from-image image))
 (define map-pos (make-vector-3 -8.0 0.0 -8.0))
 (unload-image image)
 

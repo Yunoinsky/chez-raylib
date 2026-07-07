@@ -24,8 +24,8 @@
 
 (set-target-fps 60)
 
-(do ([player-box (make-bounding-box)]
-     [enemy-box (make-bounding-box)])
+(do ([player-box (make-bounding-box (make-vector-3 0 0 0) (make-vector-3 0 0 0))]
+     [enemy-box (make-bounding-box (make-vector-3 0 0 0) (make-vector-3 0 0 0))])
     ((window-should-close)
      (close-window))
   (cond

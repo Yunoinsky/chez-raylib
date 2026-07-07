@@ -13,20 +13,20 @@
 
 (do ()
     ((window-should-close)
-     (stop-sound-multi)
+     (stop-sound)
      (unload-sound fx-wav)
      (unload-sound fx-ogg)
      (close-audio-device))
   (when (is-key-pressed KEY_SPACE)
-    (play-sound-multi fx-wav))
+    (play-sound fx-wav))
   (when (is-key-pressed KEY_ENTER)
-    (play-sound-multi fx-ogg))
+    (play-sound fx-ogg))
   (drawing-begin
    (clear-background RAYWHITE)
    (draw-text "MULTICHANNEL SOUND PLAYING" 20 20 20 GRAY)
    (draw-text "Press ENTER to play the ogg sound!" 200 120 20 LIGHTGRAY)
    (draw-text "Press SPACE to play the wav sound!" 200 180 20 LIGHTGRAY)
    (draw-text
-    (format "CONCURRENT SOUNDS PLAYING: ~2,,,'0@s"
-            (get-sounds-playing))
+    (format "CONCURRENT SOUNDS PLAYING: ~s"
+            (and (is-sound-playing fx-wav) (is-sound-playing fx-ogg)))
     220 280 20 RED)))

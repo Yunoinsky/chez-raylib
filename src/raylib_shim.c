@@ -95,3 +95,5 @@ void shim_GenMeshTorus(Mesh *out, float radius, float size, int radSeg, int side
 void shim_GenMeshKnot(Mesh *out, float radius, float size, int radSeg, int sides) { *out = GenMeshKnot(radius, size, radSeg, sides); }
 void shim_GenMeshHeightmap(Mesh *out, Image heightmap, Vector3 size) { *out = GenMeshHeightmap(heightmap, size); }
 void shim_GenMeshCubicmap(Mesh *out, Image cubicmap, Vector3 cubeSize) { *out = GenMeshCubicmap(cubicmap, cubeSize); }
+/* Font (used by load-font) */
+void shim_LoadFont(Font *out, const char *fileName) { *out = LoadFont(fileName); }
