@@ -183,77 +183,8 @@
 (define scalar-ftype-names
   '(int float double char unsigned-8 unsigned-short unsigned long void void*))
 
-;; Functions that use the C shim to avoid Chez 10.5 struct-return issues.
 ;; Maps raylib C function name -> shim function name
 ;; The shim takes the output buffer as the FIRST parameter.
-(define shim-functions-alist
-  '((LoadTexture . shim_LoadTexture)
-    (LoadFont . shim_LoadFont)
-    (MeasureTextEx . shim_MeasureTextEx)
-    (LoadFontEx . shim_LoadFontEx)
-    (LoadTextureFromImage . shim_LoadTextureFromImage)
-    (LoadImage . shim_LoadImage)
-    (LoadImageFromTexture . shim_LoadImageFromTexture)
-    (ImageCopy . shim_ImageCopy)
-    (ImageFromImage . shim_ImageFromImage)
-    (ImageText . shim_ImageText)
-    (LoadSound . shim_LoadSound)
-    (LoadModel . shim_LoadModel)
-    (LoadModelFromMesh . shim_LoadModelFromMesh)
-    (GetCameraMatrix . shim_GetCameraMatrix)
-    (GetCameraMatrix2D . shim_GetCameraMatrix2D)
-    (GetMousePosition . shim_GetMousePosition)
-    (GetMouseDelta . shim_GetMouseDelta)
-    (GetTouchPosition . shim_GetTouchPosition)
-    (GetWindowPosition . shim_GetWindowPosition)
-    (GetMonitorPosition . shim_GetMonitorPosition)
-    (GetWindowScaleDPI . shim_GetWindowScaleDPI)
-    (GetColor . shim_GetColor)
-    (Fade . shim_Fade)
-    (ColorAlpha . shim_ColorAlpha)
-    (GetImageColor . shim_GetImageColor)
-    (ColorFromNormalized . shim_ColorFromNormalized)
-    (ColorToHSV . shim_ColorToHSV)
-    (ColorFromHSV . shim_ColorFromHSV)
-    (ColorToInt . shim_ColorToInt)
-    (GetScreenToWorldRay . shim_GetScreenToWorldRay)
-    (GetScreenToWorld2D . shim_GetScreenToWorld2D)
-    (GetWorldToScreen2D . shim_GetWorldToScreen2D)
-    (GetCollisionRec . shim_GetCollisionRec)
-    (GetMouseRay . shim_GetMouseRay)
-    (GetMeshBoundingBox . shim_GetMeshBoundingBox)
-    (LoadWave . shim_LoadWave)
-    (WaveCopy . shim_WaveCopy)
-    (LoadRenderTexture . shim_LoadRenderTexture)
-    (LoadTextureCubemap . shim_LoadTextureCubemap)
-    (LoadImageAnim . shim_LoadImageAnim)
-    (LoadImageFromMemory . shim_LoadImageFromMemory)
-    (LoadImageFromScreen . shim_LoadImageFromScreen)
-    (LoadWaveFromMemory . shim_LoadWaveFromMemory)
-    (LoadMusicStream . shim_LoadMusicStream)
-    (LoadAudioStream . shim_LoadAudioStream)
-    (LoadSoundFromWave . shim_LoadSoundFromWave)
-    (LoadSoundAlias . shim_LoadSoundAlias)
-    (GenImageColor . shim_GenImageColor)
-    (GenImageGradientLinear . shim_GenImageGradientLinear)
-    (GenImageGradientRadial . shim_GenImageGradientRadial)
-    (GenImageGradientSquare . shim_GenImageGradientSquare)
-    (GenImageChecked . shim_GenImageChecked)
-    (GenImageWhiteNoise . shim_GenImageWhiteNoise)
-    (GenImagePerlinNoise . shim_GenImagePerlinNoise)
-    (GenImageCellular . shim_GenImageCellular)
-    (GenImageText . shim_GenImageText)
-    (ImageTextEx . shim_ImageTextEx)
-    (GenMeshPlane . shim_GenMeshPlane)
-    (GenMeshCube . shim_GenMeshCube)
-    (GenMeshSphere . shim_GenMeshSphere)
-    (GenMeshHemiSphere . shim_GenMeshHemiSphere)
-    (GenMeshCylinder . shim_GenMeshCylinder)
-    (GenMeshTorus . shim_GenMeshTorus)
-    (GenMeshKnot . shim_GenMeshKnot)
-    (GenMeshHeightmap . shim_GenMeshHeightmap)
-    (GenMeshCubicmap . shim_GenMeshCubicmap)))
-
 ;; ===== struct forms =====
 (define (struct-form alist)
   (let* ([name (ftype-name-of (attr alist "name"))]
@@ -372,33 +303,19 @@
        (or (attr-list alist "values") '())))
 
 ;; ===== function form =====
-;; Known SCALAR fields for copy-out of struct-returning functions.
 ;; Only includes fields of scalar types (int, float, etc.) — struct/array
 ;; fields are NOT included because ftype-set! can't copy them by value.
-(define struct-scalar-fields-alist
-  '((Vector-2 x y)
-    (Vector-3 x y z)
-    (Vector-4 x y z w)
-    (Color r g b a)
-    (Matrix m-0 m-4 m-8 m-12 m-1 m-5 m-9 m-13 m-2 m-6 m-10 m-14 m-3 m-7 m-11 m-15)
-    (Rectangle x y width height)
-    ;; Ray: skip (position/direction are Vector-3)
-    ;; BoundingBox: skip (min/max are Vector-3)
-    ))
-
 (define scalar-ffi-types '(int float double char unsigned-8 unsigned-short
                            unsigned long void void* string boolean ...))
 (define (struct-symbol? t) (and (symbol? t) (not (memq t scalar-ffi-types))))
 (define (wrap-ffi t) (if (struct-symbol? t) (list '& t) t))
 ;; Return types for structs use pointer (*) since Chez doesn't accept (& Type) as result type
-(define (wrap-ffi-ret t) (if (struct-symbol? t) (list '* t) t))
-;; Shim params use (* Type) — shim C functions take pointers, not by-value structs
-(define (wrap-shim-param t) (if (struct-symbol? t) (list '* t) t))
+(define (wrap-ffi-ret t) (if (struct-symbol? t) (list '& t) t))
+
 
 (define (fn-form alist)
   (let* ([name-str (attr alist "name")]
          [params (or (attr-list alist "params") '())])
-    ;; Skip variadic functions (Chez 10.5 does not support ... in foreign-procedure)
     (define (variadic? ps)
       (and (pair? ps) (or (string=? (attr (car ps) "type") "...") (variadic? (cdr ps)))))
     (if (variadic? params)
@@ -411,45 +328,26 @@
                [ret-ftype (if ret-bool? 'unsigned-8
                               (or (ctype->type ret-str) (param-type ret-str)))]
                [ret-struct? (struct-symbol? ret-ftype)])
-          (let ([shim-name (let ([entry (assq (string->symbol name-str) shim-functions-alist)]) (and entry (cdr entry)))])
+          ;; For struct returns, use (& Type) as return type.
+          ;; Chez converts this to an implicit first parameter (the output buffer).
           `(define ,name
              (let ([f #f])
                (lambda ,param-names
                  (unless f
-                   ;; For struct-returning functions with a shim, use the shim
-                   ;; (which takes the output buffer as a parameter).
-                   ;; This avoids Chez 10.5's broken struct-by-value return.
-                   ,(if (and ret-struct? shim-name)
-                        ;; Shim takes (Type* first_arg, ...rest_args)
-                        `(set! f (foreign-procedure ,(symbol->string shim-name)
-                                                   ((* ,ret-ftype) ,@(map wrap-shim-param param-ftypes))
-                                                   void))
-                        `(set! f (foreign-procedure ,name-str
-                                                   ,(map wrap-ffi param-ftypes)
-                                                   ,(wrap-ffi-ret ret-ftype)))))
+                   (set! f (foreign-procedure ,name-str
+                                              ,(map wrap-ffi param-ftypes)
+                                              ,(wrap-ffi-ret ret-ftype))))
                  ,(cond
                    [ret-bool?
                     `(not (= (f ,@param-names) 0))]
                    [ret-struct?
-                    ;; Allocate output buffer; either shim writes to it,
-                    ;; or we copy borrowed struct result.
-                    (if shim-name
-                        ;; Shim puts output buffer first, then original params
-                        `(let ([dst (make-ftype-pointer
-                                     ,ret-ftype
-                                     (foreign-alloc (ftype-sizeof ,ret-ftype)))])
-                           (f dst ,@param-names)
-                           dst)
-                        `(let ([ret (f ,@param-names)]
-                               [dst (make-ftype-pointer
-                                     ,ret-ftype
-                                     (foreign-alloc (ftype-sizeof ,ret-ftype)))])
-                           (memcpy-to (ftype-pointer-address dst)
-                                      (ftype-pointer-address ret)
-                                      (ftype-sizeof ,ret-ftype))
-                           dst))]
+                    ;; Allocate output buffer, pass it first, return it
+                    `(let ([dst (make-ftype-pointer ,ret-ftype
+                                (foreign-alloc (ftype-sizeof ,ret-ftype)))])
+                       (f dst ,@param-names)
+                       dst)]
                    [else
-                    `(f ,@param-names)])))))))))
+                    `(f ,@param-names)]))))))))
 
 ;; ===== color form =====
 (define (color-form def)
@@ -514,14 +412,7 @@
 
 ;; ===== load-shared-object code =====
 (define raylib-load-code
-  '((load-shared-object "/usr/lib/libSystem.B.dylib")
-    (load-shared-object
-     (let loop ([libs (library-directories)])
-       (cond [(null? libs) (error 'raylib "Raylib not found")]
-             [(file-exists? (string-append (caar libs) "/raylib/chez_raylib_shim.dylib"))
-              (string-append (caar libs) "/raylib/chez_raylib_shim.dylib")]
-             [else (loop (cdr libs))])))
-    (load-shared-object
+  '(    (load-shared-object
      (let loop ([libs (library-directories)])
        (cond [(null? libs) (error 'raylib "Raylib not found")]
              [(file-exists? (string-append (caar libs) "/raylib/raylib.dll"))
@@ -567,14 +458,6 @@
       (syntax-rules () [(_ bm e0 e1 ...) (begin (begin-blend-mode bm) e0 e1 ... (end-blend-mode))]))
     (define-syntax scissor-mode-begin
       (syntax-rules () [(_ rect-l e0 e1 ...) (begin (apply begin-scissor-mode rect-l) e0 e1 ... (end-scissor-mode))]))
-    ;; Define memcpy_t at compile time; load libSystem at load time
-    (define-ftype memcpy_t (function (void* void* size_t) void))
-    (define memcpy
-      (begin
-        (load-shared-object "/usr/lib/libSystem.B.dylib")
-        (make-ftype-pointer memcpy_t "memcpy")))
-    (define (memcpy-to dst-ptr src-ptr size)
-      ((ftype-ref memcpy_t () memcpy) dst-ptr src-ptr size))
     (define-syntax float
       (syntax-rules () [(_ f) (if (fixnum? f) (fixnum->flonum f) f)]))
     (define-syntax int

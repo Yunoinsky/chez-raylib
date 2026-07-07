@@ -1266,15 +1266,11 @@
             (set! f
               (foreign-procedure "rlLoadRenderBatch"
                 (int int)
-                (* rl-Render-Batch))))
-          (let ([ret (f num-buffers buffer-elements)]
-                [dst (make-ftype-pointer
+                (& rl-Render-Batch))))
+          (let ([dst (make-ftype-pointer
                        rl-Render-Batch
                        (foreign-alloc (ftype-sizeof rl-Render-Batch)))])
-            (memcpy-to
-              (ftype-pointer-address dst)
-              (ftype-pointer-address ret)
-              (ftype-sizeof rl-Render-Batch))
+            (f dst num-buffers buffer-elements)
             dst))))
     (define rl-unload-render-batch
       (let ([f #f])
@@ -1774,45 +1770,33 @@
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "rlGetMatrixModelview" () (* Matrix))))
-          (let ([ret (f)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "rlGetMatrixModelview" () (& Matrix))))
+          (let ([dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (memcpy-to
-              (ftype-pointer-address dst)
-              (ftype-pointer-address ret)
-              (ftype-sizeof Matrix))
+            (f dst)
             dst))))
     (define rl-get-matrix-projection
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "rlGetMatrixProjection" () (* Matrix))))
-          (let ([ret (f)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "rlGetMatrixProjection" () (& Matrix))))
+          (let ([dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (memcpy-to
-              (ftype-pointer-address dst)
-              (ftype-pointer-address ret)
-              (ftype-sizeof Matrix))
+            (f dst)
             dst))))
     (define rl-get-matrix-transform
       (let ([f #f])
         (lambda ()
           (unless f
             (set! f
-              (foreign-procedure "rlGetMatrixTransform" () (* Matrix))))
-          (let ([ret (f)]
-                [dst (make-ftype-pointer
+              (foreign-procedure "rlGetMatrixTransform" () (& Matrix))))
+          (let ([dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (memcpy-to
-              (ftype-pointer-address dst)
-              (ftype-pointer-address ret)
-              (ftype-sizeof Matrix))
+            (f dst)
             dst))))
     (define rl-get-matrix-projection-stereo
       (let ([f #f])
@@ -1821,15 +1805,11 @@
             (set! f
               (foreign-procedure "rlGetMatrixProjectionStereo"
                 (int)
-                (* Matrix))))
-          (let ([ret (f eye)]
-                [dst (make-ftype-pointer
+                (& Matrix))))
+          (let ([dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (memcpy-to
-              (ftype-pointer-address dst)
-              (ftype-pointer-address ret)
-              (ftype-sizeof Matrix))
+            (f dst eye)
             dst))))
     (define rl-get-matrix-view-offset-stereo
       (let ([f #f])
@@ -1838,15 +1818,11 @@
             (set! f
               (foreign-procedure "rlGetMatrixViewOffsetStereo"
                 (int)
-                (* Matrix))))
-          (let ([ret (f eye)]
-                [dst (make-ftype-pointer
+                (& Matrix))))
+          (let ([dst (make-ftype-pointer
                        Matrix
                        (foreign-alloc (ftype-sizeof Matrix)))])
-            (memcpy-to
-              (ftype-pointer-address dst)
-              (ftype-pointer-address ret)
-              (ftype-sizeof Matrix))
+            (f dst eye)
             dst))))
     (define rl-set-matrix-projection
       (let ([f #f])
